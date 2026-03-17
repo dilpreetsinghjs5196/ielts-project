@@ -293,7 +293,7 @@
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">User Management
                 </p>
                 <li class="{{ request()->is('admin/students*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-users"></i> Students</a>
+                    <a href="{{ route('admin.students.index') }}"><i class="fas fa-users"></i> Students</a>
                 </li>
                 <li class="{{ request()->is('admin/results*') ? 'active' : '' }}">
                     <a href="#"><i class="fas fa-chart-bar"></i> Results & Performance</a>

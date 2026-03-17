@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TestTypeController;
 use App\Http\Controllers\Admin\LevelController;
+use App\Http\Controllers\Admin\StudentController;
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
@@ -22,4 +23,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('test-types', TestTypeController::class);
     Route::resource('levels', LevelController::class);
+
+    // User Management
+    Route::resource('students', StudentController::class);
 });
