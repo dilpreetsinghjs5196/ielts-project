@@ -7,6 +7,7 @@ Route::get('/', function () {
 });
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\CategoryController;
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
@@ -14,4 +15,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Test Management
+    Route::resource('categories', CategoryController::class);
 });

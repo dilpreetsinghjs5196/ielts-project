@@ -273,8 +273,8 @@
                 <p class="px-3 text-uppercase mb-2 mt-4"
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Test Management
                 </p>
-                <li class="{{ request()->is('admin/modules*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-cubes"></i> Modules</a>
+                <li class="{{ request()->is('admin/categories*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.categories.index') }}"><i class="fas fa-cubes"></i> Modules</a>
                 </li>
                 <li class="{{ request()->is('admin/types*') ? 'active' : '' }}">
                     <a href="#"><i class="fas fa-tags"></i> Test Types</a>
