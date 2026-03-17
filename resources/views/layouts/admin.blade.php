@@ -276,8 +276,8 @@
                 <li class="{{ request()->is('admin/categories*') ? 'active' : '' }}">
                     <a href="{{ route('admin.categories.index') }}"><i class="fas fa-cubes"></i> Modules</a>
                 </li>
-                <li class="{{ request()->is('admin/types*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-tags"></i> Test Types</a>
+                <li class="{{ request()->is('admin/test-types*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.test-types.index') }}"><i class="fas fa-tags"></i> Test Types</a>
                 </li>
                 <li class="{{ request()->is('admin/levels*') ? 'active' : '' }}">
                     <a href="#"><i class="fas fa-layer-group"></i> Levels</a>
