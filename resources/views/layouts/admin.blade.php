@@ -280,7 +280,7 @@
                     <a href="{{ route('admin.test-types.index') }}"><i class="fas fa-tags"></i> Test Types</a>
                 </li>
                 <li class="{{ request()->is('admin/levels*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-layer-group"></i> Levels</a>
+                    <a href="{{ route('admin.levels.index') }}"><i class="fas fa-layer-group"></i> Levels</a>
                 </li>
                 <li class="{{ request()->is('admin/tests*') ? 'active' : '' }}">
                     <a href="#"><i class="fas fa-file-alt"></i> Tests</a>
