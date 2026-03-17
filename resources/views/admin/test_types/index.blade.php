@@ -4,11 +4,11 @@
 <div class="row mb-4">
     <div class="col-12 d-flex justify-content-between align-items-center">
         <div>
-            <h2 class="mb-0 text-gray-800" style="font-weight: 700;">Test Modules</h2>
-            <p class="text-muted">Manage the primary IELTS modules (Listening, Reading, Writing, Speaking).</p>
+            <h2 class="mb-0 text-gray-800" style="font-weight: 700;">Test Types</h2>
+            <p class="text-muted">Manage different IELTS test categories (e.g. Academic, General Training).</p>
         </div>
-        <a href="{{ route('admin.categories.create') }}" class="btn btn-primary shadow-sm" style="border-radius: 10px; padding: 10px 20px;">
-            <i class="fas fa-plus me-2"></i> Add New Module
+        <a href="{{ route('admin.test-types.create') }}" class="btn btn-primary shadow-sm" style="border-radius: 10px; padding: 10px 20px;">
+            <i class="fas fa-plus me-2"></i> Add New Type
         </a>
     </div>
 </div>
@@ -21,30 +21,24 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr>
-                                <th class="px-4 py-3 text-uppercase text-secondary font-weight-bolder opacity-7" style="font-size: 0.75rem;">Icon</th>
-                                <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7" style="font-size: 0.75rem;">Module Name</th>
+                                <th class="px-4 py-3 text-uppercase text-secondary font-weight-bolder opacity-7" style="font-size: 0.75rem;">Name</th>
                                 <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7" style="font-size: 0.75rem;">Slug</th>
-                                <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7" style="font-size: 0.75rem;">Description Snippet</th>
+                                <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7" style="font-size: 0.75rem;">Description</th>
                                 <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7 text-center" style="font-size: 0.75rem;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($categories as $category)
+                            @forelse($testTypes as $type)
                             <tr>
                                 <td class="px-4 py-4">
-                                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-primary" style="width: 45px; height: 45px;">
-                                        <i class="{{ $category->icon }} fa-lg"></i>
-                                    </div>
+                                    <h6 class="mb-0 font-weight-bold" style="color: #0d1624;">{{ $type->name }}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="mb-0 font-weight-bold" style="color: #0d1624;">{{ $category->name }}</h6>
+                                    <code class="text-primary bg-primary bg-opacity-10 px-2 py-1 rounded" style="font-size: 0.85rem;">{{ $type->slug }}</code>
                                 </td>
                                 <td>
-                                    <code class="text-primary bg-primary bg-opacity-10 px-2 py-1 rounded" style="font-size: 0.85rem;">{{ $category->slug }}</code>
-                                </td>
-                                <td>
-                                    <p class="mb-0 text-muted text-truncate" style="max-width: 300px; font-size: 0.9rem;">
-                                        {{ $category->description ?? 'No description provided.' }}
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem;">
+                                        {{ Str::limit($type->description, 100) }}
                                     </p>
                                 </td>
                                 <td class="text-center">
@@ -53,10 +47,10 @@
                                             <i class="fa fa-ellipsis-v text-xs"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
-                                            <li><a class="dropdown-item py-2" href="{{ route('admin.categories.edit', $category) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Module</a></li>
+                                            <li><a class="dropdown-item py-2" href="{{ route('admin.test-types.edit', $type) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Type</a></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
-                                                <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this module? All associated tests will be affected.');">
+                                                <form action="{{ route('admin.test-types.destroy', $type) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this test type?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="dropdown-item py-2 text-danger">
@@ -70,10 +64,9 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="py-5 text-center">
-                                    <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" style="max-height: 150px;" class="mb-3">
-                                    <h5 class="text-muted">No Modules Found</h5>
-                                    <p class="text-secondary mb-0">Start by adding your first IELTS module.</p>
+                                <td colspan="4" class="py-5 text-center">
+                                    <h5 class="text-muted">No Test Types Found</h5>
+                                    <p class="text-secondary mb-0">Start by adding your first IELTS test type.</p>
                                 </td>
                             </tr>
                             @endforelse

@@ -44,6 +44,26 @@
             height: 100vh;
             position: fixed;
             z-index: 100;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
         }
 
         #sidebar.active {
@@ -113,16 +133,19 @@
 
         /* Content Styling */
         #content {
-            width: calc(100% - 260px);
+            flex: 1;
             min-height: 100vh;
             transition: all 0.3s;
-            position: absolute;
-            top: 0;
-            right: 0;
+            background-color: var(--primary-bg);
+            position: relative;
+            margin-left: 260px;
+            z-index: 10;
+            overflow-x: hidden;
+            max-width: calc(100% - 260px);
         }
 
         #content.active {
-            width: 100%;
+            margin-left: 0;
         }
 
         /* Navbar */
@@ -156,6 +179,25 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
             margin-bottom: 24px;
+            position: relative;
+            background: #fff;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            padding: 10px 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #ce9d3c;
+            box-shadow: 0 0 0 3px rgba(206, 157, 60, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
         }
 
         /* Overlay for mobile */
@@ -176,20 +218,21 @@
         @media (max-width: 768px) {
             #sidebar {
                 margin-left: -260px;
-                z-index: 100;
+                position: fixed;
             }
 
             #sidebar.active {
                 margin-left: 0;
             }
 
+            #content {
+                margin-left: 0;
+                width: 100%;
+            }
+
             .sidebar-overlay.active {
                 display: block;
                 animation: fadeIn 0.3s ease-in-out;
-            }
-
-            #content {
-                width: 100%;
             }
 
             #content.active {
@@ -276,24 +319,48 @@
                 <li class="{{ request()->is('admin/categories*') ? 'active' : '' }}">
                     <a href="{{ route('admin.categories.index') }}"><i class="fas fa-cubes"></i> Modules</a>
                 </li>
-                <li class="{{ request()->is('admin/types*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-tags"></i> Test Types</a>
+                <li class="{{ request()->is('admin/test-types*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.test-types.index') }}"><i class="fas fa-tags"></i> Test Types</a>
                 </li>
                 <li class="{{ request()->is('admin/levels*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-layer-group"></i> Levels</a>
+                    <a href="{{ route('admin.levels.index') }}"><i class="fas fa-layer-group"></i> Levels</a>
                 </li>
                 <li class="{{ request()->is('admin/tests*') ? 'active' : '' }}">
                     <a href="#"><i class="fas fa-file-alt"></i> Tests</a>
                 </li>
-                <li class="{{ request()->is('admin/questions*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-question-circle"></i> Question Bank</a>
+                <li class="{{ request()->is('admin/question-groups*') ? 'active' : '' }}">
+                    <a href="#questionSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->is('admin/question-groups*') ? 'true' : 'false' }}" class="dropdown-toggle">
+                        <i class="fas fa-question-circle"></i> Question Bank
+                    </a>
+                    <ul class="collapse list-unstyled ps-4 {{ request()->is('admin/question-groups*') ? 'show' : '' }}" id="questionSubmenu">
+                        <li>
+                            <a href="{{ route('admin.question-groups.index', ['category' => 'listening']) }}" style="font-size: 0.9rem; padding: 8px 20px;">
+                                <i class="fas fa-headphones me-2"></i> Listening
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.question-groups.index', ['category' => 'reading']) }}" style="font-size: 0.9rem; padding: 8px 20px;">
+                                <i class="fas fa-book-open me-2"></i> Reading
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.question-groups.index', ['category' => 'writing']) }}" style="font-size: 0.9rem; padding: 8px 20px;">
+                                <i class="fas fa-pen-nib me-2"></i> Writing
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.question-groups.index', ['category' => 'speaking']) }}" style="font-size: 0.9rem; padding: 8px 20px;">
+                                <i class="fas fa-comment-dots me-2"></i> Speaking
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <p class="px-3 text-uppercase mb-2 mt-4"
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">User Management
                 </p>
                 <li class="{{ request()->is('admin/students*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-users"></i> Students</a>
+                    <a href="{{ route('admin.students.index') }}"><i class="fas fa-users"></i> Students</a>
                 </li>
                 <li class="{{ request()->is('admin/results*') ? 'active' : '' }}">
                     <a href="#"><i class="fas fa-chart-bar"></i> Results & Performance</a>
