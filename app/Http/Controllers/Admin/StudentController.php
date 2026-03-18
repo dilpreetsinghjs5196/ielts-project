@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
@@ -30,16 +31,19 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'student_id' => 'required|string|max:255|unique:students',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:students',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|email|max:255|unique:students',
+            'phone'      => 'nullable|string|max:20',
+            'address'    => 'nullable|string',
+            'status'     => 'required|in:active,inactive',
+            'password'   => 'required|string|min:8|confirmed',
         ]);
 
-        Student::create($request->all());
+        $validated['password'] = Hash::make($validated['password']);
+
+        Student::create($validated);
 
         return redirect()->route('admin.students.index')->with('success', 'Student created successfully.');
     }
@@ -65,16 +69,24 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
-        $request->validate([
+        $validated = $request->validate([
             'student_id' => 'required|string|max:255|unique:students,student_id,' . $student->id,
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:students,email,' . $student->id,
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|email|max:255|unique:students,email,' . $student->id,
+            'phone'      => 'nullable|string|max:20',
+            'address'    => 'nullable|string',
+            'status'     => 'required|in:active,inactive',
+            'password'   => 'nullable|string|min:8|confirmed',
         ]);
 
-        $student->update($request->all());
+        // Only update password if it was provided
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $student->update($validated);
 
         return redirect()->route('admin.students.index')->with('success', 'Student updated successfully.');
     }

@@ -66,7 +66,8 @@
             background: rgba(255,255,255,0.2);
         }
 
-        #sidebar.active {
+        /* Desktop collapse: sidebar slides off-screen left */
+        #sidebar.sidebar-collapsed {
             margin-left: -260px;
         }
 
@@ -144,8 +145,11 @@
             max-width: calc(100% - 260px);
         }
 
-        #content.active {
+        /* Desktop: content expands when sidebar is collapsed */
+        #content.content-expanded {
             margin-left: 0;
+            max-width: 100%;
+            width: 100%;
         }
 
         /* Navbar */
@@ -214,73 +218,76 @@
             backdrop-filter: blur(2px);
         }
 
-        /* Responsive */
+        .sidebar-overlay.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        /* Sidebar close tab — right edge of sidebar */
+        #sidebarClose {
+            position: fixed;
+            top: 50%;
+            left: 260px;               /* right edge of sidebar */
+            transform: translateY(-50%);
+            width: 22px;
+            height: 56px;
+            background: var(--sidebar-active-bg);
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            display: none;             /* hidden by default */
+            align-items: center;
+            justify-content: center;
+            box-shadow: 3px 0 12px rgba(0,0,0,0.25);
+            z-index: 101;
+            cursor: pointer;
+            transition: left 0.3s, background 0.2s;
+        }
+
+        #sidebarClose:hover {
+            background: #b8882f;
+        }
+
+        /* Show tab on desktop when sidebar is visible */
+        @media (min-width: 769px) {
+            #sidebarClose {
+                display: flex;
+            }
+            /* When sidebar collapses, move tab to left edge */
+            #sidebar.sidebar-collapsed + * + #content #sidebarClose,
+            #sidebar.sidebar-collapsed ~ #sidebarClose {
+                left: 0;
+            }
+        }
+
+        /* ── MOBILE (≤768px) ── */
         @media (max-width: 768px) {
+            /* sidebar always hidden off-screen by default on mobile */
             #sidebar {
                 margin-left: -260px;
                 position: fixed;
             }
-
-            #sidebar.active {
+            /* sidebar-open class slides it BACK on screen */
+            #sidebar.sidebar-open {
                 margin-left: 0;
             }
-
-            #content {
-                margin-left: 0;
-                width: 100%;
-            }
-
-            .sidebar-overlay.active {
-                display: block;
-                animation: fadeIn 0.3s ease-in-out;
-            }
-
-            #content.active {
-                width: 100%;
-            }
-
-            /* Mobile Close Arrow Button */
-            #sidebarClose {
-                position: absolute;
-                top: 20px;
-                right: -17px;
-                width: 30px;
-                height: 30px;
-                background: var(--sidebar-active-bg);
-                color: white;
-                border: none;
-                border-radius: 50%;
+            /* show the close tab on mobile when sidebar is open */
+            #sidebar.sidebar-open ~ #sidebarClose,
+            #sidebar.sidebar-open #sidebarClose {
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-                z-index: 101;
-                cursor: pointer;
-                transition: all 0.3s;
-                opacity: 0;
-                pointer-events: none;
             }
-
-            #sidebarClose:hover {
-                transform: scale(1.1);
+            /* content always full width on mobile */
+            #content {
+                margin-left: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
             }
-
-            @media (max-width: 768px) {
-                #sidebar.active #sidebarClose {
-                    opacity: 1;
-                    pointer-events: auto;
-                }
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                }
-
-                to {
-                    opacity: 1;
-                }
-            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -290,15 +297,15 @@
     <!-- Mobile Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- Sidebar Close Tab (fixed to right edge of sidebar) -->
+    <button type="button" id="sidebarClose" title="Close sidebar" style="display: none;">
+        <i class="fas fa-chevron-left" style="font-size: 0.9rem;"></i>
+    </button>
+
     <div class="wrapper d-flex">
 
         <!-- Sidebar -->
         <nav id="sidebar">
-            <!-- Premium Mobile Close Arrow -->
-            <button type="button" id="sidebarClose" class="d-md-none">
-                <i class="fas fa-chevron-left" style="font-size: 1.1rem;"></i>
-            </button>
-
             <div class="sidebar-header position-relative">
                 <div class="sidebar-logo-wrapper">
                     <img src="{{ asset('images/opera-dark-logo.webp') }}" alt="IELTS System Logo">
@@ -309,10 +316,20 @@
                 <p class="px-3 text-uppercase mb-2 mt-2"
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Main Navigation
                 </p>
+                @if(auth('web')->check())
                 <li class="{{ request()->is('admin/dashboard*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="{{ route('admin.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
+                @elseif(auth('student')->check())
+                <li class="{{ request()->is('student/dashboard*') ? 'active' : '' }}">
+                    <a href="{{ route('student.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+                </li>
+                <li class="{{ request()->is('student/tests*') ? 'active' : '' }}">
+                    <a href="#"><i class="fas fa-file-alt"></i> My Tests</a>
+                </li>
+                @endif
 
+                @if(auth('web')->check())
                 <p class="px-3 text-uppercase mb-2 mt-4"
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Test Management
                 </p>
@@ -365,14 +382,18 @@
                 <li class="{{ request()->is('admin/results*') ? 'active' : '' }}">
                     <a href="#"><i class="fas fa-chart-bar"></i> Results & Performance</a>
                 </li>
+                @endif
             </ul>
 
             <ul class="list-unstyled CTAs px-3 mt-4">
                 <li>
-                    <a href="#" class="btn btn-outline-light w-100 text-start"
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="btn btn-outline-light w-100 text-start"
                         style="border-color: rgba(255,255,255,0.2);">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none" style="display: none;">
+                        @csrf
+                    </form>
                 </li>
             </ul>
         </nav>
@@ -390,17 +411,34 @@
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
                             id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span style="font-weight: 500;">Admin User</span>
+                            <span style="font-weight: 500;">
+                                @if(auth('web')->check())
+                                    {{ auth('web')->user()->name }}
+                                @elseif(auth('student')->check())
+                                    {{ auth('student')->user()->name }}
+                                @else
+                                    User
+                                @endif
+                            </span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
-                            <li><a class="dropdown-item" href="#"><i
-                                        class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile</a></li>
+                            <li>
+                                @if(auth('web')->check())
+                                    <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
+                                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile
+                                    </a>
+                                @elseif(auth('student')->check())
+                                    <a class="dropdown-item" href="{{ route('student.profile') }}">
+                                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile
+                                    </a>
+                                @endif
+                            </li>
                             <li><a class="dropdown-item" href="#"><i
                                         class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i> Settings</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="#"><i
+                            <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i
                                         class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a></li>
                         </ul>
                     </div>
@@ -434,32 +472,72 @@
 
     <!-- Sidebar Toggle Script -->
     <script>
-        document.addEventListener("DOMContentLoaded", function (event) {
-            const sidebarCollapse = document.getElementById('sidebarCollapse');
-            const sidebarClose = document.getElementById('sidebarClose');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const sidebar = document.getElementById('sidebar');
-            const content = document.getElementById('content');
+        document.addEventListener("DOMContentLoaded", function () {
+            const btn      = document.getElementById('sidebarCollapse');
+            const closeBtn = document.getElementById('sidebarClose');
+            const overlay  = document.getElementById('sidebarOverlay');
+            const sidebar  = document.getElementById('sidebar');
+            const content  = document.getElementById('content');
+            const isMobile = () => window.innerWidth <= 768;
 
-            // Open/Close from hamburger menu
-            sidebarCollapse.addEventListener('click', function () {
-                sidebar.classList.toggle('active');
-                sidebarOverlay.classList.toggle('active');
-                content.classList.toggle('active');
+            // ── DESKTOP ────────────────────────────────────────────
+            function desktopCollapse() {
+                sidebar.classList.add('sidebar-collapsed');
+                content.classList.add('content-expanded');
+                // Move tab to left edge so user can re-open
+                if (closeBtn) closeBtn.style.left = '0px';
+            }
+            function desktopExpand() {
+                sidebar.classList.remove('sidebar-collapsed');
+                content.classList.remove('content-expanded');
+                // Move tab back to right edge of sidebar
+                if (closeBtn) closeBtn.style.left = '260px';
+            }
+
+            // ── MOBILE ─────────────────────────────────────────────
+            function mobileOpen() {
+                sidebar.classList.add('sidebar-open');
+                overlay.classList.add('show');
+            }
+            function mobileClose() {
+                sidebar.classList.remove('sidebar-open');
+                overlay.classList.remove('show');
+            }
+
+            // ── Hamburger ──────────────────────────────────────────
+            btn.addEventListener('click', function () {
+                if (isMobile()) {
+                    sidebar.classList.contains('sidebar-open') ? mobileClose() : mobileOpen();
+                } else {
+                    sidebar.classList.contains('sidebar-collapsed') ? desktopExpand() : desktopCollapse();
+                }
             });
 
-            // Close from inside sidebar (mobile X button)
-            sidebarClose.addEventListener('click', function () {
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-                content.classList.remove('active');
-            });
+            // ── Sidebar close tab ──────────────────────────────────
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    if (isMobile()) {
+                        mobileClose();   // on mobile: close the overlay
+                    } else {
+                        // on desktop: tab acts as a toggle
+                        sidebar.classList.contains('sidebar-collapsed') ? desktopExpand() : desktopCollapse();
+                    }
+                });
+            }
 
-            // Close when clicking the dark overlay outside the sidebar
-            sidebarOverlay.addEventListener('click', function () {
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-                content.classList.remove('active');
+            // ── Overlay click ──────────────────────────────────────
+            overlay.addEventListener('click', mobileClose);
+
+            // ── Resize cleanup ─────────────────────────────────────
+            window.addEventListener('resize', function () {
+                if (!isMobile()) {
+                    sidebar.classList.remove('sidebar-open');
+                    overlay.classList.remove('show');
+                } else {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    content.classList.remove('content-expanded');
+                    if (closeBtn) closeBtn.style.left = '';
+                }
             });
         });
     </script>
