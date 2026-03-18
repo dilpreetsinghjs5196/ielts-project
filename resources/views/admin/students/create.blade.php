@@ -74,6 +74,23 @@
                         @enderror
                     </div>
 
+                    <hr class="my-3" style="opacity:0.1;">
+                    <p class="text-muted small mb-3"><i class="fas fa-lock me-1"></i> Set login credentials for this student</p>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label font-weight-bold">Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="Min. 8 characters" required>
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="password_confirmation" class="form-label font-weight-bold">Confirm Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" placeholder="Repeat password" required>
+                        </div>
+                    </div>
+
                     <div class="mt-4 d-flex justify-content-end gap-2">
                         <a href="{{ route('admin.students.index') }}" class="btn btn-light px-4" style="border-radius: 10px;">Cancel</a>
                         <button type="submit" class="btn btn-primary px-4" style="border-radius: 10px;">Save Student</button>
