@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid p-0">
@@ -62,7 +62,7 @@
                             <label class="form-label small font-weight-bold text-muted">Module</label>
                             <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror" onchange="handleModuleChange(this)" required>
                                 <option value="">Select Module</option>
-                                @foreach($categories as $cat)
+                                @foreach ($categories as $cat)
                                     <option value="{{ $cat->id }}" data-slug="{{ $cat->slug }}" {{ (request()->category_id == $cat->id || old('category_id') == $cat->id) ? 'selected' : '' }}>{{ $cat->name }}</option>
                                 @endforeach
                             </select>
@@ -71,7 +71,7 @@
                         <div class="mb-3">
                             <label class="form-label small font-weight-bold text-muted">Test Type</label>
                             <select name="test_type_id" class="form-select" required>
-                                @foreach($testTypes as $type)
+                                @foreach ($testTypes as $type)
                                     <option value="{{ $type->id }}" {{ old('test_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
                                 @endforeach
                             </select>
@@ -80,7 +80,7 @@
                         <div class="mb-3">
                             <label class="form-label small font-weight-bold text-muted">Level</label>
                             <select name="level_id" class="form-select" required>
-                                @foreach($levels as $level)
+                                @foreach ($levels as $level)
                                     <option value="{{ $level->id }}" {{ old('level_id') == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
                                 @endforeach
                             </select>
@@ -121,3 +121,4 @@
     });
 </script>
 @endsection
+

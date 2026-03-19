@@ -28,48 +28,50 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($levels as $level)
-                            <tr>
-                                <td class="px-4 py-4">
-                                    <h6 class="mb-0 font-weight-bold" style="color: #0d1624;">{{ $level->name }}</h6>
-                                </td>
-                                <td>
-                                    <code class="text-primary bg-primary bg-opacity-10 px-2 py-1 rounded" style="font-size: 0.85rem;">{{ $level->slug }}</code>
-                                </td>
-                                <td>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem;">
-                                        {{ Str::limit($level->description, 100) }}
-                                    </p>
-                                </td>
-                                <td class="text-center">
-                                    <div class="dropdown">
-                                        <button class="btn btn-link text-secondary mb-0 outline-none shadow-none" type="button" data-bs-toggle="dropdown">
-                                            <i class="fa fa-ellipsis-v text-xs"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
-                                            <li><a class="dropdown-item py-2" href="{{ route('admin.levels.edit', $level) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Level</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <form action="{{ route('admin.levels.destroy', $level) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this level?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item py-2 text-danger">
-                                                        <i class="fas fa-trash-alt me-2"></i> Delete
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="py-5 text-center">
-                                    <h5 class="text-muted">No Levels Found</h5>
-                                    <p class="text-secondary mb-0">Start by adding your first IELTS level or batch.</p>
-                                </td>
-                            </tr>
-                            @endforelse
+                            @if ($levels->count() > 0)
+                                @foreach ($levels as $level)
+                                <tr>
+                                    <td class="px-4 py-4">
+                                        <h6 class="mb-0 font-weight-bold" style="color: #0d1624;">{{ $level->name }}</h6>
+                                    </td>
+                                    <td>
+                                        <code class="text-primary bg-primary bg-opacity-10 px-2 py-1 rounded" style="font-size: 0.85rem;">{{ $level->slug }}</code>
+                                    </td>
+                                    <td>
+                                        <p class="mb-0 text-muted" style="font-size: 0.9rem;">
+                                            {{ Str::limit($level->description, 100) }}
+                                        </p>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <button class="btn btn-link text-secondary mb-0 outline-none shadow-none" type="button" data-bs-toggle="dropdown">
+                                                <i class="fa fa-ellipsis-v text-xs"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
+                                                <li><a class="dropdown-item py-2" href="{{ route('admin.levels.edit', $level) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Level</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form action="{{ route('admin.levels.destroy', $level) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this level?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="dropdown-item py-2 text-danger">
+                                                            <i class="fas fa-trash-alt me-2"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="4" class="py-5 text-center">
+                                        <h5 class="text-muted">No Levels Found</h5>
+                                        <p class="text-secondary mb-0">Start by adding your first IELTS level or batch.</p>
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -78,3 +80,4 @@
     </div>
 </div>
 @endsection
+

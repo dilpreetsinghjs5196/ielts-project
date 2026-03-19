@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid">
@@ -54,11 +54,11 @@
                         </tr>
                         <tr>
                             <td class="text-muted">Phone</td>
-                            <td class="fw-semibold">{{ $student->phone ?? '—' }}</td>
+                            <td class="fw-semibold">{{ $student->phone ?? '' }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">Address</td>
-                            <td class="fw-semibold">{{ $student->address ?? '—' }}</td>
+                            <td class="fw-semibold">{{ $student->address ?? '' }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">Status</td>
@@ -137,3 +137,5 @@
 
 </div>
 @endsection
+
+

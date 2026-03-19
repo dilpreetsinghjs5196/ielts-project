@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="row mb-4">
@@ -29,54 +29,56 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($categories as $category)
-                            <tr>
-                                <td class="px-4 py-4">
-                                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-primary" style="width: 45px; height: 45px;">
-                                        <i class="{{ $category->icon }} fa-lg"></i>
-                                    </div>
-                                </td>
-                                <td>
-                                    <h6 class="mb-0 font-weight-bold" style="color: #0d1624;">{{ $category->name }}</h6>
-                                </td>
-                                <td>
-                                    <code class="text-primary bg-primary bg-opacity-10 px-2 py-1 rounded" style="font-size: 0.85rem;">{{ $category->slug }}</code>
-                                </td>
-                                <td>
-                                    <p class="mb-0 text-muted text-truncate" style="max-width: 300px; font-size: 0.9rem;">
-                                        {{ $category->description ?? 'No description provided.' }}
-                                    </p>
-                                </td>
-                                <td class="text-center">
-                                    <div class="dropdown">
-                                        <button class="btn btn-link text-secondary mb-0 outline-none shadow-none" type="button" data-bs-toggle="dropdown">
-                                            <i class="fa fa-ellipsis-v text-xs"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
-                                            <li><a class="dropdown-item py-2" href="{{ route('admin.categories.edit', $category) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Module</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this module? All associated tests will be affected.');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item py-2 text-danger">
-                                                        <i class="fas fa-trash-alt me-2"></i> Delete
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="py-5 text-center">
-                                    <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" style="max-height: 150px;" class="mb-3">
-                                    <h5 class="text-muted">No Modules Found</h5>
-                                    <p class="text-secondary mb-0">Start by adding your first IELTS module.</p>
-                                </td>
-                            </tr>
-                            @endforelse
+                            @if ($categories->count() > 0)
+                                @foreach ($categories as $category)
+                                <tr>
+                                    <td class="px-4 py-4">
+                                        <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-primary" style="width: 45px; height: 45px;">
+                                            <i class="{{ $category->icon }} fa-lg"></i>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <h6 class="mb-0 font-weight-bold" style="color: #0d1624;">{{ $category->name }}</h6>
+                                    </td>
+                                    <td>
+                                        <code class="text-primary bg-primary bg-opacity-10 px-2 py-1 rounded" style="font-size: 0.85rem;">{{ $category->slug }}</code>
+                                    </td>
+                                    <td>
+                                        <p class="mb-0 text-muted text-truncate" style="max-width: 300px; font-size: 0.9rem;">
+                                            {{ $category->description ?? 'No description provided.' }}
+                                        </p>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <button class="btn btn-link text-secondary mb-0 outline-none shadow-none" type="button" data-bs-toggle="dropdown">
+                                                <i class="fa fa-ellipsis-v text-xs"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
+                                                <li><a class="dropdown-item py-2" href="{{ route('admin.categories.edit', $category) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Module</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this module? All associated tests will be affected.');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="dropdown-item py-2 text-danger">
+                                                            <i class="fas fa-trash-alt me-2"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="5" class="py-5 text-center">
+                                        <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" style="max-height: 150px;" class="mb-3">
+                                        <h5 class="text-muted">No Modules Found</h5>
+                                        <p class="text-secondary mb-0">Start by adding your first IELTS module.</p>
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -85,3 +87,4 @@
     </div>
 </div>
 @endsection
+

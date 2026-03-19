@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid p-0">
@@ -41,7 +41,7 @@
 
                         <div class="mb-4 {{ $questionGroup->category->slug != 'listening' ? 'd-none' : '' }}" id="audio_section">
                             <label for="audio_file" class="form-label font-weight-bold">Common Audio File (Listening Segment)</label>
-                            @if($questionGroup->audio_file)
+                            @if ($questionGroup->audio_file)
                                 <div class="mb-3 p-3 bg-light rounded border">
                                     <p class="small text-muted mb-1">Current Audio:</p>
                                     <audio controls class="w-100"><source src="{{ asset('storage/' . $questionGroup->audio_file) }}"></audio>
@@ -52,7 +52,7 @@
 
                         <div class="mb-4 {{ $questionGroup->category->slug != 'writing' ? 'd-none' : '' }}" id="writing_section">
                             <label for="attachment" class="form-label font-weight-bold">Writing Task Image (Chart/Graph/Table)</label>
-                            @if($questionGroup->attachment)
+                            @if ($questionGroup->attachment)
                                 <div class="mb-3 p-2 bg-light rounded border text-center">
                                     <p class="small text-muted mb-2 text-start">Current Image:</p>
                                     <img src="{{ asset('storage/' . $questionGroup->attachment) }}" class="img-fluid rounded shadow-sm" style="max-height: 300px;">
@@ -72,7 +72,7 @@
                         <div class="mb-3">
                             <label class="form-label small font-weight-bold text-muted">Module</label>
                             <select name="category_id" id="category_id" class="form-select" onchange="handleModuleChange(this)" required>
-                                @foreach($categories as $cat)
+                                @foreach ($categories as $cat)
                                     <option value="{{ $cat->id }}" data-slug="{{ $cat->slug }}" {{ $questionGroup->category_id == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                                 @endforeach
                             </select>
@@ -81,7 +81,7 @@
                         <div class="mb-3">
                             <label class="form-label small font-weight-bold text-muted">Test Type</label>
                             <select name="test_type_id" class="form-select" required>
-                                @foreach($testTypes as $type)
+                                @foreach ($testTypes as $type)
                                     <option value="{{ $type->id }}" {{ $questionGroup->test_type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
                                 @endforeach
                             </select>
@@ -90,7 +90,7 @@
                         <div class="mb-3">
                             <label class="form-label small font-weight-bold text-muted">Level</label>
                             <select name="level_id" class="form-select" required>
-                                @foreach($levels as $level)
+                                @foreach ($levels as $level)
                                     <option value="{{ $level->id }}" {{ $questionGroup->level_id == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
                                 @endforeach
                             </select>
@@ -119,3 +119,4 @@
     }
 </script>
 @endsection
+

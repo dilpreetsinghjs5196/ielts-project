@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid p-0">
@@ -47,7 +47,7 @@
                     <!-- Listening Specific: Audio -->
                     <div class="mb-3 {{ $question->category->slug != 'listening' ? 'd-none' : '' }}" id="audio_section">
                         <label for="audio_file" class="form-label font-weight-bold">Listening Audio File</label>
-                        @if($question->audio_file)
+                        @if ($question->audio_file)
                             <div class="mb-2">
                                 <audio controls class="w-100">
                                     <source src="{{ asset('storage/' . $question->audio_file) }}" type="audio/mpeg">
@@ -65,7 +65,7 @@
                     <!-- Writing Specific: Image/Attachment -->
                     <div class="mb-3 {{ $question->category->slug != 'writing' ? 'd-none' : '' }}" id="writing_section">
                         <label for="attachment" class="form-label font-weight-bold">Writing Task Image (Chart/Graph)</label>
-                        @if($question->attachment)
+                        @if ($question->attachment)
                             <div class="mb-2">
                                 <img src="{{ asset('storage/' . $question->attachment) }}" alt="Attachment" class="img-fluid rounded" style="max-height: 200px;">
                             </div>
@@ -93,8 +93,8 @@
                             </button>
                         </div>
                         <div id="options_container">
-                            @if($question->options && is_array($question->options))
-                                @foreach($question->options as $index => $option)
+                            @if ($question->options && is_array($question->options))
+                                @foreach ($question->options as $index => $option)
                                 <div class="input-group mb-2">
                                     <span class="input-group-text bg-light">{{ chr(65 + $index) }}</span>
                                     <input type="text" name="options[]" class="form-control" placeholder="Enter option text" value="{{ $option }}">
@@ -143,7 +143,7 @@
                     <div class="mb-3">
                         <label for="category_id" class="form-label small font-weight-bold text-muted">Module</label>
                         <select name="category_id" id="category_id" class="form-select" onchange="handleModuleChange(this)" required>
-                            @foreach($categories as $category)
+                            @foreach ($categories as $category)
                                 <option value="{{ $category->id }}" data-slug="{{ $category->slug }}" {{ $question->category_id == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                             @endforeach
                         </select>
@@ -152,7 +152,7 @@
                     <div class="mb-3">
                         <label for="test_type_id" class="form-label small font-weight-bold text-muted">Test Type</label>
                         <select name="test_type_id" id="test_type_id" class="form-select" required>
-                            @foreach($testTypes as $type)
+                            @foreach ($testTypes as $type)
                                 <option value="{{ $type->id }}" {{ $question->test_type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
                             @endforeach
                         </select>
@@ -161,7 +161,7 @@
                     <div class="mb-3">
                         <label for="level_id" class="form-label small font-weight-bold text-muted">Level / Batch</label>
                         <select name="level_id" id="level_id" class="form-select" required>
-                            @foreach($levels as $level)
+                            @foreach ($levels as $level)
                                 <option value="{{ $level->id }}" {{ $question->level_id == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
                             @endforeach
                         </select>
@@ -277,3 +277,4 @@
 </script>
 </div>
 @endsection
+

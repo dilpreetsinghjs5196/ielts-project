@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="row mb-4">
@@ -19,7 +19,7 @@
         <div class="card border-0 shadow-sm" style="border-radius: 15px;">
             <div class="card-body p-2">
                 <ul class="nav nav-pills nav-justified" id="testTypeTabs">
-                    @foreach($testTypes as $type)
+                    @foreach ($testTypes as $type)
                     <li class="nav-item">
                         <a class="nav-link {{ $activeTestType && $activeTestType->id == $type->id ? 'active' : '' }}" 
                            href="{{ route('admin.questions.index', ['category' => $activeCategory->slug, 'type' => $type->slug]) }}"
@@ -50,12 +50,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($questions as $question)
+                            @forelse ($questions as $question)
                             <tr>
                                 <td class="px-4 py-4">
                                     <h6 class="mb-1 font-weight-bold" style="color: #0d1624;">{{ $question->title ?? 'Question #'.$question->id }}</h6>
                                     <p class="mb-0 text-muted small" style="max-width: 300px;">
-                                        @if($question->passage)
+                                        @if ($question->passage)
                                             <span class="badge bg-light text-dark me-2">Passage Linked</span>
                                         @endif
                                         {{ Str::limit($question->content, 80) }}
@@ -71,13 +71,13 @@
                                     <span class="badge bg-info bg-opacity-10 text-info px-2 py-1" style="font-size: 0.75rem; border-radius: 6px;">{{ $question->level->name }}</span>
                                 </td>
                                 <td class="text-center">
-                                    @if($question->audio_file)
+                                    @if ($question->audio_file)
                                         <i class="fas fa-volume-up text-primary cursor-pointer" title="Audio File Present"></i>
                                     @endif
-                                    @if($question->attachment)
+                                    @if ($question->attachment)
                                         <i class="fas fa-image text-success cursor-pointer ms-2" title="Image Attached"></i>
                                     @endif
-                                    @if(!$question->audio_file && !$question->attachment)
+                                    @if (!$question->audio_file && !$question->attachment)
                                         <span class="text-muted small">None</span>
                                     @endif
                                 </td>
@@ -118,3 +118,4 @@
     </div>
 </div>
 @endsection
+

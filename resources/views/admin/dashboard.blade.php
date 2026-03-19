@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="row mb-4">
@@ -185,3 +185,4 @@
     </div>
 </div>
 @endsection
+

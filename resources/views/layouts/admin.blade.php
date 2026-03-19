@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -228,7 +228,7 @@
             to   { opacity: 1; }
         }
 
-        /* Sidebar close tab — right edge of sidebar */
+        /* Sidebar close tab  right edge of sidebar */
         #sidebarClose {
             position: fixed;
             top: 50%;
@@ -265,7 +265,7 @@
             }
         }
 
-        /* ── MOBILE (≤768px) ── */
+        /*  MOBILE (768px)  */
         @media (max-width: 768px) {
             /* sidebar always hidden off-screen by default on mobile */
             #sidebar {
@@ -316,11 +316,11 @@
                 <p class="px-3 text-uppercase mb-2 mt-2"
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Main Navigation
                 </p>
-                @if(auth('web')->check())
+                @if (auth('web')->check())
                 <li class="{{ request()->is('admin/dashboard*') ? 'active' : '' }}">
                     <a href="{{ route('admin.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
-                @elseif(auth('student')->check())
+                @elseif (auth('student')->check())
                 <li class="{{ request()->is('student/dashboard*') ? 'active' : '' }}">
                     <a href="{{ route('student.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
@@ -329,7 +329,7 @@
                 </li>
                 @endif
 
-                @if(auth('web')->check())
+                @if (auth('web')->check())
                 <p class="px-3 text-uppercase mb-2 mt-4"
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Test Management
                 </p>
@@ -412,9 +412,9 @@
                         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
                             id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                             <span style="font-weight: 500;">
-                                @if(auth('web')->check())
+                                @if (auth('web')->check())
                                     {{ auth('web')->user()->name }}
-                                @elseif(auth('student')->check())
+                                @elseif (auth('student')->check())
                                     {{ auth('student')->user()->name }}
                                 @else
                                     User
@@ -423,11 +423,11 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
                             <li>
-                                @if(auth('web')->check())
+                                @if (auth('web')->check())
                                     <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
                                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile
                                     </a>
-                                @elseif(auth('student')->check())
+                                @elseif (auth('student')->check())
                                     <a class="dropdown-item" href="{{ route('student.profile') }}">
                                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile
                                     </a>
@@ -447,14 +447,14 @@
 
             <!-- Main Content Area -->
             <div class="main-content">
-                @if(session('success'))
+                @if (session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
-                @if(session('error'))
+                @if (session('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         {{ session('error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -480,7 +480,7 @@
             const content  = document.getElementById('content');
             const isMobile = () => window.innerWidth <= 768;
 
-            // ── DESKTOP ────────────────────────────────────────────
+            //  DESKTOP 
             function desktopCollapse() {
                 sidebar.classList.add('sidebar-collapsed');
                 content.classList.add('content-expanded');
@@ -494,7 +494,7 @@
                 if (closeBtn) closeBtn.style.left = '260px';
             }
 
-            // ── MOBILE ─────────────────────────────────────────────
+            //  MOBILE 
             function mobileOpen() {
                 sidebar.classList.add('sidebar-open');
                 overlay.classList.add('show');
@@ -504,7 +504,7 @@
                 overlay.classList.remove('show');
             }
 
-            // ── Hamburger ──────────────────────────────────────────
+            //  Hamburger 
             btn.addEventListener('click', function () {
                 if (isMobile()) {
                     sidebar.classList.contains('sidebar-open') ? mobileClose() : mobileOpen();
@@ -513,7 +513,7 @@
                 }
             });
 
-            // ── Sidebar close tab ──────────────────────────────────
+            //  Sidebar close tab 
             if (closeBtn) {
                 closeBtn.addEventListener('click', function () {
                     if (isMobile()) {
@@ -525,10 +525,10 @@
                 });
             }
 
-            // ── Overlay click ──────────────────────────────────────
+            //  Overlay click 
             overlay.addEventListener('click', mobileClose);
 
-            // ── Resize cleanup ─────────────────────────────────────
+            //  Resize cleanup 
             window.addEventListener('resize', function () {
                 if (!isMobile()) {
                     sidebar.classList.remove('sidebar-open');
@@ -545,3 +545,4 @@
 </body>
 
 </html>
+

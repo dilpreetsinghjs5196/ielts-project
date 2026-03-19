@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid p-0">
@@ -23,7 +23,7 @@
                 <div class="card-body p-4">
                     
                     <!-- Dynamic Module Header -->
-                    @if(isset($selectedGroup))
+                    @if (isset($selectedGroup))
                         <div class="alert alert-primary border-0 shadow-sm mb-4" style="border-radius: 12px;">
                             <i class="fas fa-layer-group me-2"></i> Adding question to segment: <strong>{{ $selectedGroup->title }}</strong>
                             <input type="hidden" name="question_group_id" value="{{ $selectedGroup->id }}">
@@ -45,7 +45,7 @@
                         @enderror
                     </div>
 
-                    @if(!isset($selectedGroup))
+                    @if (!isset($selectedGroup))
                         <!-- Reading Specific: Passage -->
                         <div class="mb-3 d-none" id="passage_section">
                             <label for="q_passage" class="form-label font-weight-bold">Reading Passage / Text</label>
@@ -129,11 +129,11 @@
                 <div class="card-body p-4">
                     <h6 class="font-weight-bold mb-3 text-uppercase small text-secondary">Categorization</h6>
                     
-                    @if(!isset($selectedGroup))
+                    @if (!isset($selectedGroup))
                         <div class="mb-3">
                             <label for="category_id" class="form-label small font-weight-bold text-muted">Module</label>
                             <select name="category_id" id="category_id" class="form-select" onchange="handleModuleChange(this)" required>
-                                @foreach($categories as $category)
+                                @foreach ($categories as $category)
                                     <option value="{{ $category->id }}" data-slug="{{ $category->slug }}" {{ (request()->category_id == $category->id || old('category_id') == $category->id) ? 'selected' : '' }}>{{ $category->name }}</option>
                                 @endforeach
                             </select>
@@ -142,7 +142,7 @@
                         <div class="mb-3">
                             <label for="test_type_id" class="form-label small font-weight-bold text-muted">Test Type</label>
                             <select name="test_type_id" id="test_type_id" class="form-select" required>
-                                @foreach($testTypes as $type)
+                                @foreach ($testTypes as $type)
                                     <option value="{{ $type->id }}" {{ old('test_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
                                 @endforeach
                             </select>
@@ -151,7 +151,7 @@
                         <div class="mb-3">
                             <label for="level_id" class="form-label small font-weight-bold text-muted">Level / Batch</label>
                             <select name="level_id" id="level_id" class="form-select" required>
-                                @foreach($levels as $level)
+                                @foreach ($levels as $level)
                                     <option value="{{ $level->id }}" {{ old('level_id') == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
                                 @endforeach
                             </select>
@@ -277,3 +277,4 @@
 </script>
 </div>
 @endsection
+

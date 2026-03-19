@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="row mb-4">
@@ -29,7 +29,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($students as $student)
+                            @forelse ($students as $student)
                             <tr>
                                 <td class="px-4 py-4">
                                     <span class="badge bg-light text-dark font-weight-bold" style="font-size: 0.85rem; border-radius: 8px;">{{ $student->student_id }}</span>
@@ -88,3 +88,4 @@
     </div>
 </div>
 @endsection
+
