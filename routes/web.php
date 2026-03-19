@@ -2,6 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\FrontendController;
+
+// Public frontend API routes
+Route::get('/api/levels', [FrontendController::class, 'getLevels'])->name('frontend.levels');
+Route::get('/api/module-sets', [FrontendController::class, 'getModuleSets'])->name('frontend.moduleSets');
+Route::get('/api/tests', [FrontendController::class, 'getTests'])->name('frontend.tests');
+
 Route::get('/', function () {
     return view('welcome');
 });

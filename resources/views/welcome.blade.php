@@ -724,7 +724,7 @@
                         </div>
                     </div>
 
-                    <!-- Step 2: Select Level -->
+                    <!-- Step 2: Select Level (dynamic from DB) -->
                     <div id="step-level" style="display: none;">
                         <div class="text-center mb-5">
                             <div class="mb-3">
@@ -733,41 +733,56 @@
                             <h2 class="fw-bold mb-2">Select Your Level</h2>
                             <p class="text-muted">Choose your current preparation stage</p>
                         </div>
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <a href="{{ route('login') }}" class="selection-card p-4">
-                                    <div class="icon" style="width: 60px; height: 60px; font-size: 1.5rem; border-radius: 16px;">
-                                        <i class="fas fa-seedling"></i>
-                                    </div>
-                                    <h5 class="fw-bold">Level 1 and 2</h5>
-                                    <p style="font-size: 0.85rem;">Foundation levels for early-stage preparation.</p>
-                                    <span class="btn-select py-2" style="font-size: 0.8rem;">Choose Level</span>
-                                </a>
-                            </div>
-                            <div class="col-md-4">
-                                <a href="{{ route('login') }}" class="selection-card p-4">
-                                    <div class="icon" style="width: 60px; height: 60px; font-size: 1.5rem; border-radius: 16px;">
-                                        <i class="fas fa-layer-group"></i>
-                                    </div>
-                                    <h5 class="fw-bold">Level 3</h5>
-                                    <p style="font-size: 0.85rem;">Intermediate level focusing on core skills.</p>
-                                    <span class="btn-select py-2" style="font-size: 0.8rem;">Choose Level</span>
-                                </a>
-                            </div>
-                            <div class="col-md-4">
-                                <a href="{{ route('login') }}" class="selection-card p-4">
-                                    <div class="icon" style="width: 60px; height: 60px; font-size: 1.5rem; border-radius: 16px;">
-                                        <i class="fas fa-fire"></i>
-                                    </div>
-                                    <h5 class="fw-bold">Exam Batch</h5>
-                                    <p style="font-size: 0.85rem;">Advanced intensive preparation for your exam.</p>
-                                    <span class="btn-select py-2" style="font-size: 0.8rem;">Choose Level</span>
-                                </a>
+                        <div class="row g-4" id="level-cards-container">
+                            <!-- Dynamically populated via JS -->
+                            <div class="col-12 text-center py-4">
+                                <div class="spinner-border text-warning" role="status"></div>
                             </div>
                         </div>
                         <div class="text-center mt-5">
                             <button class="btn btn-link text-muted text-decoration-none" onclick="goToStep('test-type')">
                                 <i class="fas fa-chevron-left me-2"></i> Back to Test Type
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Select Module Set (dynamic from DB) -->
+                    <div id="step-modules" style="display: none;">
+                        <div class="text-center mb-5">
+                            <div class="mb-3 d-flex justify-content-center gap-2">
+                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 border" id="moduleBadgeType"></span>
+                                <span class="badge rounded-pill bg-warning text-dark px-3 py-2" id="moduleBadgeLevel"></span>
+                            </div>
+                            <h2 class="fw-bold mb-2">Select a Module</h2>
+                            <p class="text-muted" id="moduleSubtitle">Choose a module to start your practice</p>
+                        </div>
+                        <div class="row g-4" id="module-cards-container">
+                            <!-- Dynamically populated via JS -->
+                        </div>
+                        <div class="text-center mt-5">
+                            <button class="btn btn-link text-muted text-decoration-none" onclick="goToStep('level')">
+                                <i class="fas fa-chevron-left me-2"></i> Back to Level
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Tests List inside selected Module -->
+                    <div id="step-tests" style="display: none;">
+                        <div class="text-center mb-4">
+                            <div class="mb-3 d-flex justify-content-center gap-2">
+                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 border" id="testBadgeType"></span>
+                                <span class="badge rounded-pill bg-warning text-dark px-3 py-2" id="testBadgeLevel"></span>
+                                <span class="badge rounded-pill bg-dark text-white px-3 py-2" id="testBadgeModule"></span>
+                            </div>
+                            <h2 class="fw-bold mb-2">Available Tests</h2>
+                            <p class="text-muted" id="testSubtitle">Login to attempt any test below</p>
+                        </div>
+                        <div id="tests-list-container">
+                            <!-- Dynamically populated via JS -->
+                        </div>
+                        <div class="text-center mt-4">
+                            <button class="btn btn-link text-muted text-decoration-none" onclick="goToStep('modules')">
+                                <i class="fas fa-chevron-left me-2"></i> Back to Modules
                             </button>
                         </div>
                     </div>
@@ -780,26 +795,197 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Global state to track selections
+        let currentModule = '';
+        let currentType = '';
+        let currentLevelId = null;
+        let currentLevelName = '';
+
+        // Level icon map (fallback icons based on index)
+        const levelIcons = ['fa-seedling', 'fa-layer-group', 'fa-fire', 'fa-star', 'fa-rocket'];
+
         function openTestSelection(moduleName) {
-            document.getElementById('selectionModuleSubtitle').innerText = 'Choose between Academic or General for ' + moduleName;
-            
-            // Reset to first step
-            document.getElementById('step-test-type').style.display = 'block';
-            document.getElementById('step-level').style.display = 'none';
-            
+            currentModule = moduleName;
+            document.getElementById('selectionModuleSubtitle').innerText =
+                'Choose between Academic or General for ' + moduleName;
+
+            // Reset to Step 1
+            showOnlyStep('test-type');
+
             var selectionModal = new bootstrap.Modal(document.getElementById('testSelectionModal'));
             selectionModal.show();
         }
 
+        function showOnlyStep(step) {
+            ['test-type', 'level', 'modules', 'tests'].forEach(s => {
+                const el = document.getElementById('step-' + s);
+                if (el) el.style.display = (s === step) ? 'block' : 'none';
+            });
+        }
+
         function goToStep(step, typeSelected) {
             if (step === 'level') {
-                document.getElementById('selectedTypeBadge').innerText = typeSelected;
-                document.getElementById('step-test-type').style.display = 'none';
-                document.getElementById('step-level').style.display = 'block';
+                currentType = typeSelected || currentType;
+                document.getElementById('selectedTypeBadge').innerText = currentType;
+
+                showOnlyStep('level');
+                fetchLevels();
+
             } else if (step === 'test-type') {
-                document.getElementById('step-test-type').style.display = 'block';
-                document.getElementById('step-level').style.display = 'none';
+                showOnlyStep('test-type');
+
+            } else if (step === 'modules') {
+                showOnlyStep('modules');
             }
+        }
+
+        // Fetch levels from the server
+        function fetchLevels() {
+            const container = document.getElementById('level-cards-container');
+            container.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-warning" role="status"></div></div>';
+
+            fetch('/api/levels')
+                .then(r => r.json())
+                .then(levels => {
+                    if (levels.length === 0) {
+                        container.innerHTML = '<div class="col-12 text-center py-4 text-muted"><i class="fas fa-inbox fa-2x mb-2"></i><p>No levels found.</p></div>';
+                        return;
+                    }
+
+                    const colSize = levels.length <= 3 ? `col-md-${12 / levels.length}` : 'col-md-4';
+
+                    container.innerHTML = levels.map((level, i) => `
+                        <div class="${colSize}">
+                            <div class="selection-card p-4" onclick="selectLevel(${level.id}, '${level.name.replace(/'/g, "\\'")}')"
+                                 style="cursor:pointer;">
+                                <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                    <i class="fas ${levelIcons[i] || 'fa-star'}"></i>
+                                </div>
+                                <h5 class="fw-bold">${level.name}</h5>
+                                <p style="font-size:0.85rem;">${level.description || 'Select to see available modules.'}</p>
+                                <span class="btn-select py-2" style="font-size:0.8rem;">Choose Level</span>
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(() => {
+                    container.innerHTML = '<div class="col-12 text-center text-danger">Failed to load levels. Please try again.</div>';
+                });
+        }
+
+        // User picked a level → fetch module sets
+        function selectLevel(levelId, levelName) {
+            currentLevelId = levelId;
+            currentLevelName = levelName;
+
+            document.getElementById('moduleBadgeType').innerText = currentType;
+            document.getElementById('moduleBadgeLevel').innerText = levelName;
+            document.getElementById('moduleSubtitle').innerText =
+                `${currentModule} modules for ${currentType} — ${levelName}`;
+
+            showOnlyStep('modules');
+            fetchModuleSets();
+        }
+
+        // Fetch module sets from the server
+        function fetchModuleSets() {
+            const container = document.getElementById('module-cards-container');
+            container.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-warning" role="status"></div></div>';
+
+            const categorySlug = currentModule.toLowerCase();
+            const url = `/api/module-sets?category=${encodeURIComponent(categorySlug)}&test_type=${encodeURIComponent(currentType)}&level_id=${currentLevelId}`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(modules => {
+                    if (modules.length === 0) {
+                        container.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No modules available yet</h5>
+                                <p class="text-muted small">No active modules found for <strong>${currentType}</strong> — <strong>${currentLevelName}</strong> in <strong>${currentModule}</strong>.</p>
+                                <a href="{{ route('login') }}" class="btn btn-warning mt-2 px-4" style="border-radius:50px;">Login to Access Tests</a>
+                            </div>`;
+                        return;
+                    }
+
+                    const colSize = modules.length === 1 ? 'col-md-6 mx-auto' : 'col-md-4';
+
+                    container.innerHTML = modules.map(mod => `
+                        <div class="${colSize}">
+                            <div class="selection-card p-4" onclick="selectModule(${mod.id}, '${mod.name.replace(/'/g, "\\'")}')"
+                                 style="cursor:pointer;">
+                                <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <h5 class="fw-bold">${mod.name}</h5>
+                                <p style="font-size:0.85rem;">${mod.tests_count} test${mod.tests_count !== 1 ? 's' : ''} inside</p>
+                                <span class="btn-select py-2" style="font-size:0.8rem;">View Tests</span>
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(() => {
+                    container.innerHTML = '<div class="col-12 text-center text-danger">Failed to load modules. Please try again.</div>';
+                });
+        }
+
+        // User clicked a module → show tests
+        function selectModule(moduleSetId, moduleSetName) {
+            document.getElementById('testBadgeType').innerText   = currentType;
+            document.getElementById('testBadgeLevel').innerText  = currentLevelName;
+            document.getElementById('testBadgeModule').innerText = moduleSetName;
+            document.getElementById('testSubtitle').innerText    =
+                `Tests inside: ${moduleSetName} — ${currentModule} / ${currentType} / ${currentLevelName}`;
+
+            showOnlyStep('tests');
+            fetchTests(moduleSetId);
+        }
+
+        // Fetch tests for a specific module set
+        function fetchTests(moduleSetId) {
+            const container = document.getElementById('tests-list-container');
+            container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-warning" role="status"></div></div>';
+
+            fetch(`/api/tests?module_set_id=${moduleSetId}`)
+                .then(r => r.json())
+                .then(tests => {
+                    if (tests.length === 0) {
+                        container.innerHTML = `
+                            <div class="text-center py-5">
+                                <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No Tests Available Yet</h5>
+                                <p class="text-muted small">Tests will appear here once added by the admin.</p>
+                            </div>`;
+                        return;
+                    }
+
+                    container.innerHTML = `
+                        <div class="list-group shadow-sm" style="border-radius:14px;overflow:hidden;">
+                            ${tests.map((test, i) => `
+                                <a href="{{ route('login') }}"
+                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4"
+                                   style="border-left:4px solid var(--primary-gold); transition:all 0.2s;"
+                                   onmouseover="this.style.background='rgba(206,157,60,0.06)'"
+                                   onmouseout="this.style.background=''">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span class="d-flex align-items-center justify-content-center rounded-circle bg-warning text-dark fw-bold"
+                                              style="width:34px;height:34px;font-size:0.85rem;flex-shrink:0;">${i + 1}</span>
+                                        <span class="fw-semibold" style="color:#0d1624;">${test.name}</span>
+                                    </div>
+                                    <span class="btn btn-sm btn-warning px-3" style="border-radius:50px;font-size:0.78rem;font-weight:600;">
+                                        Start <i class="fas fa-arrow-right ms-1"></i>
+                                    </span>
+                                </a>
+                            `).join('')}
+                        </div>
+                        <p class="text-center text-muted small mt-3">
+                            <i class="fas fa-lock me-1"></i>Please <a href="{{ route('login') }}" class="text-warning fw-bold">login</a> to attempt a test.
+                        </p>`;
+                })
+                .catch(() => {
+                    container.innerHTML = '<div class="text-center text-danger">Failed to load tests. Please try again.</div>';
+                });
         }
     </script>
 </body>
