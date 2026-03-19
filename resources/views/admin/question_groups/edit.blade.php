@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid p-0">
@@ -94,6 +94,19 @@
                                     <option value="{{ $level->id }}" {{ $questionGroup->level_id == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
                                 @endforeach
                             </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small font-weight-bold text-muted">Assign to Specific Test</label>
+                            <select name="test_id" class="form-select @error('test_id') is-invalid @enderror">
+                                <option value="">Draft (Unassigned)</option>
+                                @foreach ($tests as $test)
+                                    <option value="{{ $test->id }}" {{ (old('test_id', $questionGroup->test_id) == $test->id) ? 'selected' : '' }}>
+                                        [{{ $test->level->name }}] - {{ $test->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted" style="font-size: 0.7rem;">Optional. You can assign this segment to a specific test later.</small>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 mb-2 mt-3">Update Segment</button>

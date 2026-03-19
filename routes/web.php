@@ -32,6 +32,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     Route::resource('categories', CategoryController::class);
     Route::resource('test-types', TestTypeController::class);
     Route::resource('levels', LevelController::class);
+    Route::resource('module-sets', \App\Http\Controllers\Admin\ModuleSetController::class);
+    Route::resource('tests', \App\Http\Controllers\Admin\TestController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('question-groups', \App\Http\Controllers\Admin\QuestionGroupController::class);
 

@@ -12,4 +12,14 @@ class Category extends Model
         'icon',
         'description',
     ];
+
+    public function moduleSets()
+    {
+        return $this->hasMany(ModuleSet::class);
+    }
+
+    public function tests()
+    {
+        return $this->hasMany(Test::class);
+    }
 }

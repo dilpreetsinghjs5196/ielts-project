@@ -19,7 +19,7 @@
         <div class="col-12">
             <div class="card border-0 shadow-sm" style="border-radius: 15px;">
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="overflow: visible;">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>

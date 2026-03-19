@@ -7,6 +7,7 @@ use App\Models\QuestionGroup;
 use App\Models\Category;
 use App\Models\TestType;
 use App\Models\Level;
+use App\Models\Test;
 use Illuminate\Http\Request;
 
 class QuestionGroupController extends Controller
@@ -23,8 +24,9 @@ class QuestionGroupController extends Controller
             
         $categories = Category::all();
         $testTypes = TestType::all();
+        $tests = Test::all();
 
-        return view('admin.question_groups.index', compact('groups', 'activeCategory', 'categories', 'testTypes'));
+        return view('admin.question_groups.index', compact('groups', 'activeCategory', 'categories', 'testTypes', 'tests'));
     }
 
     public function create()
@@ -32,7 +34,8 @@ class QuestionGroupController extends Controller
         $categories = Category::all();
         $testTypes = TestType::all();
         $levels = Level::all();
-        return view('admin.question_groups.create', compact('categories', 'testTypes', 'levels'));
+        $tests = Test::with(['level', 'category', 'testType'])->get();
+        return view('admin.question_groups.create', compact('categories', 'testTypes', 'levels', 'tests'));
     }
 
     public function store(Request $request)
@@ -41,6 +44,7 @@ class QuestionGroupController extends Controller
             'category_id' => 'required|exists:categories,id',
             'test_type_id' => 'required|exists:test_types,id',
             'level_id' => 'required|exists:levels,id',
+            'test_id' => 'nullable|exists:tests,id',
             'title' => 'required|string|max:255',
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
             'attachment' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
@@ -67,7 +71,8 @@ class QuestionGroupController extends Controller
         $categories = Category::all();
         $testTypes = TestType::all();
         $levels = Level::all();
-        return view('admin.question_groups.show', compact('questionGroup', 'categories', 'testTypes', 'levels'));
+        $tests = Test::all();
+        return view('admin.question_groups.show', compact('questionGroup', 'categories', 'testTypes', 'levels', 'tests'));
     }
 
     public function edit(QuestionGroup $questionGroup)
@@ -75,16 +80,21 @@ class QuestionGroupController extends Controller
         $categories = Category::all();
         $testTypes = TestType::all();
         $levels = Level::all();
-        return view('admin.question_groups.edit', compact('questionGroup', 'categories', 'testTypes', 'levels'));
+        $tests = Test::all();
+        return view('admin.question_groups.edit', compact('questionGroup', 'categories', 'testTypes', 'levels', 'tests'));
     }
 
     public function update(Request $request, QuestionGroup $questionGroup)
     {
         $request->validate([
             'title' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'test_type_id' => 'required|exists:test_types,id',
+            'level_id' => 'required|exists:levels,id',
+            'test_id' => 'nullable|exists:tests,id',
         ]);
 
-        $data = $request->all();
+        $data = $request->except(['audio_file', 'attachment']);
 
         if ($request->hasFile('audio_file')) {
             $data['audio_file'] = $request->file('audio_file')->store('groups/audio', 'public');

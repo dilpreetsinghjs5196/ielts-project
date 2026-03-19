@@ -13,6 +13,7 @@ class QuestionGroup extends Model
         'category_id',
         'test_type_id',
         'level_id',
+        'test_id',
         'title',
         'passage',
         'audio_file',
@@ -20,6 +21,11 @@ class QuestionGroup extends Model
         'instruction',
         'status',
     ];
+
+    public function test()
+    {
+        return $this->belongsTo(Test::class);
+    }
 
     public function category()
     {

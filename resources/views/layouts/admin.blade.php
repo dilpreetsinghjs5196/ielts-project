@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -342,8 +342,11 @@
                 <li class="{{ request()->is('admin/levels*') ? 'active' : '' }}">
                     <a href="{{ route('admin.levels.index') }}"><i class="fas fa-layer-group"></i> Levels</a>
                 </li>
+                <li class="{{ request()->is('admin/module-sets*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.module-sets.index') }}"><i class="fas fa-archive"></i> Module Portfolios</a>
+                </li>
                 <li class="{{ request()->is('admin/tests*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-file-alt"></i> Tests</a>
+                    <a href="{{ route('admin.tests.index') }}"><i class="fas fa-vial"></i> Mock Tests</a>
                 </li>
                 <li class="{{ request()->is('admin/question-groups*') ? 'active' : '' }}">
                     <a href="#questionSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->is('admin/question-groups*') ? 'true' : 'false' }}" class="dropdown-toggle">
