@@ -11,15 +11,20 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             font-family: 'Outfit', sans-serif;
+        }
+
+        body {
             background: linear-gradient(135deg, #0d1624 0%, #1a2a44 100%);
-            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
-            overflow: hidden;
+            position: relative;
         }
 
         /* Abstract shapes in background */
@@ -52,6 +57,7 @@
             z-index: 10;
             width: 100%;
             max-width: 1000px;
+            max-height: 95vh;
             display: flex;
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -59,6 +65,15 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(20px);
             overflow: hidden;
+        }
+
+        @media (max-height: 700px) {
+            .login-wrapper {
+                max-height: 98vh;
+            }
+            .login-sidebar, .login-form-container {
+                overflow-y: auto;
+            }
         }
 
         .login-sidebar {
@@ -200,24 +215,67 @@
         @media (max-width: 900px) {
             .login-wrapper {
                 flex-direction: column;
-                margin: 20px;
+                margin: 10px;
                 max-width: 500px;
+                width: calc(100% - 20px);
+                max-height: 95vh;
             }
             .login-sidebar {
-                padding: 2rem;
+                padding: 1.5rem;
                 border-right: none;
                 border-bottom: 1px solid rgba(0,0,0,0.05);
+                flex: 0 0 auto;
             }
             .login-sidebar img {
-                max-width: 150px;
-                margin-bottom: 1rem;
+                max-width: 100px;
+                margin-bottom: 0.5rem;
+            }
+            .login-sidebar h3 {
+                font-size: 1.25rem;
+                margin-bottom: 0.5rem;
             }
             .login-sidebar p {
                 display: none;
             }
             .login-form-container {
-                padding: 3rem 2rem;
+                padding: 1.5rem 1rem;
+                flex: 1 1 auto;
+                overflow-y: auto;
             }
+            .login-header h2 {
+                font-size: 1.25rem;
+            }
+            .login-header p {
+                margin-bottom: 1rem;
+                font-size: 0.9rem;
+            }
+            .form-floating mb-4 {
+                margin-bottom: 0.75rem !important;
+            }
+            .btn-primary {
+                padding: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-wrapper {
+                margin: 5px;
+                width: calc(100% - 10px);
+            }
+            .login-form-container {
+                padding: 1.25rem 0.75rem;
+            }
+        }
+        
+        /* Hide scrollbars for cleaner look but still allow scrolling if needed */
+        .login-sidebar::-webkit-scrollbar,
+        .login-form-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .login-sidebar::-webkit-scrollbar-thumb,
+        .login-form-container::-webkit-scrollbar-thumb {
+            background: rgba(206, 157, 60, 0.2);
+            border-radius: 10px;
         }
     </style>
 </head>
