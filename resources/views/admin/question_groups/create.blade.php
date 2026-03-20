@@ -71,8 +71,9 @@
                         <div class="mb-3">
                             <label class="form-label small font-weight-bold text-muted">Test Type</label>
                             <select name="test_type_id" class="form-select" required>
+                                <option value="">Select Test Type</option>
                                 @foreach ($testTypes as $type)
-                                    <option value="{{ $type->id }}" {{ old('test_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                    <option value="{{ $type->id }}" {{ (request()->test_type_id == $type->id || old('test_type_id') == $type->id) ? 'selected' : '' }}>{{ $type->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -82,7 +83,7 @@
                             <select name="level_id" class="form-select @error('level_id') is-invalid @enderror" required>
                                 <option value="">Select Level</option>
                                 @foreach ($levels as $level)
-                                    <option value="{{ $level->id }}" {{ old('level_id') == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
+                                    <option value="{{ $level->id }}" {{ (request()->level_id == $level->id || old('level_id') == $level->id) ? 'selected' : '' }}>{{ $level->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -92,7 +93,7 @@
                             <select name="test_id" class="form-select @error('test_id') is-invalid @enderror">
                                 <option value="">Draft (Unassigned)</option>
                                 @foreach ($tests as $test)
-                                    <option value="{{ $test->id }}" {{ old('test_id') == $test->id ? 'selected' : '' }}>
+                                    <option value="{{ $test->id }}" {{ (request()->test_id == $test->id || old('test_id') == $test->id) ? 'selected' : '' }}>
                                         [{{ $test->level->name }}] - {{ $test->name }}
                                     </option>
                                 @endforeach
@@ -109,7 +110,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 mb-2 mt-3">Create Segment</button>
-                        <a href="{{ route('admin.question-groups.index') }}" class="btn btn-light w-100">Cancel</a>
+                        <a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug ?? 'listening']) }}" class="btn btn-light w-100">Cancel</a>
                     </div>
                 </div>
             </div>

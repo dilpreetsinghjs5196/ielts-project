@@ -17,17 +17,53 @@ class QuestionGroupController extends Controller
         $categorySlug = $request->query('category', 'listening');
         $activeCategory = Category::where('slug', $categorySlug)->firstOrFail();
         
-        $groups = QuestionGroup::with(['category', 'testType', 'level', 'questions'])
-            ->where('category_id', $activeCategory->id)
-            ->latest()
-            ->get();
-            
-        $categories = Category::all();
-        $testTypes = TestType::all();
-        $tests = Test::all();
+        $testTypeId = $request->query('test_type');
+        $levelId = $request->query('level');
+        $moduleSetId = $request->query('module_set');
+        $testId = $request->query('test');
 
-        return view('admin.question_groups.index', compact('groups', 'activeCategory', 'categories', 'testTypes', 'tests'));
+        // Get options for each step
+        $testTypes = TestType::all();
+        
+        $levels = $testTypeId 
+            ? Level::all() 
+            : collect();
+
+        $moduleSets = ($testTypeId && $levelId)
+            ? \App\Models\ModuleSet::where('category_id', $activeCategory->id)
+                ->where('test_type_id', $testTypeId)
+                ->where('level_id', $levelId)
+                ->get()
+            : collect();
+
+        $tests = ($moduleSetId)
+            ? Test::where('module_set_id', $moduleSetId)->get()
+            : collect();
+
+        // Final groups list
+        $query = QuestionGroup::with(['category', 'testType', 'level', 'questions'])
+            ->where('category_id', $activeCategory->id);
+
+        if ($testTypeId) $query->where('test_type_id', $testTypeId);
+        if ($levelId) $query->where('level_id', $levelId);
+        if ($testId) $query->where('test_id', $testId);
+
+        $groups = ($testId) ? $query->latest()->get() : collect();
+            
+        return view('admin.question_groups.index', compact(
+            'groups', 
+            'activeCategory', 
+            'testTypes', 
+            'levels', 
+            'moduleSets', 
+            'tests',
+            'testTypeId',
+            'levelId',
+            'moduleSetId',
+            'testId'
+        ));
     }
+
 
     public function create()
     {
