@@ -85,8 +85,8 @@ class QuestionController extends Controller
             $data['attachment'] = $request->file('attachment')->store('questions/attachments', 'public');
         }
 
-        // Handle options if it's an MCQ
-        if ($request->question_type == 'mcq' && $request->has('options')) {
+        // Handle options if it's a type that requires options
+        if (in_array($request->question_type, ['mcq', 'match_heading', 'fill_blanks']) && $request->has('options')) {
             $data['options'] = array_filter($request->options);
         }
 
@@ -151,7 +151,7 @@ class QuestionController extends Controller
             $data['attachment'] = $request->file('attachment')->store('questions/attachments', 'public');
         }
 
-        if ($request->question_type == 'mcq' && $request->has('options')) {
+        if (in_array($request->question_type, ['mcq', 'match_heading', 'fill_blanks']) && $request->has('options')) {
             $data['options'] = array_filter($request->options);
         } else {
             $data['options'] = null;

@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid p-0">
@@ -85,9 +85,9 @@
                         @enderror
                     </div>
 
-                    <div id="mcq_options_section" style="{{ $question->question_type == 'mcq' ? 'display: block;' : 'display: none;' }}">
+                    <div id="mcq_options_section" style="{{ in_array($question->question_type, ['mcq', 'match_heading', 'fill_blanks']) ? 'display: block;' : 'display: none;' }}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label font-weight-bold mb-0">Options (For MCQs)</label>
+                            <label class="form-label font-weight-bold mb-0" id="options_label">Options (For MCQs)</label>
                             <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOption()">
                                 <i class="fas fa-plus me-1"></i> Add Option
                             </button>
@@ -233,8 +233,18 @@
 
     function toggleOptions(type) {
         const mcqSection = document.getElementById('mcq_options_section');
-        if (type === 'mcq') {
+        const optionsLabel = document.getElementById('options_label');
+        
+        if (['mcq', 'match_heading', 'fill_blanks'].includes(type)) {
             mcqSection.style.display = 'block';
+            
+            if (type === 'mcq') {
+                optionsLabel.innerText = "Options (For MCQs)";
+            } else if (type === 'match_heading') {
+                optionsLabel.innerText = "Headings (List of headings to match)";
+            } else if (type === 'fill_blanks') {
+                optionsLabel.innerText = "Word Bank (Optional choices for blanks)";
+            }
         } else {
             mcqSection.style.display = 'none';
         }
@@ -273,6 +283,10 @@
         // Initial setup for existing data
         const select = document.getElementById('category_id');
         handleModuleChange(select);
+        
+        // Initial setup for question type
+        const typeSelect = document.getElementById('question_type');
+        toggleOptions(typeSelect.value);
     });
 </script>
 </div>
