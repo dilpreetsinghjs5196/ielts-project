@@ -41,7 +41,8 @@ class StudentController extends Controller
             'password'   => 'required|string|min:8|confirmed',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        // In Laravel 11 with 'hashed' cast, model handles hashing automatically
+        // $validated['password'] = Hash::make($validated['password']);
 
         Student::create($validated);
 
@@ -80,9 +81,8 @@ class StudentController extends Controller
         ]);
 
         // Only update password if it was provided
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
+        // Only update password if it was provided. Hashing is handled by the model cast.
+        if (empty($validated['password'])) {
             unset($validated['password']);
         }
 

@@ -81,6 +81,13 @@
             @endforeach
         </section>
 
+        <!-- Resizer Divider -->
+        <div class="test-resizer" id="test-divider">
+            <div class="resizer-handle">
+                <i class="fas fa-arrows-alt-h text-white"></i>
+            </div>
+        </div>
+
         <!-- Right: Questions -->
         <section class="test-questions p-4" id="questions-container">
             @foreach ($test->questionGroups as $group)
@@ -91,7 +98,32 @@
                     </div>
 
                     <div class="questions-list">
+                        @php $lastTitle = null; @endphp
                         @foreach ($group->questions as $index => $question)
+                            @if(!empty($question->title) && $question->title !== $lastTitle)
+                                <div class="question-set-header mt-5 mb-4 p-4 rounded-4" style="background: rgba(59, 130, 246, 0.05); border-left: 5px solid #3b82f6;">
+                                    <div class="d-flex flex-column gap-2">
+                                        @php 
+                                            // Extract 'Questions X-Y' if it exists at start
+                                            $title = $question->title;
+                                            $badgeText = '';
+                                            if (preg_match('/^(Questions?\s\d+[-–]\d+)/i', $title, $matches)) {
+                                                $badgeText = $matches[1];
+                                                $title = trim(substr($title, strlen($badgeText)));
+                                            }
+                                        @endphp
+                                        
+                                        @if($badgeText)
+                                            <div><span class="badge bg-primary px-3 py-2 rounded-2" style="font-size: 0.9rem;">{{ $badgeText }}</span></div>
+                                        @endif
+                                        
+                                        @if($title)
+                                            <h5 class="fw-bold mb-0 text-dark" style="line-height: 1.5;">{{ $title }}</h5>
+                                        @endif
+                                    </div>
+                                </div>
+                                @php $lastTitle = $question->title; @endphp
+                            @endif
                             <div class="question-item mb-4 pb-4 border-bottom" id="q-{{ $question->id }}" data-q-id="{{ $question->id }}" data-q-type="{{ $question->question_type }}">
                                 <div class="d-flex gap-3">
                                     <div class="q-number bg-dark text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; flex-shrink: 0;">
@@ -237,9 +269,43 @@
     .test-passage {
         width: 50%;
         overflow-y: auto;
-        border-right: 1px solid #e2e8f0;
         background: #f1f5f9;
         scrollbar-width: thin;
+    }
+
+    /* Draggable Resizer */
+    .test-resizer {
+        width: 10px;
+        background: #cbd5e1;
+        cursor: col-resize;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        position: relative;
+        transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+    }
+
+    .test-resizer:hover, .test-resizer.resizing {
+        background: #3b82f6;
+    }
+
+    .resizer-handle {
+        background: #3b82f6;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        pointer-events: none;
+        border: 2px solid white;
     }
 
     .test-questions {
@@ -623,5 +689,46 @@
             });
         }
     }
+
+    // Draggable Resizer Logic
+    const resizer = document.getElementById('test-divider');
+    const leftSide = resizer.previousElementSibling;
+    const rightSide = resizer.nextElementSibling;
+
+    let x = 0;
+    let leftWidth = 0;
+
+    const mouseMoveHandler = function (e) {
+        const dx = e.clientX - x;
+        const newLeftWidth = ((leftWidth + dx) * 100) / resizer.parentNode.getBoundingClientRect().width;
+        
+        // Boundaries (25% to 75%)
+        if (newLeftWidth > 25 && newLeftWidth < 75) {
+            leftSide.style.width = `${newLeftWidth}%`;
+            rightSide.style.width = `${100 - newLeftWidth}%`;
+        }
+    };
+
+    const mouseUpHandler = function () {
+        resizer.classList.remove('resizing');
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+        document.body.style.removeProperty('cursor');
+        document.body.style.removeProperty('user-select');
+    };
+
+    const mouseDownHandler = function (e) {
+        x = e.clientX;
+        leftWidth = leftSide.getBoundingClientRect().width;
+        resizer.classList.add('resizing');
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+        
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    };
+
+    resizer.addEventListener('mousedown', mouseDownHandler);
 </script>
 @endsection

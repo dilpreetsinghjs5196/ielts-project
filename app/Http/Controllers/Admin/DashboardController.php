@@ -12,10 +12,18 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // In the future, we will fetch real statistics from models here
-        // e.g., $studentCount = User::where('role', 'student')->count();
-        //       $testCount = Test::count();
+        $stats = [
+            'total_students'  => \App\Models\Student::count(),
+            'total_tests'     => \App\Models\Test::count(),
+            'total_questions' => \App\Models\Question::count(),
+            'recent_attempts' => \App\Models\TestAttempt::count(),
+        ];
 
-        return view('admin.dashboard');
+        $recentSubmissions = \App\Models\TestAttempt::with(['student', 'test.moduleSet'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'recentSubmissions'));
     }
 }

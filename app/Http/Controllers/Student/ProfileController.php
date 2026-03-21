@@ -33,7 +33,7 @@ class ProfileController extends Controller
         $student->address = $validated['address'] ?? $student->address;
 
         if (!empty($validated['password'])) {
-            $student->password = Hash::make($validated['password']);
+            $student->password = $validated['password'];
         }
 
         $student->save();
