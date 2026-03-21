@@ -81,6 +81,7 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
     Route::get('/my-tests', [\App\Http\Controllers\Student\MockTestController::class, 'index'])->name('tests.index');
     Route::get('/tests/{test}', [\App\Http\Controllers\Student\MockTestController::class, 'show'])->name('tests.show');
     Route::post('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submit'])->name('tests.submit');
+    Route::post('/tests/{test}/save-progress', [\App\Http\Controllers\Student\MockTestController::class, 'saveProgress'])->name('tests.save-progress');
     Route::get('/tests/{test}/restart', [\App\Http\Controllers\Student\MockTestController::class, 'restart'])->name('tests.restart');
 });
 

@@ -1,6 +1,29 @@
 @extends('layouts.app_test_mode') {{-- Special lightweight layout for tests --}}
 
 @section('content')
+
+@if(!$attempt->wasRecentlyCreated)
+<div id="resume-confirm-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999; background: rgba(13, 22, 36, 0.95); backdrop-filter: blur(10px);">
+    <div class="card border-0 shadow-lg text-center p-5" style="max-width: 500px; border-radius: 24px;">
+        <div class="mb-4">
+            <div class="rounded-circle bg-warning-subtle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fas fa-history text-warning fs-1"></i>
+            </div>
+            <h2 class="fw-bold mb-3">Resume Test?</h2>
+            <p class="text-muted">You have an ongoing attempt for <strong>{{ $test->name }}</strong>. Would you like to pick up where you left off?</p>
+        </div>
+        <div class="d-grid gap-3">
+            <button class="btn btn-warning py-3 rounded-pill fw-bold" onclick="document.getElementById('resume-confirm-overlay').remove()">
+                <i class="fas fa-play me-2"></i> Continue Previous Attempt
+            </button>
+            <a href="{{ route('student.tests.restart', $test) }}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold" onclick="return confirm('Starting fresh will permanently delete your current progress. Are you sure?')">
+                <i class="fas fa-redo me-2"></i> Restart from Beginning
+            </a>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="test-container">
     <!-- Test Header -->
     <header class="test-header d-flex justify-content-between align-items-center px-4">
@@ -331,7 +354,7 @@
 
 <script>
     // Timer Logic
-    let timeInSeconds = 3600;
+    let timeInSeconds = {{ $attempt->time_left ?? 3600 }};
     const timerEl = document.getElementById('test-timer');
 
     function updateTimer() {
@@ -341,6 +364,11 @@
         
         if (timeInSeconds > 0) {
             timeInSeconds--;
+            
+            // Auto-save time to server every 30 seconds
+            if (timeInSeconds % 30 === 0) {
+                saveProgress();
+            }
         } else {
             clearInterval(timerInterval);
             alert("Time's up!");
@@ -348,6 +376,78 @@
         }
     }
     const timerInterval = setInterval(updateTimer, 1000);
+
+    // Load existing answers
+    function restoreAnswers() {
+        const existingAnswers = @json($attempt->answers ?? []);
+        if (!existingAnswers || Object.keys(existingAnswers).length === 0) return;
+
+        Object.entries(existingAnswers).forEach(([qId, value]) => {
+            const qEl = document.querySelector(`.question-item[data-q-id="${qId}"]`);
+            if (!qEl) return;
+
+            const type = qEl.dataset.qType;
+            if (type === 'mcq' || type === 'tfng') {
+                const input = qEl.querySelector(`input[value="${value}"]`);
+                if (input) input.checked = true;
+            } else if (type === 'mcq_multi' && Array.isArray(value)) {
+                value.forEach(v => {
+                    const input = qEl.querySelector(`input[value="${v}"]`);
+                    if (input) input.checked = true;
+                });
+            } else if (type === 'fill_blanks') {
+                const input = qEl.querySelector('input');
+                if (input) input.value = value;
+            } else if (type === 'match_heading') {
+                const dropZone = qEl.querySelector('.heading-drop-zone');
+                if (dropZone) {
+                    dropZone.innerHTML = `<div class="p-2 bg-success-subtle border border-success rounded d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">${value}</span>
+                        <i class="fas fa-times cursor-pointer" onclick="resetDropZone(this)"></i>
+                        <input type="hidden" id="hidden_q_${qId}" name="q_${qId}" value="${value}">
+                    </div>`;
+                }
+            }
+        });
+        updateProgress();
+    }
+
+    function saveProgress() {
+        const answers = collectAnswers();
+        fetch("{{ route('student.tests.save-progress', $test) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ answers: answers, time_left: timeInSeconds })
+        });
+    }
+
+    function collectAnswers() {
+        const answers = {};
+        document.querySelectorAll('.question-item').forEach(q => {
+            const qId = q.dataset.qId;
+            const type = q.dataset.qType;
+            
+            if (type === 'mcq' || type === 'tfng') {
+                const checked = q.querySelector('input:checked');
+                answers[qId] = checked ? checked.value : null;
+            } else if (type === 'mcq_multi') {
+                const checked = Array.from(q.querySelectorAll('input:checked')).map(i => i.value);
+                answers[qId] = checked;
+            } else if (type === 'fill_blanks') {
+                answers[qId] = q.querySelector('input').value;
+            } else if (type === 'match_heading') {
+                const hidden = document.getElementById(`hidden_q_${qId}`);
+                answers[qId] = hidden ? hidden.value : null;
+            }
+        });
+        return answers;
+    }
+
+    // Call restoration on load
+    window.addEventListener('DOMContentLoaded', restoreAnswers);
 
     // Navigation and Scrolling
     function scrollToQuestion(id) {

@@ -69,6 +69,25 @@ class MockTestController extends Controller
         return response()->json(['success' => true, 'message' => 'Test submitted successfully!']);
     }
 
+    public function saveProgress(Request $request, Test $test)
+    {
+        $student = auth('student')->user();
+        
+        $attempt = \App\Models\TestAttempt::where('student_id', $student->id)
+            ->where('test_id', $test->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($attempt) {
+            $attempt->update([
+                'answers' => $request->answers,
+                'time_left' => $request->time_left
+            ]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function restart(Test $test)
     {
         $student = auth('student')->user();

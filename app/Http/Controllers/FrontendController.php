@@ -66,11 +66,22 @@ class FrontendController extends Controller
     public function getTests(Request $request)
     {
         $moduleSetId = $request->get('module_set_id');
+        $studentId = auth('student')->id();
 
         $tests = Test::where('module_set_id', $moduleSetId)
             ->where('status', 'active')
-            ->select('id', 'name', 'status')
-            ->get();
+            ->with(['attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])
+            ->get()
+            ->map(function($test) {
+                $attempt = $test->attempts->first();
+                return [
+                    'id' => $test->id,
+                    'name' => $test->name,
+                    'status' => $attempt ? $attempt->status : 'not_started'
+                ];
+            });
 
         return response()->json($tests);
     }

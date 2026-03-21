@@ -962,22 +962,25 @@
 
                     container.innerHTML = `
                         <div class="list-group shadow-sm" style="border-radius:14px;overflow:hidden;">
-                            ${tests.map((test, i) => `
-                                <a href="{{ route('login') }}"
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4"
-                                   style="border-left:4px solid var(--primary-gold); transition:all 0.2s;"
-                                   onmouseover="this.style.background='rgba(206,157,60,0.06)'"
-                                   onmouseout="this.style.background=''">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <span class="d-flex align-items-center justify-content-center rounded-circle bg-warning text-dark fw-bold"
-                                              style="width:34px;height:34px;font-size:0.85rem;flex-shrink:0;">${i + 1}</span>
-                                        <span class="fw-semibold" style="color:#0d1624;">${test.name}</span>
-                                    </div>
-                                    <span class="btn btn-sm btn-warning px-3" style="border-radius:50px;font-size:0.78rem;font-weight:600;">
-                                        Start <i class="fas fa-arrow-right ms-1"></i>
-                                    </span>
-                                </a>
-                            `).join('')}
+                            ${tests.map((test, i) => {
+                                const testUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id);
+                                return `
+                                    <a href="${testUrl}"
+                                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4"
+                                       style="border-left:4px solid var(--primary-gold); transition:all 0.2s;"
+                                       onmouseover="this.style.background='rgba(206,157,60,0.06)'"
+                                       onmouseout="this.style.background=''">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <span class="d-flex align-items-center justify-content-center rounded-circle bg-warning text-dark fw-bold"
+                                                  style="width:34px;height:34px;font-size:0.85rem;flex-shrink:0;">${i + 1}</span>
+                                            <span class="fw-semibold" style="color:#0d1624;">${test.name}</span>
+                                        </div>
+                                        <span class="btn btn-sm btn-warning px-3" style="border-radius:50px;font-size:0.78rem;font-weight:600;">
+                                            Start <i class="fas fa-arrow-right ms-1"></i>
+                                        </span>
+                                    </a>
+                                `;
+                            }).join('')}
                         </div>
                         <p class="text-center text-muted small mt-3">
                             <i class="fas fa-lock me-1"></i>Please <a href="{{ route('login') }}" class="text-warning fw-bold">login</a> to attempt a test.

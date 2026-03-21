@@ -235,18 +235,33 @@
                 } else {
                     tests.forEach(test => {
                         const showRoute = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id);
+                        
+                        let badgeClass = 'success-subtle';
+                        let badgeText = 'Available';
+                        let buttonText = 'Take Mock Test';
+
+                        if (test.status === 'pending') {
+                            badgeClass = 'warning-subtle text-warning';
+                            badgeText = 'In Progress';
+                            buttonText = 'Resume / Restart';
+                        } else if (test.status === 'completed') {
+                            badgeClass = 'secondary-subtle text-secondary';
+                            badgeText = 'Completed';
+                            buttonText = 'Finished';
+                        }
+
                         testsContainer.innerHTML += `
                             <div class="col-md-4">
                                 <div class="card test-card shadow-sm border-0 h-100">
                                     <div class="card-body p-4 text-center">
                                         <div class="mb-3">
-                                            <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Available</span>
+                                            <span class="badge bg-${badgeClass} px-3 py-2 rounded-pill">${badgeText}</span>
                                         </div>
                                         <h5 class="fw-bold mb-1">${test.name}</h5>
                                         <p class="text-muted small mb-3">Standard IELTS Format</p>
-                                        <a href="${showRoute}" class="btn btn-primary w-100 rounded-pill py-2">
-                                            Take Mock Test <i class="fas fa-play ms-2"></i>
-                                        </a>
+                                        <button onclick="handleStart('${test.id}', '${test.status}')" class="btn btn-primary w-100 rounded-pill py-2" ${test.status === 'completed' ? 'disabled' : ''}>
+                                            ${buttonText} <i class="fas ${test.status === 'pending' ? 'fa-redo' : 'fa-play'} ms-2"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -255,6 +270,23 @@
                 }
                 goToStep(4);
             });
+    }
+
+    function handleStart(testId, status) {
+        const showRoute = "{{ route('student.tests.show', ':id') }}".replace(':id', testId);
+        const restartRoute = "{{ route('student.tests.restart', ':id') }}".replace(':id', testId);
+
+        if (status === 'pending') {
+            if (confirm("You have a test in progress. \n\nOK -> Continue where you left off \nCancel -> Restart from the beginning")) {
+                window.location.href = showRoute;
+            } else {
+                if (confirm("Are you sure you want to RESTART? This will delete your current progress.")) {
+                    window.location.href = restartRoute;
+                }
+            }
+        } else {
+            window.location.href = showRoute;
+        }
     }
 </script>
 @endpush

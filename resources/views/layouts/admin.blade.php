@@ -316,78 +316,63 @@
                 <p class="px-3 text-uppercase mb-2 mt-2"
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Main Navigation
                 </p>
-                @if (auth('web')->check())
-                <li class="{{ request()->is('admin/dashboard*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
-                </li>
-                @elseif (auth('student')->check())
-                <li class="{{ request()->is('student/dashboard*') ? 'active' : '' }}">
-                    <a href="{{ route('student.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
-                </li>
-                <li class="{{ request()->is('student/take-test*') ? 'active' : '' }}">
-                    <a href="{{ route('student.tests.take') }}"><i class="fas fa-play-circle"></i> Take Test</a>
-                </li>
-                <li class="{{ request()->is('student/my-tests*') ? 'active' : '' }}">
-                    <a href="{{ route('student.tests.index') }}"><i class="fas fa-file-alt"></i> My Tests</a>
-                </li>
-                @endif
+                @if (auth('student')->check())
+                    {{-- Student Specific Navigation --}}
+                    <li class="{{ request()->is('student/dashboard*') ? 'active' : '' }}">
+                        <a href="{{ route('student.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
+                    <li class="{{ request()->is('student/take-test*') ? 'active' : '' }}">
+                        <a href="{{ route('student.tests.take') }}"><i class="fas fa-play-circle"></i> Take Test</a>
+                    </li>
+                    <li class="{{ request()->is('student/my-tests*') ? 'active' : '' }}">
+                        <a href="{{ route('student.tests.index') }}"><i class="fas fa-file-alt"></i> My Tests</a>
+                    </li>
+                @elseif (auth('web')->check())
+                    {{-- Admin Specific Navigation --}}
+                    <li class="{{ request()->is('admin/dashboard*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
 
-                @if (auth('web')->check())
-                <p class="px-3 text-uppercase mb-2 mt-4"
-                    style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Test Management
-                </p>
-                <li class="{{ request()->is('admin/categories*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.categories.index') }}"><i class="fas fa-cubes"></i> Modules</a>
-                </li>
-                <li class="{{ request()->is('admin/test-types*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.test-types.index') }}"><i class="fas fa-tags"></i> Test Types</a>
-                </li>
-                <li class="{{ request()->is('admin/levels*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.levels.index') }}"><i class="fas fa-layer-group"></i> Levels</a>
-                </li>
-                <li class="{{ request()->is('admin/module-sets*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.module-sets.index') }}"><i class="fas fa-archive"></i> Module Portfolios</a>
-                </li>
-                <li class="{{ request()->is('admin/tests*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.tests.index') }}"><i class="fas fa-vial"></i> Mock Tests</a>
-                </li>
-                <li class="{{ request()->is('admin/question-groups*') ? 'active' : '' }}">
-                    <a href="#questionSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->is('admin/question-groups*') ? 'true' : 'false' }}" class="dropdown-toggle">
-                        <i class="fas fa-question-circle"></i> Question Bank
-                    </a>
-                    <ul class="collapse list-unstyled ps-4 {{ request()->is('admin/question-groups*') ? 'show' : '' }}" id="questionSubmenu">
-                        <li>
-                            <a href="{{ route('admin.question-groups.index', ['category' => 'listening']) }}" style="font-size: 0.9rem; padding: 8px 20px;">
-                                <i class="fas fa-headphones me-2"></i> Listening
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('admin.question-groups.index', ['category' => 'reading']) }}" style="font-size: 0.9rem; padding: 8px 20px;">
-                                <i class="fas fa-book-open me-2"></i> Reading
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('admin.question-groups.index', ['category' => 'writing']) }}" style="font-size: 0.9rem; padding: 8px 20px;">
-                                <i class="fas fa-pen-nib me-2"></i> Writing
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('admin.question-groups.index', ['category' => 'speaking']) }}" style="font-size: 0.9rem; padding: 8px 20px;">
-                                <i class="fas fa-comment-dots me-2"></i> Speaking
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                    <p class="px-3 text-uppercase mb-2 mt-4"
+                        style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Test Management
+                    </p>
+                    <li class="{{ request()->is('admin/categories*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.categories.index') }}"><i class="fas fa-cubes"></i> Modules</a>
+                    </li>
+                    <li class="{{ request()->is('admin/test-types*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.test-types.index') }}"><i class="fas fa-tags"></i> Test Types</a>
+                    </li>
+                    <li class="{{ request()->is('admin/levels*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.levels.index') }}"><i class="fas fa-layer-group"></i> Levels</a>
+                    </li>
+                    <li class="{{ request()->is('admin/module-sets*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.module-sets.index') }}"><i class="fas fa-archive"></i> Module Portfolios</a>
+                    </li>
+                    <li class="{{ request()->is('admin/tests*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.tests.index') }}"><i class="fas fa-vial"></i> Mock Tests</a>
+                    </li>
+                    
+                    <li class="{{ request()->is('admin/question-groups*') ? 'active' : '' }}">
+                        <a href="#questionSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->is('admin/question-groups*') ? 'true' : 'false' }}" class="dropdown-toggle">
+                            <i class="fas fa-question-circle"></i> Question Bank
+                        </a>
+                        <ul class="collapse list-unstyled ps-4 {{ request()->is('admin/question-groups*') ? 'show' : '' }}" id="questionSubmenu">
+                            <li><a href="{{ route('admin.question-groups.index', ['category' => 'listening']) }}"><i class="fas fa-headphones me-2"></i> Listening</a></li>
+                            <li><a href="{{ route('admin.question-groups.index', ['category' => 'reading']) }}"><i class="fas fa-book-open me-2"></i> Reading</a></li>
+                            <li><a href="{{ route('admin.question-groups.index', ['category' => 'writing']) }}"><i class="fas fa-pen-nib me-2"></i> Writing</a></li>
+                            <li><a href="{{ route('admin.question-groups.index', ['category' => 'speaking']) }}"><i class="fas fa-comment-dots me-2"></i> Speaking</a></li>
+                        </ul>
+                    </li>
 
-                <p class="px-3 text-uppercase mb-2 mt-4"
-                    style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">User Management
-                </p>
-                <li class="{{ request()->is('admin/students*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.students.index') }}"><i class="fas fa-users"></i> Students</a>
-                </li>
-                <li class="{{ request()->is('admin/results*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.results.index') }}"><i class="fas fa-chart-bar"></i> Results & Performance</a>
-                </li>
+                    <p class="px-3 text-uppercase mb-2 mt-4"
+                        style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">User Management
+                    </p>
+                    <li class="{{ request()->is('admin/students*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.students.index') }}"><i class="fas fa-users"></i> Students</a>
+                    </li>
+                    <li class="{{ request()->is('admin/results*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.results.index') }}"><i class="fas fa-chart-bar"></i> Results & Performance</a>
+                    </li>
                 @endif
             </ul>
 
@@ -418,10 +403,10 @@
                         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
                             id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                             <span style="font-weight: 500;">
-                                @if (auth('web')->check())
-                                    {{ auth('web')->user()->name }}
-                                @elseif (auth('student')->check())
+                                @if (auth('student')->check())
                                     {{ auth('student')->user()->name }}
+                                @elseif (auth('web')->check())
+                                    {{ auth('web')->user()->name }}
                                 @else
                                     User
                                 @endif
@@ -429,12 +414,12 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
                             <li>
-                                @if (auth('web')->check())
-                                    <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
+                                @if (auth('student')->check())
+                                    <a class="dropdown-item" href="{{ route('student.profile') }}">
                                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile
                                     </a>
-                                @elseif (auth('student')->check())
-                                    <a class="dropdown-item" href="{{ route('student.profile') }}">
+                                @elseif (auth('web')->check())
+                                    <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
                                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile
                                     </a>
                                 @endif
