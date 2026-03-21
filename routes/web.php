@@ -14,11 +14,13 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\ModuleSetController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\QuestionGroupController;
+use App\Http\Controllers\Admin\ResultController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 
 // Public frontend API routes
 Route::get('/api/levels', [FrontendController::class, 'getLevels'])->name('frontend.levels');
-Route::get('/api/module-sets', [FrontendController::class, 'getModuleSets'])->name('frontend.moduleSets');
+Route::get('/api/test-types', [FrontendController::class, 'getTestTypes'])->name('frontend.test-types');
+Route::get('/api/module-sets', [FrontendController::class, 'getModuleSets'])->name('frontend.module-sets');
 Route::get('/api/tests', [FrontendController::class, 'getTests'])->name('frontend.tests');
 
 Route::get('/', function () {
@@ -49,6 +51,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
 
     // User Management
     Route::resource('students', StudentController::class);
+    Route::resource('results', ResultController::class);
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -58,7 +61,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
 // Student Protected Routes
 Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(function () {
     Route::get('/dashboard', function () {
-        return view('student.dashboard');
+        $studentId = auth('student')->id();
+        $tests = \App\Models\Test::where('status', 'active')
+            ->with(['moduleSet', 'attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])->get();
+        return view('student.dashboard', compact('tests'));
     })->name('dashboard');
 
     Route::get('/profile', function () {
@@ -67,5 +75,12 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
 
     Route::get('/profile/edit', [StudentProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile/edit', [StudentProfileController::class, 'update'])->name('profile.update');
+
+    // Test Management
+    Route::get('/take-test', [\App\Http\Controllers\Student\MockTestController::class, 'take'])->name('tests.take');
+    Route::get('/my-tests', [\App\Http\Controllers\Student\MockTestController::class, 'index'])->name('tests.index');
+    Route::get('/tests/{test}', [\App\Http\Controllers\Student\MockTestController::class, 'show'])->name('tests.show');
+    Route::post('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submit'])->name('tests.submit');
+    Route::get('/tests/{test}/restart', [\App\Http\Controllers\Student\MockTestController::class, 'restart'])->name('tests.restart');
 });
 

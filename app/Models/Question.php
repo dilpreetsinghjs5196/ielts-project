@@ -15,9 +15,11 @@ class Question extends Model
         'audio_file',
         'passage',
         'attachment',
+        'question_number',
         'title',
         'content',
         'options',
+        'settings',
         'correct_answer',
         'explanation',
         'marks',
@@ -31,6 +33,7 @@ class Question extends Model
 
     protected $casts = [
         'options' => 'array',
+        'settings' => 'array',
     ];
 
     public function category()

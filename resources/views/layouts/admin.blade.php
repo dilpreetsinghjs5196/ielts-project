@@ -324,8 +324,11 @@
                 <li class="{{ request()->is('student/dashboard*') ? 'active' : '' }}">
                     <a href="{{ route('student.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
-                <li class="{{ request()->is('student/tests*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-file-alt"></i> My Tests</a>
+                <li class="{{ request()->is('student/take-test*') ? 'active' : '' }}">
+                    <a href="{{ route('student.tests.take') }}"><i class="fas fa-play-circle"></i> Take Test</a>
+                </li>
+                <li class="{{ request()->is('student/my-tests*') ? 'active' : '' }}">
+                    <a href="{{ route('student.tests.index') }}"><i class="fas fa-file-alt"></i> My Tests</a>
                 </li>
                 @endif
 
@@ -383,7 +386,7 @@
                     <a href="{{ route('admin.students.index') }}"><i class="fas fa-users"></i> Students</a>
                 </li>
                 <li class="{{ request()->is('admin/results*') ? 'active' : '' }}">
-                    <a href="#"><i class="fas fa-chart-bar"></i> Results & Performance</a>
+                    <a href="{{ route('admin.results.index') }}"><i class="fas fa-chart-bar"></i> Results & Performance</a>
                 </li>
                 @endif
             </ul>

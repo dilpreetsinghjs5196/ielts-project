@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('content')
 <div class="row mb-4">
@@ -57,6 +57,8 @@
                                             <i class="fa fa-ellipsis-v text-xs"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
+                                            <li><a class="dropdown-item py-2" href="{{ route('admin.results.index', ['student_id' => $student->id]) }}"><i class="fas fa-chart-bar me-2 text-info"></i> View Test Results</a></li>
+                                            <li><hr class="dropdown-divider"></li>
                                             <li><a class="dropdown-item py-2" href="{{ route('admin.students.edit', $student) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Student</a></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li>

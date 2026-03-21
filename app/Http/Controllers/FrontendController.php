@@ -12,6 +12,15 @@ use Illuminate\Http\Request;
 class FrontendController extends Controller
 {
     /**
+     * Return all test types as JSON for AJAX calls from the frontend.
+     */
+    public function getTestTypes()
+    {
+        $testTypes = TestType::select('id', 'name', 'slug')->get();
+        return response()->json($testTypes);
+    }
+
+    /**
      * Return all levels as JSON for AJAX calls from the frontend.
      */
     public function getLevels()

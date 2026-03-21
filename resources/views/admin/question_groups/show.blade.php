@@ -73,7 +73,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
                                 <div class="me-3 d-flex align-items-center justify-content-center bg-primary text-white" style="width: 32px; height: 32px; border-radius: 8px; font-weight: bold;">
-                                    {{ $index + 1 }}
+                                    {{ $question->question_number ?? ($index + 1) }}
                                 </div>
                                 <div>
                                     <p class="mb-0 font-weight-bold text-dark">{{ Str::limit($question->content, 120) }}</p>

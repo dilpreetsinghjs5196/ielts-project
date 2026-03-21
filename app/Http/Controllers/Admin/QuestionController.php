@@ -67,6 +67,7 @@ class QuestionController extends Controller
             'correct_answer' => 'required|string',
             'marks' => 'required|integer|min:1',
             'status' => 'required|in:active,inactive',
+            'question_number' => 'nullable|integer',
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
             'attachment' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'passage' => 'nullable|string',
@@ -86,7 +87,7 @@ class QuestionController extends Controller
         }
 
         // Handle options if it's a type that requires options
-        if (in_array($request->question_type, ['mcq', 'match_heading', 'fill_blanks']) && $request->has('options')) {
+        if (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
             $data['options'] = array_filter($request->options);
         }
 
@@ -134,6 +135,7 @@ class QuestionController extends Controller
             'correct_answer' => 'required|string',
             'marks' => 'required|integer|min:1',
             'status' => 'required|in:active,inactive',
+            'question_number' => 'nullable|integer',
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
             'attachment' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'passage' => 'nullable|string',
@@ -151,7 +153,7 @@ class QuestionController extends Controller
             $data['attachment'] = $request->file('attachment')->store('questions/attachments', 'public');
         }
 
-        if (in_array($request->question_type, ['mcq', 'match_heading', 'fill_blanks']) && $request->has('options')) {
+        if (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
             $data['options'] = array_filter($request->options);
         } else {
             $data['options'] = null;

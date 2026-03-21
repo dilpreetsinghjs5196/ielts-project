@@ -27,12 +27,19 @@
                         <i class="fas fa-info-circle me-2"></i> Editing a question for the <strong id="selectedModuleText">{{ $question->category->name }}</strong> module.
                     </div>
 
-                    <div class="mb-3">
-                        <label for="title" class="form-label font-weight-bold">Question Heading / Title</label>
-                        <input type="text" name="title" id="title" class="form-control @error('title') is-invalid @enderror" placeholder="e.g. Section 1 - Note Completion" value="{{ old('title', $question->title) }}">
-                        @error('title')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="question_number" class="form-label font-weight-bold">Q. Number</label>
+                                <input type="number" name="question_number" id="question_number" class="form-control" placeholder="e.g. 14" value="{{ old('question_number', $question->question_number) }}">
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-3">
+                                <label for="title" class="form-label font-weight-bold">Question Heading / Title</label>
+                                <input type="text" name="title" id="title" class="form-control @error('title') is-invalid @enderror" placeholder="e.g. Section 1 - Note Completion" value="{{ old('title', $question->title) }}">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Reading Specific: Passage -->
@@ -173,7 +180,8 @@
                         <label for="question_type" class="form-label small font-weight-bold text-muted">Question Format</label>
                         <select name="question_type" id="question_type" class="form-select" onchange="toggleOptions(this.value)" required>
                             <option value="short_answer" {{ $question->question_type == 'short_answer' ? 'selected' : '' }}>Short Answer</option>
-                            <option value="mcq" {{ $question->question_type == 'mcq' ? 'selected' : '' }}>Multiple Choice (MCQ)</option>
+                            <option value="mcq" {{ $question->question_type == 'mcq' ? 'selected' : '' }}>Multiple Choice (Single)</option>
+                            <option value="mcq_multi" {{ $question->question_type == 'mcq_multi' ? 'selected' : '' }}>Multiple Choice (Select Two/Three)</option>
                             <option value="fill_blanks" {{ $question->question_type == 'fill_blanks' ? 'selected' : '' }}>Fill in the Blanks</option>
                             <option value="tfng" {{ $question->question_type == 'tfng' ? 'selected' : '' }}>True / False / Not Given</option>
                             <option value="match_heading" {{ $question->question_type == 'match_heading' ? 'selected' : '' }}>Heading Matching</option>
@@ -235,11 +243,13 @@
         const mcqSection = document.getElementById('mcq_options_section');
         const optionsLabel = document.getElementById('options_label');
         
-        if (['mcq', 'match_heading', 'fill_blanks'].includes(type)) {
+        if (['mcq', 'mcq_multi', 'match_heading', 'fill_blanks'].includes(type)) {
             mcqSection.style.display = 'block';
             
             if (type === 'mcq') {
-                optionsLabel.innerText = "Options (For MCQs)";
+                optionsLabel.innerText = "Options (Single Choice)";
+            } else if (type === 'mcq_multi') {
+                optionsLabel.innerText = "Options (Multi-select)";
             } else if (type === 'match_heading') {
                 optionsLabel.innerText = "Headings (List of headings to match)";
             } else if (type === 'fill_blanks') {
