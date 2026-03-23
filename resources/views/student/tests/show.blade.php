@@ -90,8 +90,8 @@
 
         <!-- Right: Questions -->
         <section class="test-questions p-4" id="questions-container">
-            @foreach ($test->questionGroups as $group)
-                <div class="question-group mb-5" data-group-id="{{ $group->id }}">
+            @foreach ($test->questionGroups as $g_idx => $group)
+                <div class="question-group mb-5 {{ $g_idx === 0 ? '' : 'd-none' }}" data-group-id="{{ $group->id }}">
                     <div class="group-instruction mb-4 p-3 bg-warning-subtle rounded-3 border-start border-warning border-4">
                         <h6 class="fw-bold mb-1">{{ $group->title }}</h6>
                         <p class="mb-0 text-muted">{{ $group->instruction }}</p>
@@ -519,6 +519,12 @@
     function scrollToQuestion(id) {
         const el = document.getElementById(id);
         if (el) {
+            // Find parent group and activate it first
+            const group = el.closest('.question-group');
+            if (group) {
+                activatePart(group.dataset.groupId, false);
+            }
+
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
             // Mark as current in nav
@@ -526,10 +532,6 @@
             const qId = id.replace('q-', '');
             const navBtn = document.querySelector(`.q-nav-${qId}`);
             if (navBtn) navBtn.classList.add('current');
-
-            // Auto-activate the part in footer
-            const group = el.closest('.question-group');
-            if (group) activatePart(group.dataset.groupId, false);
         }
     }
 
@@ -547,13 +549,17 @@
             p.classList.toggle('d-none', p.id !== `passage-group-${groupId}`);
         });
 
+        // Toggle Question Groups
+        document.querySelectorAll('.question-group').forEach(q => {
+            q.classList.toggle('d-none', q.dataset.groupId != groupId);
+        });
+
         if (scroll) {
             const groupEl = document.querySelector(`.question-group[data-group-id="${groupId}"]`);
             if (groupEl) {
                 // Scroll the questions container
                 const container = document.getElementById('questions-container');
-                const topPos = groupEl.offsetTop - container.offsetTop;
-                container.scrollTo({ top: topPos, behavior: 'smooth' });
+                container.scrollTo({ top: 0, behavior: 'smooth' }); // Reset to top when switching parts
             }
             // Also reset passage scroll to top
             document.getElementById('passage-container').scrollTo({ top: 0, behavior: 'smooth' });
