@@ -92,19 +92,69 @@
         <section class="test-questions p-4" id="questions-container">
             @foreach ($test->questionGroups as $g_idx => $group)
                 <div class="question-group mb-5 {{ $g_idx === 0 ? '' : 'd-none' }}" data-group-id="{{ $group->id }}">
+                    @php
+                        // 1. Prepare Question Mapping
+                        $renderedInstruction = $group->instruction;
+                        $embeddedQIds = [];
+                        
+                        // We'll use a function-like approach to find and replace tags
+                        // Pattern matches [q123], [Q123], [123], [ q123 ]
+                        $pattern = '/\[\s*q?(\d+)\s*\]/i';
+                        
+                        $replaceCallback = function($matches) use ($group, &$embeddedQIds) {
+                            $num = $matches[1];
+                            
+                            // Find question that matches this number exactly or is part of a range
+                            $targetQ = $group->questions->filter(function($q) use ($num) {
+                                if ($q->question_number == $num) return true;
+                                // Handle range like 34-40
+                                if (str_contains($q->question_number, '-')) {
+                                    list($start, $end) = explode('-', $q->question_number);
+                                    return (int)$num >= (int)$start && (int)$num <= (int)$end;
+                                }
+                                return false;
+                            })->first();
+
+                            if ($targetQ) {
+                                $embeddedQIds[] = $targetQ->id;
+                                // Create unique name for each blank: q_ID_NUM
+                                return '<span class="d-inline-block mx-1" id="q-'.$targetQ->id.'-'.$num.'"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 100px; height: 32px; border: 1px solid #94a3b8; border-radius: 4px; background: #fff;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'"></span>';
+                            }
+                            return $matches[0]; // Return original if no question found
+                        };
+
+                        $renderedInstruction = preg_replace_callback($pattern, $replaceCallback, $renderedInstruction);
+                    @endphp
+
                     <div class="group-instruction mb-4 p-3 bg-warning-subtle rounded-3 border-start border-warning border-4">
                         <h6 class="fw-bold mb-1">{{ $group->title }}</h6>
-                        <p class="mb-0 text-muted">{{ $group->instruction }}</p>
+                        <div class="mb-0 text-muted instruction-content" style="line-height: 2.5;">
+                            {!! nl2br($renderedInstruction) !!}
+                        </div>
                     </div>
 
                     <div class="questions-list">
                         @php $lastTitle = null; @endphp
                         @foreach ($group->questions as $index => $question)
+                            @php
+                                // Process question content for tags too
+                                $qContent = preg_replace_callback($pattern, $replaceCallback, $question->content);
+                                
+                                // Hide the main question block if ANY of its numbers were embedded
+                                if (in_array($question->id, $embeddedQIds)) {
+                                    // If the entire content was just the tags, skip it
+                                    // But we wrap it in a hidden div instead to keep the ID reachable via JS
+                                    $isHidden = true;
+                                } else {
+                                    $isHidden = false;
+                                }
+                            @endphp
+
                             @if(!empty($question->title) && $question->title !== $lastTitle)
+{{-- ... rest of question logic ... --}}
                                 <div class="question-set-header mt-5 mb-4 p-4 rounded-4" style="background: rgba(59, 130, 246, 0.05); border-left: 5px solid #3b82f6;">
                                     <div class="d-flex flex-column gap-2">
                                         @php 
-                                            // Extract 'Questions X-Y' if it exists at start
                                             $title = $question->title;
                                             $badgeText = '';
                                             if (preg_match('/^(Questions?\s\d+[-–]\d+)/i', $title, $matches)) {
@@ -124,15 +174,15 @@
                                 </div>
                                 @php $lastTitle = $question->title; @endphp
                             @endif
+
                             <div class="question-item mb-4 pb-4 border-bottom" id="q-{{ $question->id }}" data-q-id="{{ $question->id }}" data-q-type="{{ $question->question_type }}">
                                 <div class="d-flex gap-3">
-                                    <div class="q-number bg-dark text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; flex-shrink: 0;">
-                                        {{ $question->question_number ?? ($index + 1) }}
-                                    </div>
                                     <div class="q-body w-100">
-                                        <p class="fw-semibold mb-3">{{ $question->content }}</p>
+                                        <div class="fw-semibold mb-3" style="line-height: 2.5;">
+                                            {!! nl2br($qContent) !!}
+                                        </div>
 
-                                        {{-- Match Heading Component --}}
+                                        {{-- Standard inputs (only show if tags didn't replace them) --}}
                                         @if ($question->question_type === 'match_heading')
                                             <div class="match-heading-wrapper d-flex flex-column gap-3">
                                                 <div class="heading-drop-zone p-3 bg-light rounded-3 border-dashed border-2 text-center" ondrop="drop(event)" ondragover="allowDrop(event)">
@@ -146,8 +196,6 @@
                                                     @endforeach
                                                 </div>
                                             </div>
-
-                                        {{-- MCQ Single/Multi Component --}}
                                         @elseif ($question->question_type === 'mcq' || $question->question_type === 'mcq_multi')
                                             <div class="mcq-options d-flex flex-column gap-2">
                                                 @foreach ($question->options as $opt_idx => $option)
@@ -160,8 +208,6 @@
                                                     </label>
                                                 @endforeach
                                             </div>
-
-                                        {{-- TFNG Component --}}
                                         @elseif ($question->question_type === 'tfng')
                                             <div class="tfng-options d-flex gap-3">
                                                 @foreach (['TRUE', 'FALSE', 'NOT GIVEN'] as $val)
@@ -171,10 +217,8 @@
                                                     </label>
                                                 @endforeach
                                             </div>
-
-                                        {{-- Fill Blanks Component --}}
-                                        @elseif ($question->question_type === 'fill_blanks')
-                                            <div class="fill-blanks-container">
+                                        @elseif (($question->question_type === 'fill_blanks' || $question->question_type === 'short_answer'))
+                                            <div class="fill-blanks-container {{ $isHidden ? 'd-none' : '' }}">
                                                 <input type="text" name="q_{{ $question->id }}" class="form-control border-bottom border-top-0 border-start-0 border-end-0 bg-light px-3" placeholder="Enter word...">
                                             </div>
                                         @endif
@@ -190,27 +234,27 @@
 
     <!-- Test Footer -->
     <footer class="test-footer bg-white border-top px-4 d-flex align-items-center justify-content-between">
-        <div class="footer-left d-flex align-items-center gap-2 overflow-hidden" id="footer-nav-container">
+        <div class="footer-left d-flex align-items-center gap-4 overflow-hidden" id="footer-nav-container">
             @foreach ($test->questionGroups as $g_index => $group)
-                <div class="nav-part d-flex align-items-center gap-3 {{ $g_index === 0 ? 'active' : '' }}" id="nav-part-{{ $group->id }}" onclick="activatePart('{{ $group->id }}')">
+                <div class="nav-part d-flex align-items-center gap-2 {{ $g_index === 0 ? 'active' : '' }}" id="nav-part-{{ $group->id }}" onclick="activatePart('{{ $group->id }}')">
                     <span class="part-label fw-bold text-nowrap">Part {{ $g_index + 1 }}</span>
                     
-                    <div class="part-questions d-flex gap-1 {{ $g_index === 0 ? '' : 'd-none' }}">
-                        @foreach ($group->questions as $q_index => $q)
-                            <button class="nav-btn btn btn-sm rounded-circle fw-bold q-nav-{{ $q->id }}" 
-                                    style="width: 28px; height: 28px; font-size: 0.75rem;" 
-                                    onclick="event.stopPropagation(); scrollToQuestion('q-{{ $q->id }}')">
-                                {{ $q->question_number ?? ($q_index + 1) }}
-                            </button>
-                        @endforeach
+                    <div class="part-summary text-muted small text-nowrap mx-2">
+                        <span class="answered-count">0</span> of {{ $group->questions->count() }}
                     </div>
 
-                    <div class="part-summary text-muted small text-nowrap {{ $g_index === 0 ? 'd-none' : '' }}">
-                        <span class="answered-count">0</span> of {{ $group->questions->count() }}
+                    <div class="part-questions d-flex gap-2 {{ $g_index === 0 ? '' : 'd-none' }}">
+                        @foreach ($group->questions as $q_index => $q)
+                            <a href="javascript:void(0)" 
+                               class="question-nav-link q-nav-{{ $q->id }} text-decoration-none text-muted fw-semibold" 
+                               onclick="event.stopPropagation(); scrollToQuestion('q-{{ $q->id }}')">
+                                {{ $q->question_number }}
+                            </a>
+                        @endforeach
                     </div>
                 </div>
                 @if(!$loop->last)
-                    <div class="vr mx-2 opacity-50"></div>
+                    <div class="vr mx-1 opacity-25"></div>
                 @endif
             @endforeach
         </div>
@@ -492,7 +536,9 @@
 
     function collectAnswers() {
         const answers = {};
-        document.querySelectorAll('.question-item').forEach(q => {
+        
+        // 1. Collect from regular question items
+        document.querySelectorAll('.question-item:not(.d-none)').forEach(q => {
             const qId = q.dataset.qId;
             const type = q.dataset.qType;
             
@@ -502,13 +548,30 @@
             } else if (type === 'mcq_multi') {
                 const checked = Array.from(q.querySelectorAll('input:checked')).map(i => i.value);
                 answers[qId] = checked;
-            } else if (type === 'fill_blanks') {
-                answers[qId] = q.querySelector('input').value;
+            } else if (type === 'fill_blanks' || type === 'short_answer') {
+                const input = q.querySelector('input');
+                answers[qId] = input ? input.value : '';
             } else if (type === 'match_heading') {
                 const hidden = document.getElementById(`hidden_q_${qId}`);
                 answers[qId] = hidden ? hidden.value : null;
             }
         });
+
+        // 2. Collect from smart inputs (can be multiple per Q-ID)
+        const smartAnswers = {};
+        document.querySelectorAll('.smart-q-input').forEach(input => {
+            const qId = input.dataset.qId;
+            const qNum = input.dataset.qNum;
+            if (!smartAnswers[qId]) smartAnswers[qId] = {};
+            smartAnswers[qId][qNum] = input.value;
+        });
+
+        // Merge smart answers into main answers (joining with commas or storing as object if preferred)
+        Object.entries(smartAnswers).forEach(([qId, vals]) => {
+            // Join all blank values. Filter out empties if you want, but better to keep positions
+            answers[qId] = Object.values(vals).join(', ');
+        });
+
         return answers;
     }
 
@@ -517,21 +580,37 @@
 
     // Navigation and Scrolling
     function scrollToQuestion(id) {
-        const el = document.getElementById(id);
+        // Handle smart inputs: search for q-ID-NUM or just q-ID
+        let el = document.getElementById(id);
+        if (!el) {
+            // Try searching for a smart input container
+            const qId = id.replace('q-', '');
+            el = document.querySelector(`[data-q-id="${qId}"]`)?.closest('span');
+        }
+
         if (el) {
-            // Find parent group and activate it first
-            const group = el.closest('.question-group');
+            const group = el.closest('.question-group') || el.closest('.passage-group');
+            let groupId = null;
             if (group) {
-                activatePart(group.dataset.groupId, false);
+                groupId = group.dataset.groupId || group.id.replace('passage-group-', '');
+            } else {
+                const instrGroup = el.closest('.question-group') || el.closest('.instruction-content')?.closest('.question-group');
+                if (instrGroup) groupId = instrGroup.dataset.groupId;
+            }
+
+            if (groupId) {
+                activatePart(groupId, false);
             }
 
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            // Mark as current in nav
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('current'));
-            const qId = id.replace('q-', '');
-            const navBtn = document.querySelector(`.q-nav-${qId}`);
-            if (navBtn) navBtn.classList.add('current');
+            // Highlight link in nav
+            document.querySelectorAll('.question-nav-link').forEach(link => link.classList.remove('text-primary', 'fw-bold', 'border-bottom', 'border-primary'));
+            const qIdOnly = id.replace('q-', '');
+            const navLink = document.querySelector(`.q-nav-${qIdOnly}`);
+            if (navLink) {
+                navLink.classList.add('text-primary', 'fw-bold', 'border-bottom', 'border-primary');
+            }
         }
     }
 
@@ -541,7 +620,6 @@
             const isTarget = part.id === `nav-part-${groupId}`;
             part.classList.toggle('active', isTarget);
             part.querySelector('.part-questions').classList.toggle('d-none', !isTarget);
-            part.querySelector('.part-summary').classList.toggle('d-none', isTarget);
         });
 
         // Toggle Passages
@@ -555,45 +633,39 @@
         });
 
         if (scroll) {
-            const groupEl = document.querySelector(`.question-group[data-group-id="${groupId}"]`);
-            if (groupEl) {
-                // Scroll the questions container
-                const container = document.getElementById('questions-container');
-                container.scrollTo({ top: 0, behavior: 'smooth' }); // Reset to top when switching parts
-            }
-            // Also reset passage scroll to top
+            const container = document.getElementById('questions-container');
+            container.scrollTo({ top: 0, behavior: 'smooth' });
             document.getElementById('passage-container').scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
     // Progress Tracking
     function updateProgress() {
-        document.querySelectorAll('.question-group').forEach(group => {
-            const groupId = group.dataset.groupId;
-            const questions = group.querySelectorAll('.question-item');
+        const currentAnswers = collectAnswers();
+        
+        // Track answered states per question
+        Object.entries(currentAnswers).forEach(([qId, value]) => {
+            // A question is answered if it has any non-empty value
+            // (Note: Joined values like ", , " should be treated as empty)
+            const cleanedValue = value ? value.toString().replace(/[, ]/g, '') : '';
+            const isAnswered = cleanedValue.length > 0;
+            
+            const navLink = document.querySelector(`.q-nav-${qId}`);
+            if (navLink) {
+                navLink.classList.toggle('text-success', isAnswered);
+                navLink.classList.toggle('text-muted', !isAnswered);
+            }
+        });
+
+        // Update counts per group
+        document.querySelectorAll('.nav-part').forEach(part => {
+            const groupId = part.id.replace('nav-part-', '');
+            const navLinks = part.querySelectorAll('.question-nav-link');
             let answeredCount = 0;
-
-            questions.forEach(q => {
-                const qId = q.dataset.qId;
-                const type = q.dataset.qType;
-                let isAnswered = false;
-
-                if (type === 'mcq' || type === 'tfng') {
-                    isAnswered = !!q.querySelector('input:checked');
-                } else if (type === 'mcq_multi') {
-                    isAnswered = q.querySelectorAll('input:checked').length > 0;
-                } else if (type === 'fill_blanks') {
-                    isAnswered = q.querySelector('input').value.trim() !== '';
-                } else if (type === 'match_heading') {
-                    isAnswered = !!document.getElementById(`hidden_q_${qId}`)?.value;
-                }
-
-                const navBtn = document.querySelector(`.q-nav-${qId}`);
-                if (navBtn) navBtn.classList.toggle('answered', isAnswered);
-                if (isAnswered) answeredCount++;
+            navLinks.forEach(link => {
+                if (link.classList.contains('text-success')) answeredCount++;
             });
-
-            const summaryEl = document.querySelector(`#nav-part-${groupId} .answered-count`);
+            const summaryEl = part.querySelector('.answered-count');
             if (summaryEl) summaryEl.innerText = answeredCount;
         });
     }

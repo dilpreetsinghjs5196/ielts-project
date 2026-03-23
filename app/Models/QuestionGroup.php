@@ -44,6 +44,6 @@ class QuestionGroup extends Model
 
     public function questions()
     {
-        return $this->hasMany(Question::class);
+        return $this->hasMany(Question::class)->orderByRaw('CAST(question_number AS UNSIGNED), question_number');
     }
 }

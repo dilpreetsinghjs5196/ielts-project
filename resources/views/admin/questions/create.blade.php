@@ -41,7 +41,7 @@
                         <div class="col-md-3">
                             <div class="mb-3">
                                 <label for="question_number" class="form-label font-weight-bold">Q. Number</label>
-                                <input type="number" name="question_number" id="question_number" class="form-control" placeholder="e.g. 14" value="{{ old('question_number') }}">
+                                <input type="text" name="question_number" id="question_number" class="form-control" placeholder="e.g. 14 or 14-17" value="{{ old('question_number') }}">
                             </div>
                         </div>
                         <div class="col-md-9">
@@ -91,7 +91,7 @@
                         @enderror
                     </div>
 
-                    <div id="mcq_options_section" style="{{ in_array(old('question_type', 'short_answer'), ['mcq', 'match_heading', 'fill_blanks']) ? 'display: block;' : 'display: none;' }}">
+                    <div id="mcq_options_section" style="{{ in_array(old('question_type', 'short_answer'), ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) ? 'display: block;' : 'display: none;' }}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="form-label font-weight-bold mb-0" id="options_label">Options (For MCQs)</label>
                             <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOption()">
@@ -115,6 +115,12 @@
                     <div class="mb-3">
                         <label for="correct_answer" class="form-label font-weight-bold">Correct Answer</label>
                         <input type="text" name="correct_answer" id="correct_answer" class="form-control @error('correct_answer') is-invalid @enderror" placeholder="Type the exact correct answer" value="{{ old('correct_answer') }}" required>
+                        <div class="form-text mt-2 p-2 bg-light rounded border">
+                            <strong>Formatting Guide:</strong><br>
+                            - <span class="text-primary font-weight-bold">Single Choice / TFNG</span>: Enter just the letter/word (e.g., <code class="bg-white px-1">A</code> or <code class="bg-white px-1">TRUE</code>)<br>
+                            - <span class="text-primary font-weight-bold">Multi-select</span>: Enter letters separated by comma or 'and' (e.g., <code class="bg-white px-1">A, B</code> or <code class="bg-white px-1">A and B</code>)<br>
+                            - <span class="text-primary font-weight-bold">Short Answer</span>: Enter the exact case-insensitive word (limit special characters)
+                        </div>
                         @error('correct_answer')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -206,7 +212,18 @@
 
                     <div class="mt-4">
                         <button type="submit" class="btn btn-primary w-100 mb-2" style="border-radius: 10px;">Save Question</button>
-                        <a href="{{ route('admin.questions.index') }}" class="btn btn-light w-100" style="border-radius: 10px;">Cancel</a>
+                        @php
+                            $cancelRoute = route('admin.questions.index');
+                            if (isset($selectedGroup)) {
+                                $cancelRoute = route('admin.question-groups.show', $selectedGroup->id);
+                            } elseif (request()->has('category_id')) {
+                                $cat = $categories->find(request()->category_id);
+                                if ($cat) {
+                                    $cancelRoute = route('admin.questions.index', ['category' => $cat->slug]);
+                                }
+                            }
+                        @endphp
+                        <a href="{{ $cancelRoute }}" class="btn btn-light w-100" style="border-radius: 10px;">Cancel</a>
                     </div>
                 </div>
             </div>

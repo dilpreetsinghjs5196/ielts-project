@@ -29,7 +29,7 @@ class QuestionController extends Controller
             $query->where('test_type_id', $activeTestType->id);
         }
 
-        $questions = $query->latest()->get();
+        $questions = $query->orderByRaw('CAST(question_number AS UNSIGNED), question_number')->get();
         $testTypes = TestType::all();
         $categories = Category::all();
 
@@ -67,7 +67,7 @@ class QuestionController extends Controller
             'correct_answer' => 'required|string',
             'marks' => 'required|integer|min:1',
             'status' => 'required|in:active,inactive',
-            'question_number' => 'nullable|integer',
+            'question_number' => 'nullable|string',
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
             'attachment' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'passage' => 'nullable|string',
@@ -135,7 +135,7 @@ class QuestionController extends Controller
             'correct_answer' => 'required|string',
             'marks' => 'required|integer|min:1',
             'status' => 'required|in:active,inactive',
-            'question_number' => 'nullable|integer',
+            'question_number' => 'nullable|string',
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
             'attachment' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'passage' => 'nullable|string',
@@ -160,6 +160,11 @@ class QuestionController extends Controller
         }
 
         $question->update($data);
+
+        if ($question->question_group_id) {
+            return redirect()->route('admin.question-groups.show', $question->question_group_id)
+                ->with('success', 'Question updated successfully.');
+        }
 
         return redirect()->route('admin.questions.index', ['category' => $question->category->slug])
             ->with('success', 'Question updated successfully.');

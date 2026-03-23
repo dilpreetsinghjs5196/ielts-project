@@ -59,14 +59,63 @@ class MockTestController extends Controller
             ->first();
 
         if ($attempt) {
+            $studentAnswers = $request->answers;
+            $score = 0;
+            
+            // Load questions for grading
+            $test->load('questionGroups.questions');
+            
+            foreach ($test->questionGroups as $group) {
+                foreach ($group->questions as $question) {
+                    $qId = $question->id;
+                    if (isset($studentAnswers[$qId])) {
+                        if ($this->gradeQuestion($question, $studentAnswers[$qId])) {
+                            $score += $question->marks;
+                        }
+                    }
+                }
+            }
+
             $attempt->update([
                 'status' => 'completed',
-                'answers' => $request->answers,
+                'answers' => $studentAnswers,
+                'score' => $score,
                 'completed_at' => now()
             ]);
         }
 
-        return response()->json(['success' => true, 'message' => 'Test submitted successfully!']);
+        return response()->json([
+            'success' => true, 
+            'message' => 'Test submitted successfully!',
+            'score' => $score ?? 0
+        ]);
+    }
+
+    private function gradeQuestion($question, $studentAnswer)
+    {
+        if (empty($studentAnswer)) return false;
+        
+        $correct = trim(strtolower($question->correct_answer));
+        
+        if ($question->question_type === 'mcq_multi') {
+            // Student answer is array e.g. ['A', 'B']
+            if (!is_array($studentAnswer)) return false;
+            
+            // Normalize correct answer (e.g. "A, B" or "A and B")
+            $correctArray = preg_split('/[,]| and /', $correct);
+            $correctArray = array_map('trim', $correctArray);
+            
+            // Normalize student answer
+            $studentArray = array_map('trim', array_map('strtolower', $studentAnswer));
+            
+            sort($correctArray);
+            sort($studentArray);
+            
+            return $correctArray == $studentArray;
+        }
+        
+        // Single answer comparison (case-insensitive)
+        return $correct === trim(strtolower((string)$studentAnswer));
     }
 
     public function saveProgress(Request $request, Test $test)

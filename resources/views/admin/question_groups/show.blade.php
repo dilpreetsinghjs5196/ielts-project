@@ -72,22 +72,33 @@
                     <div class="card-body p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
-                                <div class="me-3 d-flex align-items-center justify-content-center bg-primary text-white" style="width: 32px; height: 32px; border-radius: 8px; font-weight: bold;">
-                                    {{ $question->question_number ?? ($index + 1) }}
+                                @if ($question->question_number)
+                                <div class="me-3 d-flex align-items-center justify-content-center bg-primary text-white" style="width: auto; min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px; font-weight: bold;">
+                                    {{ $question->question_number }}
                                 </div>
+                                @endif
                                 <div>
                                     <p class="mb-0 font-weight-bold text-dark">{{ Str::limit($question->content, 120) }}</p>
                                     <small class="text-muted">{{ ucfirst($question->question_type) }} | Marks: {{ $question->marks }}</small>
                                 </div>
                             </div>
-                            <div>
-                                <a href="{{ route('admin.questions.edit', $question) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
-                                <form action="{{ route('admin.questions.destroy', $question) }}" method="POST" class="d-inline">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this question?')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                            <div class="dropdown">
+                                <button class="btn btn-link text-secondary mb-0 outline-none shadow-none" type="button" data-bs-toggle="dropdown">
+                                    <i class="fa fa-ellipsis-v text-xs"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
+                                    <li><a class="dropdown-item py-2" href="{{ route('admin.questions.edit', $question) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Question</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form action="{{ route('admin.questions.destroy', $question) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item py-2 text-danger">
+                                                <i class="fas fa-trash-alt me-2"></i> Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
