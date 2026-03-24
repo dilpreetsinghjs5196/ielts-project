@@ -313,7 +313,10 @@
             </div>
 
             <ul class="list-unstyled components">
-                <p class="px-3 text-uppercase mb-2 mt-2"
+                <p class="px-3 text-uppercase mb-1 mt-3"
+                    style="font-size: 1.2rem; font-weight: 900; color: #e63946; letter-spacing: 1.5px; border-left: 4px solid #e63946; padding-left: 12px; margin-left: 15px;">IELTS Portal
+                </p>
+                <p class="px-3 text-uppercase mb-2 mt-3"
                     style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">Main Navigation
                 </p>
                 @if (auth('student')->check())
