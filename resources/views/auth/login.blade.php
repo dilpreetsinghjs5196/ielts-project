@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -79,30 +79,96 @@
         .login-sidebar {
             flex: 1;
             background: #fdfbf5;
-            padding: 3rem;
+            padding: 4rem 3rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             text-align: center;
             border-right: 1px solid rgba(0,0,0,0.05);
+            position: relative;
         }
 
         .login-sidebar img {
-            max-width: 250px;
-            margin-bottom: 2rem;
+            max-width: 220px;
+            margin-bottom: 3rem;
             mix-blend-mode: multiply;
+        }
+
+        .red-title {
+            color: #e63946;
+            font-weight: 800;
+            font-size: 2.8rem;
+            margin-bottom: 0.25rem;
+            letter-spacing: -1px;
+            line-height: 1;
         }
 
         .login-sidebar h3 {
             color: #0d1624;
             font-weight: 700;
-            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            margin-bottom: 1.25rem;
         }
 
         .login-sidebar p {
             color: #64748b;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            width: 100%;
+        }
+
+        .contact-section {
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .contact-card {
+            background: #ffffff;
+            padding: 1.25rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .contact-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .contact-details {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: #ce9d3c;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .contact-details i {
+            width: 35px;
+            height: 35px;
+            background: rgba(206, 157, 60, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ce9d3c;
+            font-size: 1rem;
+        }
+
+        .contact-details:hover {
+            color: #b88a35;
+            transform: translateX(5px);
         }
 
         .login-form-container {
@@ -225,16 +291,23 @@
                 border-right: none;
                 border-bottom: 1px solid rgba(0,0,0,0.05);
                 flex: 0 0 auto;
+                justify-content: center;
+                gap: 1.5rem;
+                align-items: center;
+                text-align: center;
             }
             .login-sidebar img {
                 max-width: 100px;
                 margin-bottom: 0.5rem;
             }
+            .red-title {
+                font-size: 1.8rem;
+            }
             .login-sidebar h3 {
                 font-size: 1.25rem;
                 margin-bottom: 0.5rem;
             }
-            .login-sidebar p {
+            .login-sidebar p, .contact-section {
                 display: none;
             }
             .login-form-container {
@@ -289,9 +362,22 @@
         <div class="login-wrapper">
             <!-- Left Branding Side -->
             <div class="login-sidebar">
-                <img src="{{ asset('images/opera-dark-logo.webp') }}" alt="IELTS System Logo">
-                <h3>Welcome Back</h3>
-                <p>Manage tests, students, and results all in one powerful platform.</p>
+                <div class="top-content">
+                    <img src="{{ asset('images/opera-dark-logo.webp') }}" alt="IELTS System Logo">
+                    <h1 class="red-title">IELTS</h1>
+                    <h3>Welcome Back</h3>
+                    <p>Manage tests, students, and results all in one powerful platform.</p>
+                </div>
+
+                <div class="contact-section">
+                    <div class="contact-card">
+                        <span class="contact-label">Need Assistance?</span>
+                        <a href="tel:8796853467" class="contact-details">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>8796853467</span>
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Form Side -->

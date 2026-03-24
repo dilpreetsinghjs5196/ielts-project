@@ -239,17 +239,50 @@
                 <div class="nav-part d-flex align-items-center gap-2 {{ $g_index === 0 ? 'active' : '' }}" id="nav-part-{{ $group->id }}" onclick="activatePart('{{ $group->id }}')">
                     <span class="part-label fw-bold text-nowrap">Part {{ $g_index + 1 }}</span>
                     
+                    @php
+                        $totalInGroup = 0;
+                        foreach($group->questions as $q) {
+                            if (str_contains($q->question_number, '-')) {
+                                list($start, $end) = explode('-', $q->question_number);
+                                if (is_numeric($start) && is_numeric($end)) {
+                                    $totalInGroup += ((int)$end - (int)$start + 1);
+                                } else {
+                                    $totalInGroup += 1;
+                                }
+                            } else {
+                                $totalInGroup += 1;
+                            }
+                        }
+                    @endphp
                     <div class="part-summary text-muted small text-nowrap mx-2">
-                        <span class="answered-count">0</span> of {{ $group->questions->count() }}
+                        <span class="answered-count">0</span> of {{ $totalInGroup }}
                     </div>
 
                     <div class="part-questions d-flex gap-2 {{ $g_index === 0 ? '' : 'd-none' }}">
                         @foreach ($group->questions as $q_index => $q)
-                            <a href="javascript:void(0)" 
-                               class="question-nav-link q-nav-{{ $q->id }} text-decoration-none text-muted fw-semibold" 
-                               onclick="event.stopPropagation(); scrollToQuestion('q-{{ $q->id }}')">
-                                {{ $q->question_number }}
-                            </a>
+                            @php
+                                $nums = [];
+                                if (str_contains($q->question_number, '-')) {
+                                    list($start, $end) = explode('-', $q->question_number);
+                                    if (is_numeric($start) && is_numeric($end)) {
+                                        for ($i = (int)$start; $i <= (int)$end; $i++) {
+                                            $nums[] = $i;
+                                        }
+                                    } else {
+                                        $nums[] = $q->question_number;
+                                    }
+                                } else {
+                                    $nums[] = $q->question_number ?? ($q_index + 1);
+                                }
+                            @endphp
+                            
+                            @foreach ($nums as $displayNum)
+                                <a href="javascript:void(0)" 
+                                   class="question-nav-link q-nav-{{ $q->id }} text-decoration-none text-muted fw-semibold" 
+                                   onclick="event.stopPropagation(); scrollToQuestion('q-{{ $q->id }}')">
+                                    {{ $displayNum }}
+                                </a>
+                            @endforeach
                         @endforeach
                     </div>
                 </div>
