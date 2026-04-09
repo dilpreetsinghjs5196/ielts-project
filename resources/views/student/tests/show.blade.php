@@ -779,27 +779,45 @@
         zone.innerHTML = `<span class="text-muted small">Drag a heading here</span>`;
     }
 
+    function collectAnswers() {
+        const answers = {};
+        
+        // 1. Collect all Fill-in-the-blanks and Short Answers ([q] tags)
+        document.querySelectorAll('input[type="text"][data-q-id]').forEach(input => {
+            answers[input.dataset.qId] = input.value;
+        });
+
+        // 2. Collect MCQs and TFNG (Radios)
+        document.querySelectorAll('.question-item[data-q-type="mcq"], .question-item[data-q-type="tfng"]').forEach(q => {
+            const qId = q.dataset.qId;
+            const checked = q.querySelector('input:checked');
+            if (qId) answers[qId] = checked ? checked.value : null;
+        });
+
+        // 3. Collect Multi-MCQs (Checkboxes)
+        document.querySelectorAll('.question-item[data-q-type="mcq_multi"]').forEach(q => {
+            const qId = q.dataset.qId;
+            const checked = Array.from(q.querySelectorAll('input:checked')).map(i => i.value);
+            if (qId) answers[qId] = checked;
+        });
+
+        // 4. Collect Match Headings (Hidden Inputs)
+        document.querySelectorAll('input[id^="hidden_q_"]').forEach(input => {
+            const qId = input.id.replace('hidden_q_', '');
+            answers[qId] = input.value;
+        });
+
+        return answers;
+    }
+
     function submitTest() {
         if (confirm("Are you sure you want to finish and submit your answers?")) {
-            // Collect answers and submit
-            const answers = {};
-            document.querySelectorAll('.question-item').forEach(q => {
-                const qId = q.dataset.qId;
-                const type = q.dataset.qType;
-                
-                if (type === 'mcq' || type === 'tfng') {
-                    const checked = q.querySelector('input:checked');
-                    answers[qId] = checked ? checked.value : null;
-                } else if (type === 'mcq_multi') {
-                    const checked = Array.from(q.querySelectorAll('input:checked')).map(i => i.value);
-                    answers[qId] = checked;
-                } else if (type === 'fill_blanks') {
-                    answers[qId] = q.querySelector('input').value;
-                } else if (type === 'match_heading') {
-                    const hidden = document.getElementById(`hidden_q_${qId}`);
-                    answers[qId] = hidden ? hidden.value : null;
-                }
-            });
+            const btn = document.querySelector('button[onclick="submitTest()"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
+
+            const answers = collectAnswers();
 
             // Add CSRF token
             fetch("{{ route('student.tests.submit', $test) }}", {
@@ -813,12 +831,21 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
-                    window.location.href = "{{ route('student.dashboard') }}";
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.href = "{{ route('student.dashboard') }}";
+                    }
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    alert("Submission failed. Please try again.");
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
                 alert("An error occurred while submitting the test.");
             });
         }

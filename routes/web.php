@@ -66,11 +66,20 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
 Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(function () {
     Route::get('/dashboard', function () {
         $studentId = auth('student')->id();
-        $tests = \App\Models\Test::where('status', 'active')
-            ->with(['moduleSet', 'attempts' => function($q) use ($studentId) {
+        $tests = \App\Models\Test::whereHas('attempts', function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            })
+            ->with(['moduleSet', 'questionGroups.questions', 'attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
-        return view('student.dashboard', compact('tests'));
+            
+        $stats = [
+            'assigned' => $tests->count(),
+            'completed' => $tests->filter(fn($t) => $t->attempts->where('status', 'completed')->count() > 0)->count(),
+            'average' => $tests->flatMap(fn($t) => $t->attempts->where('status', 'completed'))->avg('score') ?? 0
+        ];
+        
+        return view('student.dashboard', compact('tests', 'stats'));
     })->name('dashboard');
 
     Route::get('/profile', function () {
@@ -84,6 +93,8 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
     Route::get('/take-test', [\App\Http\Controllers\Student\MockTestController::class, 'take'])->name('tests.take');
     Route::get('/my-tests', [\App\Http\Controllers\Student\MockTestController::class, 'index'])->name('tests.index');
     Route::get('/tests/{test}', [\App\Http\Controllers\Student\MockTestController::class, 'show'])->name('tests.show');
+    Route::get('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'thankYou'])->name('tests.thank-you');
+    Route::get('/tests/{test}/review', [\App\Http\Controllers\Student\MockTestController::class, 'review'])->name('tests.review');
     Route::post('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submit'])->name('tests.submit');
     Route::post('/tests/{test}/save-progress', [\App\Http\Controllers\Student\MockTestController::class, 'saveProgress'])->name('tests.save-progress');
     Route::get('/tests/{test}/restart', [\App\Http\Controllers\Student\MockTestController::class, 'restart'])->name('tests.restart');

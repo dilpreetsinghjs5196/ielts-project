@@ -34,16 +34,16 @@
                                 <td class="px-4 py-4">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-sm me-3 bg-light rounded-circle d-flex align-items-center justify-content-center text-primary font-weight-bold" style="width: 35px; height: 35px; font-size: 0.8rem;">
-                                            {{ strtoupper(substr($attempt->student->name, 0, 1)) }}
+                                            {{ strtoupper(substr($attempt->student->name ?? '?', 0, 1)) }}
                                         </div>
                                         <div>
-                                            <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">{{ $attempt->student->name }}</h6>
-                                            <small class="text-muted">{{ $attempt->student->student_id }}</small>
+                                            <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">{{ $attempt->student->name ?? 'Deleted Student' }}</h6>
+                                            <small class="text-muted">{{ $attempt->student->student_id ?? 'N/A' }}</small>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">{{ $attempt->test->name }}</h6>
+                                    <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">{{ $attempt->test->name ?? 'Deleted Test' }}</h6>
                                     <small class="text-muted">{{ $attempt->test->moduleSet->name ?? 'N/A' }}</small>
                                 </td>
                                 <td class="text-center">
@@ -60,7 +60,7 @@
                                 </td>
                                 <td class="text-center">
                                     <span class="text-muted small">
-                                        {{ $attempt->started_at->format('d M Y, H:i') }}
+                                        {{ $attempt->started_at ? $attempt->started_at->format('d M Y, H:i') : 'N/A' }}
                                     </span>
                                 </td>
                                 <td class="text-center">

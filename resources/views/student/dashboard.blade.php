@@ -39,7 +39,7 @@
                     </div>
                     <div>
                         <p class="text-muted small mb-0">Tests Assigned</p>
-                        <h4 class="fw-bold mb-0">0</h4>
+                        <h4 class="fw-bold mb-0">{{ $stats['assigned'] ?? 0 }}</h4>
                     </div>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                     </div>
                     <div>
                         <p class="text-muted small mb-0">Tests Completed</p>
-                        <h4 class="fw-bold mb-0">0</h4>
+                        <h4 class="fw-bold mb-0">{{ $stats['completed'] ?? 0 }}</h4>
                     </div>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                     </div>
                     <div>
                         <p class="text-muted small mb-0">Average Score</p>
-                        <h4 class="fw-bold mb-0">N/A</h4>
+                        <h4 class="fw-bold mb-0">{{ number_format($stats['average'] ?? 0, 1) }}</h4>
                     </div>
                 </div>
             </div>
@@ -133,6 +133,7 @@
                                     <tr>
                                         <th class="px-4 py-3">Test Name</th>
                                         <th class="py-3">Module Set</th>
+                                        <th class="py-3">Result</th>
                                         <th class="py-3">Status</th>
                                         <th class="py-3 text-center">Action</th>
                                     </tr>
@@ -146,6 +147,14 @@
                                             </td>
                                             <td class="py-3 text-muted small">
                                                 {{ $test->moduleSet->name ?? 'N/A' }}
+                                            </td>
+                                            <td class="py-3 fw-bold">
+                                                @if($attempt && $attempt->status === 'completed')
+                                                    <span class="text-primary">{{ $attempt->score ?? 0 }}</span>
+                                                    <small class="text-muted">/ {{ $test->questionGroups->sum(fn($g) => $g->questions->sum('marks')) }}</small>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
                                             </td>
                                             <td class="py-3">
                                                 @if(!$attempt)
@@ -165,7 +174,7 @@
                                                         <a href="{{ route('student.tests.restart', $test) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
                                                     </div>
                                                 @else
-                                                    <a href="#" class="btn btn-sm btn-outline-success rounded-pill px-4 disabled">Completed</a>
+                                                    <a href="{{ route('student.tests.review', $test) }}" class="btn btn-sm btn-outline-success rounded-pill px-4">Review Result</a>
                                                 @endif
                                             </td>
                                         </tr>

@@ -21,15 +21,15 @@
             <div class="card-body">
                 <div class="text-center mb-4">
                     <div class="avatar-lg mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center text-primary font-weight-bold mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
-                        {{ strtoupper(substr($attempt->student->name, 0, 1)) }}
+                        {{ strtoupper(substr($attempt->student->name ?? '?', 0, 1)) }}
                     </div>
-                    <h5 class="mb-1 fw-bold">{{ $attempt->student->name }}</h5>
-                    <p class="text-muted small mb-0">{{ $attempt->student->student_id }}</p>
+                    <h5 class="mb-1 fw-bold">{{ $attempt->student->name ?? 'Deleted Student' }}</h5>
+                    <p class="text-muted small mb-0">{{ $attempt->student->student_id ?? 'N/A' }}</p>
                 </div>
                 <hr>
                 <div class="mb-3">
                     <label class="text-muted small d-block">Test Name</label>
-                    <span class="fw-bold">{{ $attempt->test->name }}</span>
+                    <span class="fw-bold">{{ $attempt->test->name ?? 'Deleted Test' }}</span>
                 </div>
                 <div class="mb-3">
                     <label class="text-muted small d-block">Module Set</label>
@@ -37,7 +37,7 @@
                 </div>
                 <div class="mb-0">
                     <label class="text-muted small d-block">Time Started</label>
-                    <span class="fw-bold">{{ $attempt->started_at->format('d M Y, H:i:s') }}</span>
+                    <span class="fw-bold">{{ $attempt->started_at ? $attempt->started_at->format('d M Y, H:i:s') : 'N/A' }}</span>
                 </div>
             </div>
         </div>

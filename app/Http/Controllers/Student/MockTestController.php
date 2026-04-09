@@ -19,11 +19,10 @@ class MockTestController extends Controller
     public function index()
     {
         $studentId = auth('student')->id();
-        $tests = Test::where('status', 'active')
-            ->whereHas('attempts', function($q) use ($studentId) {
+        $tests = Test::whereHas('attempts', function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             })
-            ->with(['moduleSet', 'category', 'attempts' => function($q) use ($studentId) {
+            ->with(['moduleSet', 'category', 'questionGroups.questions', 'attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
             
@@ -34,6 +33,16 @@ class MockTestController extends Controller
     {
         $student = auth('student')->user();
         
+        // Check for completed attempt first
+        $completedAttempt = \App\Models\TestAttempt::where('student_id', $student->id)
+            ->where('test_id', $test->id)
+            ->where('status', 'completed')
+            ->first();
+
+        if ($completedAttempt) {
+            return redirect()->route('student.tests.review', $test)->with('info', 'You have already completed this test.');
+        }
+
         // Find or create pending attempt
         $attempt = \App\Models\TestAttempt::firstOrCreate([
             'student_id' => $student->id,
@@ -87,7 +96,8 @@ class MockTestController extends Controller
         return response()->json([
             'success' => true, 
             'message' => 'Test submitted successfully!',
-            'score' => $score ?? 0
+            'score' => $score ?? 0,
+            'redirect' => route('student.tests.thank-you', $test)
         ]);
     }
 
@@ -146,5 +156,39 @@ class MockTestController extends Controller
             ->delete(); // Delete all attempts for this test to restart fresh
 
         return redirect()->route('student.tests.show', $test)->with('success', 'Test restarted!');
+    }
+
+    public function thankYou(Test $test)
+    {
+        $studentId = auth('student')->id();
+        $attempt = \App\Models\TestAttempt::where('student_id', $studentId)
+            ->where('test_id', $test->id)
+            ->where('status', 'completed')
+            ->latest()
+            ->first();
+
+        if (!$attempt) {
+            return redirect()->route('student.dashboard');
+        }
+
+        return view('student.tests.thank-you', compact('test', 'attempt'));
+    }
+
+    public function review(Test $test)
+    {
+        $studentId = auth('student')->id();
+        $attempt = \App\Models\TestAttempt::where('student_id', $studentId)
+            ->where('test_id', $test->id)
+            ->where('status', 'completed')
+            ->latest()
+            ->first();
+
+        if (!$attempt) {
+            return redirect()->route('student.dashboard');
+        }
+
+        $test->load(['moduleSet', 'questionGroups.questions', 'questionGroups.category']);
+        
+        return view('student.tests.review', compact('test', 'attempt'));
     }
 }

@@ -23,6 +23,7 @@
                                     <th class="px-4 py-3">Test Name</th>
                                     <th class="py-3">Module</th>
                                     <th class="py-3">Set</th>
+                                    <th class="py-3">Score</th>
                                     <th class="py-3">Status</th>
                                     <th class="py-3 text-center">Action</th>
                                 </tr>
@@ -39,6 +40,14 @@
                                         </td>
                                         <td class="py-4 text-muted small">
                                             {{ $test->moduleSet->name ?? 'N/A' }}
+                                        </td>
+                                        <td class="py-4 fw-bold">
+                                            @if($attempt && $attempt->status === 'completed')
+                                                <span class="text-primary">{{ $attempt->score ?? 0 }}</span>
+                                                <small class="text-muted">/ {{ $test->questionGroups->sum(fn($g) => $g->questions->sum('marks')) }}</small>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
                                         </td>
                                         <td class="py-4">
                                             @if(!$attempt)
@@ -58,7 +67,7 @@
                                                     <a href="{{ route('student.tests.restart', $test) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
                                                 </div>
                                             @else
-                                                <a href="#" class="btn btn-sm btn-outline-success rounded-pill px-4 disabled">Completed</a>
+                                                <a href="{{ route('student.tests.review', $test) }}" class="btn btn-sm btn-outline-success rounded-pill px-4">Review Result</a>
                                             @endif
                                         </td>
                                     </tr>
