@@ -46,6 +46,9 @@
                     @if($selectedTestType)
                         <li class="breadcrumb-item"><a href="{{ route('admin.tests.index', ['category' => $selectedCategory->slug, 'test_type_id' => $selectedTestType->id]) }}">{{ $selectedTestType->name }}</a></li>
                     @endif
+                    @if($selectedLevel)
+                        <li class="breadcrumb-item active" aria-current="page">{{ $selectedLevel->name }}</li>
+                    @endif
                     @if($selectedModuleSet)
                         <li class="breadcrumb-item active" aria-current="page">{{ $selectedModuleSet->name }}</li>
                     @endif
@@ -100,7 +103,7 @@
             @endforeach
         </div>
 
-    @elseif(!$selectedModuleSet)
+    @elseif(!$selectedModuleSet && !$selectedLevel)
         <!-- Step 3: Portfolio Swipers -->
         <div class="row mb-4">
             <div class="col-12">
@@ -111,8 +114,10 @@
         @foreach ($levels as $level)
             @php
                 $filteredSets = $level->moduleSets->where('test_type_id', $selectedTestType->id);
+                $isDirectLevel = in_array($level->id, $noModuleLevels);
             @endphp
-            @if($filteredSets->count() > 0)
+            
+            @if($filteredSets->count() > 0 || $isDirectLevel)
                 <div class="row mb-3 mt-4">
                     <div class="col-12 d-flex justify-content-between align-items-end px-4">
                         <h5 class="fw-bold text-dark mb-0 border-start border-4 border-primary ps-3">{{ $level->name }}</h5>
@@ -126,31 +131,47 @@
                 </div>
                 
                 <div class="mb-5 position-relative">
-                    <div class="swiper module-swiper" id="swiper-{{ $level->id }}">
-                        <div class="swiper-wrapper">
-                            @foreach ($filteredSets as $set)
-                            <div class="swiper-slide h-auto">
-                                <div class="card border-0 shadow-sm h-100 mx-2" style="border-radius: 15px; overflow: hidden;">
-                                    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between">
-                                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill small">
-                                            {{ $set->testType->name }}
-                                        </span>
-                                    </div>
-                                    <div class="card-body p-4 text-center">
-                                        <h5 class="card-title fw-bold mb-1" style="color: #0d1624;">{{ $set->name }}</h5>
-                                        <p class="text-muted small mb-0">{{ $set->tests_count }} mock tests</p>
-                                    </div>
-                                    <div class="card-footer bg-light border-0 p-3">
-                                        <a href="{{ route('admin.tests.index', ['category' => $selectedCategory->slug, 'test_type_id' => $selectedTestType->id, 'module_set_id' => $set->id]) }}" class="btn btn-primary btn-sm w-100 py-2 fw-bold" style="border-radius: 10px;">
-                                            View Tests <i class="fas fa-arrow-right ms-1"></i>
+                    @if($isDirectLevel)
+                        <div class="row px-3">
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; overflow: hidden; border-left: 5px solid #2d3748 !important;">
+                                    <div class="card-body p-4">
+                                        <h5 class="card-title fw-bold mb-1" style="color: #0d1624;">{{ $level->name }} Tests</h5>
+                                        <p class="text-muted small mb-3">Direct test access (No portfolios)</p>
+                                        <a href="{{ route('admin.tests.index', ['category' => $selectedCategory->slug, 'test_type_id' => $selectedTestType->id, 'level_id' => $level->id]) }}" class="btn btn-dark btn-sm w-100 py-2 fw-bold" style="border-radius: 10px;">
+                                            View All Tests <i class="fas fa-arrow-right ms-1"></i>
                                         </a>
                                     </div>
                                 </div>
                             </div>
-                            @endforeach
                         </div>
-                        <div class="swiper-pagination mt-4"></div>
-                    </div>
+                    @else
+                        <div class="swiper module-swiper" id="swiper-{{ $level->id }}">
+                            <div class="swiper-wrapper">
+                                @foreach ($filteredSets as $set)
+                                <div class="swiper-slide h-auto">
+                                    <div class="card border-0 shadow-sm h-100 mx-2" style="border-radius: 15px; overflow: hidden;">
+                                        <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill small">
+                                                {{ $set->testType->name }}
+                                            </span>
+                                        </div>
+                                        <div class="card-body p-4 text-center">
+                                            <h5 class="card-title fw-bold mb-1" style="color: #0d1624;">{{ $set->name }}</h5>
+                                            <p class="text-muted small mb-0">{{ $set->tests_count }} mock tests</p>
+                                        </div>
+                                        <div class="card-footer bg-light border-0 p-3">
+                                            <a href="{{ route('admin.tests.index', ['category' => $selectedCategory->slug, 'test_type_id' => $selectedTestType->id, 'module_set_id' => $set->id]) }}" class="btn btn-primary btn-sm w-100 py-2 fw-bold" style="border-radius: 10px;">
+                                                View Tests <i class="fas fa-arrow-right ms-1"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                            <div class="swiper-pagination mt-4"></div>
+                        </div>
+                    @endif
                 </div>
             @endif
         @endforeach
@@ -176,9 +197,14 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0 font-weight-bold">
                                 <a href="{{ route('admin.tests.index', ['category' => $selectedCategory->slug, 'test_type_id' => $selectedTestType->id]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> 
-                                Tests in {{ $selectedModuleSet->name }}
+                                Tests in {{ $selectedModuleSet->name ?? $selectedLevel->name }}
                             </h5>
-                            <a href="{{ route('admin.tests.create', ['category_id' => $selectedCategory->id, 'level_id' => $selectedModuleSet->level_id, 'module_set_id' => $selectedModuleSet->id, 'test_type_id' => $selectedModuleSet->test_type_id]) }}" class="btn btn-primary btn-sm shadow-sm px-3" style="border-radius: 8px;">
+                            <a href="{{ route('admin.tests.create', [
+                                'category_id' => $selectedCategory->id, 
+                                'level_id' => $selectedModuleSet->level_id ?? $selectedLevel->id, 
+                                'module_set_id' => $selectedModuleSet->id ?? '', 
+                                'test_type_id' => $selectedModuleSet->test_type_id ?? $selectedTestType->id
+                            ]) }}" class="btn btn-primary btn-sm shadow-sm px-3" style="border-radius: 8px;">
                                 <i class="fas fa-plus me-1"></i> Add New Test
                             </a>
                         </div>
@@ -195,7 +221,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($selectedModuleSet->tests as $test)
+                                    @php
+                                        $testsToShow = $selectedModuleSet ? $selectedModuleSet->tests : $selectedLevel->tests;
+                                    @endphp
+                                    @forelse ($testsToShow as $test)
                                     <tr>
                                         <td class="px-4 py-4">
                                             <div class="fw-bold text-dark">{{ $test->name }}</div>

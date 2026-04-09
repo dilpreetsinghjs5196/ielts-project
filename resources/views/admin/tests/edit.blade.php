@@ -70,8 +70,9 @@
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-8">
-                            <label for="module_set_id" class="form-label fw-bold">Portfolio (Module Set)</label>
-                            <select name="module_set_id" id="module_set_id" class="form-select @error('module_set_id') is-invalid @enderror" required>
+                            <label for="module_set_id" class="form-label fw-bold">Portfolio (Optional for Level 1, 2, 3)</label>
+                            <select name="module_set_id" id="module_set_id" class="form-select @error('module_set_id') is-invalid @enderror">
+                                <option value="">None (Individual Test)</option>
                                 @foreach($moduleSets as $set)
                                     <option value="{{ $set->id }}" {{ old('module_set_id', $test->module_set_id) == $set->id ? 'selected' : '' }}>
                                         {{ $set->name }} ({{ $set->category->name }} - {{ $set->testType->name }} - {{ $set->level->name }})

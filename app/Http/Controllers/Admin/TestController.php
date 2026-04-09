@@ -16,8 +16,17 @@ class TestController extends Controller
     {
         $selectedCategory = null;
         $selectedTestType = null;
+        $testTypeIdFromRequest = $request->get('test_type_id');
+        
+        if ($testTypeIdFromRequest) {
+            session(['last_test_type_id' => $testTypeIdFromRequest]);
+        }
+        
+        $effectiveTestTypeId = $testTypeIdFromRequest ?: session('last_test_type_id');
         $selectedModuleSet = null;
+        $selectedLevel = null;
         $testTypes = TestType::all();
+        $noModuleLevels = [1, 2]; // Level 1&2 and Level 3 (IDs found via tinker)
         
         if ($request->has('category')) {
             $selectedCategory = Category::where('slug', $request->get('category'))->firstOrFail();
@@ -31,18 +40,27 @@ class TestController extends Controller
                 $selectedTestType = $selectedModuleSet->testType;
                 $levels = collect();
             } 
+            // Step 4: Specific Level Selected (for levels without modules)
+            elseif ($request->has('level_id') && in_array($request->get('level_id'), $noModuleLevels)) {
+                $selectedLevel = Level::with(['tests' => function($q) use ($selectedCategory, $effectiveTestTypeId) {
+                    $q->where('category_id', $selectedCategory->id)
+                      ->where('test_type_id', $effectiveTestTypeId)
+                      ->with(['testType'])->latest();
+                }])->findOrFail($request->get('level_id'));
+                
+                $selectedTestType = TestType::findOrFail($effectiveTestTypeId);
+                $levels = collect();
+            }
             // Step 3: Category and Test Type Selected - Show Portfolio Swipers
-            elseif ($request->has('test_type_id')) {
-                $selectedTestType = TestType::findOrFail($request->get('test_type_id'));
+            elseif ($effectiveTestTypeId) {
+                $selectedTestType = TestType::findOrFail($effectiveTestTypeId);
                 
                 $levels = Level::with(['moduleSets' => function($query) use ($selectedCategory, $selectedTestType) {
                     $query->where('category_id', $selectedCategory->id)
                           ->where('test_type_id', $selectedTestType->id)
                           ->withCount('tests')
                           ->with(['testType', 'category']);
-                }])->get()->filter(function($l) {
-                    return $l->moduleSets->count() > 0;
-                });
+                }])->get();
             }
             // Step 2: Only Category Selected - Show Test Type Selection Cards
             else {
@@ -54,7 +72,7 @@ class TestController extends Controller
 
         $categories = Category::withCount('tests')->get();
         
-        return view('admin.tests.index', compact('levels', 'categories', 'selectedCategory', 'selectedTestType', 'selectedModuleSet', 'testTypes'));
+        return view('admin.tests.index', compact('levels', 'categories', 'selectedCategory', 'selectedTestType', 'selectedModuleSet', 'selectedLevel', 'testTypes', 'noModuleLevels'));
     }
 
     public function create(Request $request)
@@ -67,6 +85,7 @@ class TestController extends Controller
         $preselectedCategoryId = $request->get('category_id');
         $preselectedLevelId = $request->get('level_id');
         $preselectedModuleSetId = $request->get('module_set_id');
+        $preselectedTestTypeId = $request->get('test_type_id');
 
         return view('admin.tests.create', compact(
             'levels', 
@@ -75,7 +94,8 @@ class TestController extends Controller
             'moduleSets',
             'preselectedCategoryId',
             'preselectedLevelId',
-            'preselectedModuleSetId'
+            'preselectedModuleSetId',
+            'preselectedTestTypeId'
         ));
     }
 
@@ -83,7 +103,7 @@ class TestController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'module_set_id' => 'required|exists:module_sets,id',
+            'module_set_id' => 'nullable|exists:module_sets,id',
             'level_id' => 'required|exists:levels,id',
             'category_id' => 'required|exists:categories,id',
             'test_type_id' => 'required|exists:test_types,id',
@@ -92,13 +112,21 @@ class TestController extends Controller
 
         $test = Test::create($request->all());
 
-        $moduleSet = ModuleSet::with('category')->findOrFail($test->module_set_id);
-
-        return redirect()->route('admin.tests.index', [
-            'category' => $moduleSet->category->slug,
-            'test_type_id' => $moduleSet->test_type_id,
-            'module_set_id' => $moduleSet->id
-        ])->with('success', 'Mock Test created successfully.');
+        if ($test->module_set_id) {
+            $moduleSet = ModuleSet::with('category')->findOrFail($test->module_set_id);
+            return redirect()->route('admin.tests.index', [
+                'category' => $moduleSet->category->slug,
+                'test_type_id' => $moduleSet->test_type_id,
+                'module_set_id' => $moduleSet->id
+            ])->with('success', 'Mock Test created successfully.');
+        } else {
+            $category = Category::findOrFail($test->category_id);
+            return redirect()->route('admin.tests.index', [
+                'category' => $category->slug,
+                'test_type_id' => $test->test_type_id,
+                'level_id' => $test->level_id
+            ])->with('success', 'Mock Test created successfully.');
+        }
     }
 
     public function edit(Test $test)
@@ -114,7 +142,7 @@ class TestController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'module_set_id' => 'required|exists:module_sets,id',
+            'module_set_id' => 'nullable|exists:module_sets,id',
             'level_id' => 'required|exists:levels,id',
             'category_id' => 'required|exists:categories,id',
             'test_type_id' => 'required|exists:test_types,id',
@@ -123,13 +151,21 @@ class TestController extends Controller
 
         $test->update($request->all());
 
-        $moduleSet = ModuleSet::with('category')->findOrFail($test->module_set_id);
-
-        return redirect()->route('admin.tests.index', [
-            'category' => $moduleSet->category->slug,
-            'test_type_id' => $moduleSet->test_type_id,
-            'module_set_id' => $moduleSet->id
-        ])->with('success', 'Mock Test updated successfully.');
+        if ($test->module_set_id) {
+            $moduleSet = ModuleSet::with('category')->findOrFail($test->module_set_id);
+            return redirect()->route('admin.tests.index', [
+                'category' => $moduleSet->category->slug,
+                'test_type_id' => $moduleSet->test_type_id,
+                'module_set_id' => $moduleSet->id
+            ])->with('success', 'Mock Test updated successfully.');
+        } else {
+            $category = Category::findOrFail($test->category_id);
+            return redirect()->route('admin.tests.index', [
+                'category' => $category->slug,
+                'test_type_id' => $test->test_type_id,
+                'level_id' => $test->level_id
+            ])->with('success', 'Mock Test updated successfully.');
+        }
     }
 
     public function destroy(Test $test)

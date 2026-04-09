@@ -349,7 +349,10 @@
                         <a href="{{ route('admin.levels.index') }}"><i class="fas fa-layer-group"></i> Levels</a>
                     </li>
                     <li class="{{ request()->is('admin/module-sets*') ? 'active' : '' }}">
-                        <a href="{{ route('admin.module-sets.index') }}"><i class="fas fa-archive"></i> Module Portfolios</a>
+                        <a href="{{ route('admin.module-sets.index') }}">
+                            <i class="fas fa-archive"></i> Module Portfolios 
+                            <span class="badge bg-info bg-opacity-10 text-info ms-auto" style="font-size: 0.65rem;">Exam Batch</span>
+                        </a>
                     </li>
                     <li class="{{ request()->is('admin/tests*') ? 'active' : '' }}">
                         <a href="{{ route('admin.tests.index') }}"><i class="fas fa-vial"></i> Mock Tests</a>

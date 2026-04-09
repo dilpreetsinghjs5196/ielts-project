@@ -18,6 +18,13 @@ class QuestionGroupController extends Controller
         $activeCategory = Category::where('slug', $categorySlug)->firstOrFail();
         
         $testTypeId = $request->query('test_type');
+        
+        // If not in request, try session for administrative flow convenience
+        if (!$testTypeId) {
+            $testTypeId = session('last_test_type_id');
+        } else {
+            session(['last_test_type_id' => $testTypeId]);
+        }
         $levelId = $request->query('level');
         $moduleSetId = $request->query('module_set');
         $testId = $request->query('test');
@@ -36,9 +43,16 @@ class QuestionGroupController extends Controller
                 ->get()
             : collect();
 
-        $tests = ($moduleSetId)
-            ? Test::where('module_set_id', $moduleSetId)->get()
-            : collect();
+        $tests = collect();
+        if ($moduleSetId) {
+            $tests = Test::where('module_set_id', $moduleSetId)->get();
+        } elseif ($levelId && $testTypeId) {
+            // Fetch directly by level, category and type for levels without module system
+            $tests = Test::where('level_id', $levelId)
+                ->where('category_id', $activeCategory->id)
+                ->where('test_type_id', $testTypeId)
+                ->get();
+        }
 
         // Final groups list
         $query = QuestionGroup::with(['category', 'testType', 'level', 'questions'])
@@ -49,7 +63,8 @@ class QuestionGroupController extends Controller
         if ($testId) $query->where('test_id', $testId);
 
         $groups = ($testId) ? $query->latest()->get() : collect();
-            
+        $noModuleLevels = [1, 2]; // Found via tinker earlier
+
         return view('admin.question_groups.index', compact(
             'groups', 
             'activeCategory', 
@@ -60,7 +75,8 @@ class QuestionGroupController extends Controller
             'testTypeId',
             'levelId',
             'moduleSetId',
-            'testId'
+            'testId',
+            'noModuleLevels'
         ));
     }
 

@@ -60,20 +60,30 @@ class FrontendController extends Controller
         return response()->json($moduleSets);
     }
 
-    /**
-     * Return tests for a given module_set_id.
-     */
     public function getTests(Request $request)
     {
         $moduleSetId = $request->get('module_set_id');
-        $studentId = auth('student')->id();
+        $studentId   = auth('student')->id();
 
-        $tests = Test::where('module_set_id', $moduleSetId)
-            ->where('status', 'active')
+        $query = Test::where('status', 'active')
             ->with(['attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
-            }])
-            ->get()
+            }]);
+
+        if ($moduleSetId) {
+            $query->where('module_set_id', $moduleSetId);
+        } else {
+            // Fetch directly by level, category, and type
+            $levelId  = $request->get('level_id');
+            $testType = TestType::where('name', $request->get('test_type'))->first();
+            $category = Category::where('slug', $request->get('category'))->first();
+
+            if ($levelId) $query->where('level_id', $levelId);
+            if ($testType) $query->where('test_type_id', $testType->id);
+            if ($category) $query->where('category_id', $category->id);
+        }
+
+        $tests = $query->get()
             ->map(function($test) {
                 $attempt = $test->attempts->first();
                 return [

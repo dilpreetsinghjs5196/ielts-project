@@ -57,6 +57,10 @@
         </div>
     </div>
 
+    @php
+        $isDirectLevel = $levelId && in_array($levelId, $noModuleLevels);
+    @endphp
+
     @if (!$testTypeId)
         <!-- Step 1: Test Type Selection -->
         <div class="row gx-4 gy-4">
@@ -98,7 +102,7 @@
                 </div>
             @endforeach
         </div>
-    @elseif (!$moduleSetId)
+    @elseif (!$moduleSetId && !$isDirectLevel)
         <!-- Step 3: Module Set Selection -->
         <div class="row gx-4 gy-4">
             <div class="col-12 mb-2 d-flex justify-content-between align-items-center">
@@ -147,7 +151,7 @@
         <!-- Step 4: Test Selection -->
         <div class="row gx-4 gy-4">
             <div class="col-12 mb-2 d-flex justify-content-between align-items-center">
-                <h5 class="text-secondary mb-0"><a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId, 'level' => $levelId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> Step 4: Select Test</h5>
+                <h5 class="text-secondary mb-0"><a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId, 'level' => $levelId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> {{ $isDirectLevel ? 'Step 3' : 'Step 4' }}: Select Test</h5>
                 <a href="{{ route('admin.tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'module_set_id' => $moduleSetId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary d-flex align-items-center shadow-sm" style="border-radius: 10px;">
                     <i class="fas fa-plus me-2"></i> Add Test
                 </a>
@@ -174,7 +178,11 @@
                     <div class="p-5 bg-white shadow-sm rounded-4 border-0">
                         <i class="fas fa-flask fa-3x text-light mb-4 opacity-50"></i>
                         <h5 class="text-muted font-weight-bold">No Tests Found</h5>
-                        <p class="text-secondary mb-4 small">Add mock tests to this portfolio to begin adding questions.</p>
+                        <p class="text-secondary mb-4 small">
+                            {{ $isDirectLevel 
+                                ? 'Add mock tests to this level to begin adding questions.' 
+                                : 'Add mock tests to this portfolio to begin adding questions.' }}
+                        </p>
                         <a href="{{ route('admin.tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'module_set_id' => $moduleSetId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary px-4 py-2" style="border-radius: 10px;">+ Create First Test</a>
                     </div>
                 </div>

@@ -22,9 +22,9 @@
                     @csrf
                     
                     <div class="mb-4">
-                        <label for="module_set_id" class="form-label fw-bold small text-muted text-uppercase">Parent Portfolio (Big Container)</label>
-                        <select name="module_set_id" id="module_set_id" class="form-select @error('module_set_id') is-invalid @enderror" required>
-                            <option value="" disabled {{ !old('module_set_id') && !$preselectedModuleSetId ? 'selected' : '' }}>Select Module Portfolio</option>
+                        <label for="module_set_id" class="form-label fw-bold small text-muted text-uppercase">Parent Portfolio (Optional for Level 1, 2, 3)</label>
+                        <select name="module_set_id" id="module_set_id" class="form-select @error('module_set_id') is-invalid @enderror">
+                            <option value="">None (Individual Test)</option>
                             @foreach($moduleSets as $set)
                                 <option value="{{ $set->id }}" 
                                     {{ old('module_set_id', $preselectedModuleSetId) == $set->id ? 'selected' : '' }}>
@@ -82,10 +82,10 @@
                         <div class="col-md-6">
                             <label for="test_type_id" class="form-label fw-bold">Test Type</label>
                             <select name="test_type_id" id="test_type_id" class="form-select @error('test_type_id') is-invalid @enderror" required>
-                                <option value="" disabled selected>Select Type</option>
+                                <option value="" disabled {{ !old('test_type_id') && !$preselectedTestTypeId ? 'selected' : '' }}>Select Type</option>
                                 @foreach($testTypes as $type)
                                     <option value="{{ $type->id }}" 
-                                        {{ old('test_type_id') == $type->id ? 'selected' : '' }}>
+                                        {{ old('test_type_id', $preselectedTestTypeId) == $type->id ? 'selected' : '' }}>
                                         {{ $type->name }}
                                     </option>
                                 @endforeach

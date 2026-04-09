@@ -45,7 +45,8 @@ class ModuleSetController extends Controller
 
     public function create(Request $request)
     {
-        $levels = Level::all();
+        $noModuleLevels = [1, 2]; // IDs for Level 1&2 and Level 3
+        $levels = Level::whereNotIn('id', $noModuleLevels)->get();
         $categories = Category::all();
         $testTypes = TestType::all();
         $preselectedCategoryId = $request->get('category_id');
@@ -78,7 +79,8 @@ class ModuleSetController extends Controller
 
     public function edit(ModuleSet $moduleSet)
     {
-        $levels = Level::all();
+        $noModuleLevels = [1, 2];
+        $levels = Level::whereNotIn('id', $noModuleLevels)->get();
         $categories = Category::all();
         $testTypes = TestType::all();
         return view('admin.module_sets.edit', compact('moduleSet', 'levels', 'categories', 'testTypes'));

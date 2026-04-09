@@ -817,8 +817,8 @@
                             <!-- Dynamically populated via JS -->
                         </div>
                         <div class="text-center mt-4">
-                            <button class="btn btn-link text-muted text-decoration-none" onclick="goToStep('modules')">
-                                <i class="fas fa-chevron-left me-2"></i> Back to Modules
+                            <button class="btn btn-link text-muted text-decoration-none" id="backFromTests" onclick="goBackFromTests()">
+                                <i class="fas fa-chevron-left me-2"></i> Back
                             </button>
                         </div>
                     </div>
@@ -837,6 +837,15 @@
         let currentLevelId = null;
         let currentLevelName = '';
         let activeFlow = 'cards'; // 'navbar' or 'cards'
+
+        function goBackFromTests() {
+            // If Level ID is 1 or 2, we skipped Module selection, so go back to Level selection.
+            if (currentLevelId == 1 || currentLevelId == 2) {
+                showOnlyStep('level');
+            } else {
+                showOnlyStep('modules');
+            }
+        }
 
         // Level icon map (fallback icons based on index)
         const levelIcons = ['fa-seedling', 'fa-layer-group', 'fa-fire', 'fa-star', 'fa-rocket'];
@@ -937,18 +946,33 @@
                 });
         }
 
-        // User picked a level → fetch module sets
+        // User picked a level → either fetch module sets or fetch tests directly
         function selectLevel(levelId, levelName) {
             currentLevelId = levelId;
             currentLevelName = levelName;
 
-            document.getElementById('moduleBadgeType').innerText = currentType;
-            document.getElementById('moduleBadgeLevel').innerText = levelName;
-            document.getElementById('moduleSubtitle').innerText =
-                `${currentModule} modules for ${currentType} — ${levelName}`;
+            // Check if this level should skip module set selection
+            // Level ID 1: Level 1 and 2, Level ID 2: Level 3
+            // Level ID 3: Exam Batch (Keep module selection)
+            if (levelId == 1 || levelId == 2) {
+                document.getElementById('testBadgeType').innerText   = currentType;
+                document.getElementById('testBadgeLevel').innerText  = currentLevelName;
+                document.getElementById('testBadgeModule').innerText = 'All Practice Tests';
+                document.getElementById('testSubtitle').innerText    =
+                    `Tests for ${currentModule} / ${currentType} / ${currentLevelName}`;
 
-            showOnlyStep('modules');
-            fetchModuleSets();
+                showOnlyStep('tests');
+                fetchTests(null); // Fetch directly without module set ID
+            } else {
+                // For Exam Batch (ID 3) and others, show module set selection
+                document.getElementById('moduleBadgeType').innerText = currentType;
+                document.getElementById('moduleBadgeLevel').innerText = levelName;
+                document.getElementById('moduleSubtitle').innerText =
+                    `${currentModule} modules for ${currentType} — ${levelName}`;
+
+                showOnlyStep('modules');
+                fetchModuleSets();
+            }
         }
 
         // Fetch module sets from the server
@@ -1006,12 +1030,19 @@
             fetchTests(moduleSetId);
         }
 
-        // Fetch tests for a specific module set
-        function fetchTests(moduleSetId) {
+        // Fetch tests for a specific module set or directly for a level
+        function fetchTests(moduleSetId = null) {
             const container = document.getElementById('tests-list-container');
             container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-warning" role="status"></div></div>';
 
-            fetch(`/api/tests?module_set_id=${moduleSetId}`)
+            let url = '/api/tests?';
+            if (moduleSetId) {
+                url += `module_set_id=${moduleSetId}`;
+            } else {
+                url += `level_id=${currentLevelId}&category=${currentModule}&test_type=${currentType}`;
+            }
+
+            fetch(url)
                 .then(r => r.json())
                 .then(tests => {
                     if (tests.length === 0) {
