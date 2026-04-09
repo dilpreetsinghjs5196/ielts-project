@@ -48,6 +48,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     Route::resource('tests', TestController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('question-groups', QuestionGroupController::class);
+    
+    // Automated Import
+    Route::get('import', [App\Http\Controllers\Admin\IeltsImportController::class, 'create'])->name('import.create');
+    Route::post('import', [App\Http\Controllers\Admin\IeltsImportController::class, 'store'])->name('import.store');
 
     // User Management
     Route::resource('students', StudentController::class);

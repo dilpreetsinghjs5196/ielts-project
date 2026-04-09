@@ -199,14 +199,19 @@
                                 <a href="{{ route('admin.tests.index', ['category' => $selectedCategory->slug, 'test_type_id' => $selectedTestType->id]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> 
                                 Tests in {{ $selectedModuleSet->name ?? $selectedLevel->name }}
                             </h5>
-                            <a href="{{ route('admin.tests.create', [
-                                'category_id' => $selectedCategory->id, 
-                                'level_id' => $selectedModuleSet->level_id ?? $selectedLevel->id, 
-                                'module_set_id' => $selectedModuleSet->id ?? '', 
-                                'test_type_id' => $selectedModuleSet->test_type_id ?? $selectedTestType->id
-                            ]) }}" class="btn btn-primary btn-sm shadow-sm px-3" style="border-radius: 8px;">
-                                <i class="fas fa-plus me-1"></i> Add New Test
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('admin.import.create') }}" class="btn btn-outline-primary btn-sm shadow-sm px-3" style="border-radius: 8px;">
+                                    <i class="fas fa-file-import me-1"></i> Import from File
+                                </a>
+                                <a href="{{ route('admin.tests.create', [
+                                    'category_id' => $selectedCategory->id, 
+                                    'level_id' => $selectedModuleSet->level_id ?? $selectedLevel->id, 
+                                    'module_set_id' => $selectedModuleSet->id ?? '', 
+                                    'test_type_id' => $selectedModuleSet->test_type_id ?? $selectedTestType->id
+                                ]) }}" class="btn btn-primary btn-sm shadow-sm px-3" style="border-radius: 8px;">
+                                    <i class="fas fa-plus me-1"></i> Add New Test
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body p-0 mt-3">

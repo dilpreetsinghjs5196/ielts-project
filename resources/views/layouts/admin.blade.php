@@ -357,6 +357,9 @@
                     <li class="{{ request()->is('admin/tests*') ? 'active' : '' }}">
                         <a href="{{ route('admin.tests.index') }}"><i class="fas fa-vial"></i> Mock Tests</a>
                     </li>
+                    <li class="{{ request()->is('admin/import*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.import.create') }}"><i class="fas fa-file-import"></i> Import Test (Auto)</a>
+                    </li>
                     
                     <li class="{{ request()->is('admin/question-groups*') ? 'active' : '' }}">
                         <a href="#questionSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->is('admin/question-groups*') ? 'true' : 'false' }}" class="dropdown-toggle">

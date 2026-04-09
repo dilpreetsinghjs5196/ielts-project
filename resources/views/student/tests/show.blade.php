@@ -31,7 +31,13 @@
             <img src="{{ asset('images/opera-dark-logo.webp') }}" height="40" alt="Logo" class="test-logo">
             <div class="test-info">
                 <h5 class="mb-0 fw-bold">{{ $test->name }}</h5>
-                <small class="text-muted">{{ $test->moduleSet->name }} | {{ $test->moduleSet->category->name }}</small>
+                <small class="text-muted">
+                    @if($test->moduleSet)
+                        {{ $test->moduleSet->name }} | {{ $test->moduleSet->category->name }}
+                    @else
+                        {{ $test->level->name }} | {{ $test->category->name }}
+                    @endif
+                </small>
             </div>
         </div>
         
@@ -96,40 +102,34 @@
                         // 1. Prepare Question Mapping
                         $renderedInstruction = $group->instruction;
                         $embeddedQIds = [];
-                        
-                        // We'll use a function-like approach to find and replace tags
-                        // Pattern matches [q123], [Q123], [123], [ q123 ]
                         $pattern = '/\[\s*q?(\d+)\s*\]/i';
                         
-                        $replaceCallback = function($matches) use ($group, &$embeddedQIds) {
+                        // Helper to find question by number
+                        $allQuestions = $group->questions;
+                        
+                        // Process Instruction tags
+                        $renderedInstruction = preg_replace_callback($pattern, function($matches) use ($allQuestions, &$embeddedQIds) {
                             $num = $matches[1];
-                            
-                            // Find question that matches this number exactly or is part of a range
-                            $targetQ = $group->questions->filter(function($q) use ($num) {
-                                if ($q->question_number == $num) return true;
-                                // Handle range like 34-40
-                                if (str_contains($q->question_number, '-')) {
-                                    list($start, $end) = explode('-', $q->question_number);
-                                    return (int)$num >= (int)$start && (int)$num <= (int)$end;
-                                }
-                                return false;
+                            $targetQ = $allQuestions->filter(function($q) use ($num) {
+                                return $q->question_number == $num;
                             })->first();
 
                             if ($targetQ) {
                                 $embeddedQIds[] = $targetQ->id;
-                                // Create unique name for each blank: q_ID_NUM
-                                return '<span class="d-inline-block mx-1" id="q-'.$targetQ->id.'-'.$num.'"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 100px; height: 32px; border: 1px solid #94a3b8; border-radius: 4px; background: #fff;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'"></span>';
+                                return '<span class="d-inline-block mx-1"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 80px; height: 32px; border: 1px solid #94a3b8; border-radius: 4px;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'"></span>';
                             }
-                            return $matches[0]; // Return original if no question found
-                        };
-
-                        $renderedInstruction = preg_replace_callback($pattern, $replaceCallback, $renderedInstruction);
+                            return $matches[0];
+                        }, $renderedInstruction);
                     @endphp
 
                     <div class="group-instruction mb-4 p-3 bg-warning-subtle rounded-3 border-start border-warning border-4">
                         <h6 class="fw-bold mb-1">{{ $group->title }}</h6>
                         <div class="mb-0 text-muted instruction-content" style="line-height: 2.5;">
-                            {!! nl2br($renderedInstruction) !!}
+                            @php
+                                $htmlInstruction = nl2br($renderedInstruction);
+                                $htmlInstruction = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $htmlInstruction);
+                            @endphp
+                            {!! $htmlInstruction !!}
                         </div>
                     </div>
 
@@ -137,21 +137,31 @@
                         @php $lastTitle = null; @endphp
                         @foreach ($group->questions as $index => $question)
                             @php
-                                // Process question content for tags too
-                                $qContent = preg_replace_callback($pattern, $replaceCallback, $question->content);
+                                // Process question content for tags
+                                $qContent = preg_replace_callback($pattern, function($matches) use ($allQuestions, &$embeddedQIds, $question) {
+                                    $num = $matches[1];
+                                    $targetQ = $allQuestions->filter(function($q) use ($num) {
+                                        return $q->question_number == $num;
+                                    })->first();
+
+                                    if ($targetQ) {
+                                        // Only hide the target question if it's DIFFERENT from the current card
+                                        if ($targetQ->id != $question->id) {
+                                            $embeddedQIds[] = $targetQ->id;
+                                        }
+                                        return '<span class="d-inline-block mx-1"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 80px; height: 32px; border: 1px solid #94a3b8; border-radius: 4px;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'"></span>';
+                                    }
+                                    return $matches[0];
+                                }, $question->content);
+
+                                // Logic to hide cards that are embedded elsewhere
+                                $isHidden = in_array($question->id, $embeddedQIds);
                                 
-                                // Hide the main question block if ANY of its numbers were embedded
-                                if (in_array($question->id, $embeddedQIds)) {
-                                    // If the entire content was just the tags, skip it
-                                    // But we wrap it in a hidden div instead to keep the ID reachable via JS
-                                    $isHidden = true;
-                                } else {
-                                    $isHidden = false;
-                                }
+                                // Logic to hide redundant bottom input boxes
+                                $isEmbeddedInBody = strpos($qContent, 'smart-q-input') !== false;
                             @endphp
 
                             @if(!empty($question->title) && $question->title !== $lastTitle)
-{{-- ... rest of question logic ... --}}
                                 <div class="question-set-header mt-5 mb-4 p-4 rounded-4" style="background: rgba(59, 130, 246, 0.05); border-left: 5px solid #3b82f6;">
                                     <div class="d-flex flex-column gap-2">
                                         @php 
@@ -170,13 +180,24 @@
                                         @if($title)
                                             <h5 class="fw-bold mb-0 text-dark" style="line-height: 1.5;">{{ $title }}</h5>
                                         @endif
+
+                                        @if(!empty($question->settings['instruction']))
+                                            <div class="mt-2 text-muted small" style="line-height: 1.8;">
+                                                {!! nl2br(preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $question->settings['instruction'])) !!}
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                                 @php $lastTitle = $question->title; @endphp
                             @endif
 
-                            <div class="question-item mb-4 pb-4 border-bottom" id="q-{{ $question->id }}" data-q-id="{{ $question->id }}" data-q-type="{{ $question->question_type }}">
+                            <div class="question-item mb-4 pb-4 border-bottom {{ $isHidden ? 'd-none' : '' }}" id="q-{{ $question->id }}" data-q-id="{{ $question->id }}">
                                 <div class="d-flex gap-3">
+                                    <div class="q-number-box">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 32px; height: 32px; font-size: 0.85rem; flex-shrink: 0;">
+                                            {{ $question->question_number }}
+                                        </div>
+                                    </div>
                                     <div class="q-body w-100">
                                         <div class="fw-semibold mb-3" style="line-height: 2.5;">
                                             {!! nl2br($qContent) !!}
@@ -202,7 +223,7 @@
                                                     <label class="option-label d-flex align-items-center gap-3 p-3 bg-white border rounded-3 cursor-pointer hover-bg-light transition-all">
                                                         <input type="{{ $question->question_type === 'mcq' ? 'radio' : 'checkbox' }}" 
                                                                name="q_{{ $question->id }}" 
-                                                               value="{{ chr(65 + $opt_idx) }}" 
+                                                               value="{{ is_numeric($opt_idx) ? chr(65 + (int)$opt_idx) : $opt_idx }}" 
                                                                class="form-check-input">
                                                         <span class="option-text">{{ $option }}</span>
                                                     </label>
@@ -217,10 +238,12 @@
                                                     </label>
                                                 @endforeach
                                             </div>
-                                        @elseif (($question->question_type === 'fill_blanks' || $question->question_type === 'short_answer'))
-                                            <div class="fill-blanks-container {{ $isHidden ? 'd-none' : '' }}">
-                                                <input type="text" name="q_{{ $question->id }}" class="form-control border-bottom border-top-0 border-start-0 border-end-0 bg-light px-3" placeholder="Enter word...">
-                                            </div>
+                                        @elseif ($question->question_type === 'fill_blanks' || $question->question_type === 'short_answer')
+                                            @if(!$isEmbeddedInBody)
+                                                <div class="fill-blanks-container mt-3">
+                                                    <input type="text" name="q_{{ $question->id }}_{{ $question->question_number }}" class="form-control border-bottom border-top-0 border-start-0 border-end-0 bg-light px-3" placeholder="Enter word..." style="height: 50px; border-radius: 12px;">
+                                                </div>
+                                            @endif
                                         @endif
                                     </div>
                                 </div>
@@ -613,34 +636,34 @@
 
     // Navigation and Scrolling
     function scrollToQuestion(id) {
-        // Handle smart inputs: search for q-ID-NUM or just q-ID
+        // Handle smart inputs: search for the card or the specific input
+        let qId = id.replace('q-', '');
         let el = document.getElementById(id);
-        if (!el) {
-            // Try searching for a smart input container
-            const qId = id.replace('q-', '');
-            el = document.querySelector(`[data-q-id="${qId}"]`)?.closest('span');
+        let inputEl = document.querySelector(`input[data-q-id="${qId}"]`);
+
+        // If the main card is hidden (d-none), target the specific input box instead
+        if (!el || el.classList.contains('d-none')) {
+            el = inputEl;
         }
 
         if (el) {
-            const group = el.closest('.question-group') || el.closest('.passage-group');
-            let groupId = null;
+            // 1. Activate the correct Part (1, 2, or 3)
+            const group = el.closest('.question-group');
             if (group) {
-                groupId = group.dataset.groupId || group.id.replace('passage-group-', '');
-            } else {
-                const instrGroup = el.closest('.question-group') || el.closest('.instruction-content')?.closest('.question-group');
-                if (instrGroup) groupId = instrGroup.dataset.groupId;
+                activatePart(group.dataset.groupId, false);
             }
 
-            if (groupId) {
-                activatePart(groupId, false);
-            }
-
+            // 2. Scroll into view
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            // Highlight link in nav
+            // 3. Auto-focus the input box
+            if (inputEl) {
+                setTimeout(() => inputEl.focus(), 500);
+            }
+
+            // 4. Highlight link in nav
             document.querySelectorAll('.question-nav-link').forEach(link => link.classList.remove('text-primary', 'fw-bold', 'border-bottom', 'border-primary'));
-            const qIdOnly = id.replace('q-', '');
-            const navLink = document.querySelector(`.q-nav-${qIdOnly}`);
+            const navLink = document.querySelector(`.q-nav-${qId}`);
             if (navLink) {
                 navLink.classList.add('text-primary', 'fw-bold', 'border-bottom', 'border-primary');
             }

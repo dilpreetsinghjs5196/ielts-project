@@ -103,8 +103,8 @@
                             @if ($question->options && is_array($question->options))
                                 @foreach ($question->options as $index => $option)
                                 <div class="input-group mb-2">
-                                    <span class="input-group-text bg-light">{{ chr(65 + $index) }}</span>
-                                    <input type="text" name="options[]" class="form-control" placeholder="Enter option text" value="{{ $option }}">
+                                    <span class="input-group-text bg-light">{{ chr(65 + $loop->index) }}</span>
+                                    <input type="text" name="options[]" class="form-control" placeholder="Enter option text" value="{{ is_string($option) ? $option : '' }}">
                                     <button type="button" class="btn btn-outline-danger" onclick="removeOption(this)"><i class="fas fa-times"></i></button>
                                 </div>
                                 @endforeach
