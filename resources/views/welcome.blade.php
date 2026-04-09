@@ -485,16 +485,10 @@
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0)" onclick="openTestSelection('Listening')">Listening</a>
+                        <a class="nav-link" href="javascript:void(0)" onclick="startTypeSelection('Academic')">Academic</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0)" onclick="openTestSelection('Reading')">Reading</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0)" onclick="openTestSelection('Writing')">Writing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0)" onclick="openTestSelection('Speaking')">Speaking</a>
+                        <a class="nav-link" href="javascript:void(0)" onclick="startTypeSelection('General Training')">General Training</a>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center gap-2">
@@ -694,7 +688,49 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-lg-5 pt-0">
-                    <!-- Step 1: Select Test Type -->
+                    <!-- Step 0: Select Module (When Type is already chosen) -->
+                    <div id="step-module-category" style="display: none;">
+                        <div class="text-center mb-5">
+                            <h2 class="fw-bold mb-2">Select a Module</h2>
+                            <p class="text-muted">Choose a module for <span class="badge bg-warning text-dark px-2" id="selectedModuleType"></span></p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-3 col-6">
+                                <div class="selection-card p-3 shadow-sm border-0 bg-light" onclick="selectCategory('Listening')">
+                                    <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                        <i class="fas fa-headphones"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Listening</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="selection-card p-3 shadow-sm border-0 bg-light" onclick="selectCategory('Reading')">
+                                    <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                        <i class="fas fa-book-open"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Reading</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="selection-card p-3 shadow-sm border-0 bg-light" onclick="selectCategory('Writing')">
+                                    <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                        <i class="fas fa-pen-nib"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Writing</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="selection-card p-3 shadow-sm border-0 bg-light" onclick="selectCategory('Speaking')">
+                                    <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Speaking</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Select Test Type (When Module is already chosen) -->
                     <div id="step-test-type">
                         <div class="text-center mb-5">
                             <h2 class="fw-bold mb-2">Select Your Test Type</h2>
@@ -740,8 +776,8 @@
                             </div>
                         </div>
                         <div class="text-center mt-5">
-                            <button class="btn btn-link text-muted text-decoration-none" onclick="goToStep('test-type')">
-                                <i class="fas fa-chevron-left me-2"></i> Back to Test Type
+                            <button class="btn btn-link text-muted text-decoration-none" id="backToTypeOrModule" onclick="goBackFromLevel()">
+                                <i class="fas fa-chevron-left me-2"></i> Back
                             </button>
                         </div>
                     </div>
@@ -800,16 +836,36 @@
         let currentType = '';
         let currentLevelId = null;
         let currentLevelName = '';
+        let activeFlow = 'cards'; // 'navbar' or 'cards'
 
         // Level icon map (fallback icons based on index)
         const levelIcons = ['fa-seedling', 'fa-layer-group', 'fa-fire', 'fa-star', 'fa-rocket'];
 
+        // Entry point 1: From Navbar (Academic/General)
+        function startTypeSelection(typeName) {
+            activeFlow = 'navbar';
+            currentType = typeName;
+            document.getElementById('selectedModuleType').innerText = typeName;
+            
+            showOnlyStep('module-category');
+
+            var selectionModal = new bootstrap.Modal(document.getElementById('testSelectionModal'));
+            selectionModal.show();
+        }
+
+        // Selected a module from "Step 0" (Used when flow is 'navbar')
+        function selectCategory(moduleName) {
+            currentModule = moduleName;
+            goToStep('level');
+        }
+
+        // Entry point 2: From modules section cards (Listening/Reading/etc)
         function openTestSelection(moduleName) {
+            activeFlow = 'cards';
             currentModule = moduleName;
             document.getElementById('selectionModuleSubtitle').innerText =
                 'Choose between Academic or General for ' + moduleName;
 
-            // Reset to Step 1
             showOnlyStep('test-type');
 
             var selectionModal = new bootstrap.Modal(document.getElementById('testSelectionModal'));
@@ -817,10 +873,18 @@
         }
 
         function showOnlyStep(step) {
-            ['test-type', 'level', 'modules', 'tests'].forEach(s => {
+            ['test-type', 'module-category', 'level', 'modules', 'tests'].forEach(s => {
                 const el = document.getElementById('step-' + s);
                 if (el) el.style.display = (s === step) ? 'block' : 'none';
             });
+        }
+
+        function goBackFromLevel() {
+            if (activeFlow === 'navbar') {
+                showOnlyStep('module-category');
+            } else {
+                showOnlyStep('test-type');
+            }
         }
 
         function goToStep(step, typeSelected) {
