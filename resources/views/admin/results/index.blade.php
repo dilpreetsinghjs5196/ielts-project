@@ -24,6 +24,7 @@
                                 <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7" style="font-size: 0.75rem;">Test Name</th>
                                 <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7 text-center" style="font-size: 0.75rem;">Module</th>
                                 <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7 text-center" style="font-size: 0.75rem;">Status</th>
+                                <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7 text-center" style="font-size: 0.75rem;">Score</th>
                                 <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7 text-center" style="font-size: 0.75rem;">Date</th>
                                 <th class="py-3 text-uppercase text-secondary font-weight-bolder opacity-7 text-center" style="font-size: 0.75rem;">Actions</th>
                             </tr>
@@ -59,13 +60,18 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
+                                    <h6 class="mb-0 font-weight-bold" style="color: {{ $attempt->score >= 20 ? '#10b981' : '#ef4444' }};">
+                                        {{ $attempt->score ?? 0 }} / 40
+                                    </h6>
+                                </td>
+                                <td class="text-center">
                                     <span class="text-muted small">
                                         {{ $attempt->started_at ? $attempt->started_at->format('d M Y, H:i') : 'N/A' }}
                                     </span>
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ route('admin.results.show', $attempt) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View</a>
+                                        <a href="{{ route('admin.results.review', $attempt) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Review</a>
                                         <form action="{{ route('admin.results.destroy', $attempt) }}" method="POST" onsubmit="return confirm('Delete this attempt?');">
                                             @csrf
                                             @method('DELETE')

@@ -5,24 +5,35 @@
     <!-- Header -->
     <header class="test-header shadow-sm px-4 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-3">
-            <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" height="40">
+            <img src="{{ asset('images/opera-dark-logo.webp') }}" alt="Logo" height="40">
             <div class="border-start ps-3">
                 <h5 class="mb-0 fw-bold">{{ $test->name }}</h5>
-                <small class="text-muted">Review Mode &bull; Score: {{ $attempt->score }} marks</small>
+                <small class="text-muted">Review Mode &bull; Score: {{ $attempt->score }} / {{ $test->questionGroups->flatMap->questions->count() }}</small>
             </div>
         </div>
+
+        <div class="test-parts d-flex gap-2 mx-auto">
+            @foreach($test->questionGroups as $g_index => $group)
+                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 nav-part-btn {{ $g_index === 0 ? 'active' : '' }}" 
+                        id="header-nav-part-{{ $group->id }}"
+                        onclick="activatePart('{{ $group->id }}')">
+                    Part {{ $g_index + 1 }}
+                </button>
+            @endforeach
+        </div>
+
         <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('student.dashboard') }}" class="btn btn-outline-dark rounded-pill px-4">
+            <a href="{{ auth('web')->check() ? route('admin.results.index') : route('student.dashboard') }}" class="btn btn-outline-dark rounded-pill px-4">
                 <i class="fas fa-sign-out-alt me-2"></i> Exit Review
             </a>
         </div>
     </header>
 
-    <main class="test-main d-flex flex-grow-1 overflow-hidden" style="height: calc(100vh - 130px);">
+    <main class="test-main">
         <!-- Left Side: Passage -->
         <section class="test-passage p-4 flex-grow-1" id="passage-container">
             @foreach ($test->questionGroups as $g_index => $group)
-                <div class="passage-group {{ $g_index === 0 ? '' : 'd-none' }}" id="passage-group-{{ $group->id }}">
+                <div class="passage-group {{ $g_index === 0 ? '' : 'd-none' }}" id="passage-group-{{ $group->id }}" data-group-id="{{ $group->id }}">
                     <div class="passage-content mb-5">
                         <div class="reading-passage card border-0 shadow-sm p-4 overflow-auto" style="height: calc(100vh - 200px);">
                             <div class="passage-header mb-4 text-center border-bottom pb-4">
@@ -97,7 +108,7 @@
                                             <div class="q-text fs-5 fw-bold text-dark mb-3">
                                                 @php
                                                     $isEmbeddedInBody = false;
-                                                    $body = $question->question_text;
+                                                    $body = $question->content;
                                                     
                                                     $renderedBody = preg_replace_callback('/\[q(\d+)\]|(\d+)_+/', function($matches) use ($allQuestions, &$embeddedQIds, $attempt, &$isEmbeddedInBody) {
                                                         $num = $matches[1] ?: $matches[2];
@@ -128,51 +139,59 @@
 
                                             @if ($question->question_type === 'mcq' || $question->question_type === 'tfng')
                                                 <div class="options-grid d-grid gap-2">
-                                                    @foreach ($question->options as $option)
+                                                    @foreach ($question->options as $index => $val)
                                                         @php
-                                                            $isSelected = ($studentAnswer == $option['key']);
+                                                            $key = is_numeric($index) ? chr(65 + (int)$index) : $index;
+                                                            $isSelected = ($studentAnswer == $key);
                                                             $correctKey = $question->correct_answer;
-                                                            $isOptionCorrect = ($option['key'] == $correctKey);
+                                                            $isOptionCorrect = (trim(strtolower((string)$key)) == trim(strtolower((string)$correctKey)));
                                                             
                                                             $bgClass = '';
                                                             $borderClass = '';
                                                             if ($isSelected) {
-                                                                if ($isCorrect) {
+                                                                if ($isOptionCorrect) {
                                                                     $bgClass = 'bg-success-subtle';
                                                                     $borderClass = 'border-success';
                                                                 } else {
                                                                     $bgClass = 'bg-danger-subtle';
                                                                     $borderClass = 'border-danger';
                                                                 }
+                                                            } elseif ($isOptionCorrect) {
+                                                                $bgClass = 'bg-success-subtle border-success opacity-75';
                                                             }
                                                         @endphp
                                                         <label class="option-label p-3 border rounded-3 d-flex align-items-center gap-3 {{ $bgClass }} {{ $borderClass }}">
                                                             <input type="radio" class="form-check-input" disabled {{ $isSelected ? 'checked' : '' }}>
-                                                            <span class="option-key fw-bold text-muted">{{ $option['key'] }}.</span>
-                                                            <span class="option-text">{{ $option['value'] }}</span>
+                                                            <span class="option-key fw-bold text-muted">{{ $key }}.</span>
+                                                            <span class="option-text">{{ $val }}</span>
                                                             @if($isSelected)
-                                                                <i class="fas fa-{{ $isCorrect ? 'check' : 'times' }}-circle ms-auto text-{{ $isCorrect ? 'success' : 'danger' }}"></i>
+                                                                <i class="fas fa-{{ $isOptionCorrect ? 'check' : 'times' }}-circle ms-auto text-{{ $isOptionCorrect ? 'success' : 'danger' }}"></i>
+                                                            @elseif($isOptionCorrect)
+                                                                <i class="fas fa-check-circle ms-auto text-success"></i>
                                                             @endif
                                                         </label>
                                                     @endforeach
                                                 </div>
                                             @elseif ($question->question_type === 'mcq_multi')
                                                 <div class="options-grid d-grid gap-2">
-                                                    @foreach ($question->options as $option)
+                                                    @foreach ($question->options as $index => $val)
                                                         @php
-                                                            $isSelected = is_array($studentAnswer) && in_array($option['key'], $studentAnswer);
+                                                            $key = is_numeric($index) ? chr(65 + (int)$index) : $index;
+                                                            $isSelected = is_array($studentAnswer) && in_array($key, $studentAnswer);
                                                             $correctArray = preg_split('/[,]| and /', trim(strtolower($question->correct_answer)));
-                                                            $isOptionCorrect = in_array(strtolower($option['key']), $correctArray);
+                                                            $isOptionCorrect = in_array(strtolower((string)$key), $correctArray);
                                                             
                                                             $bgClass = '';
                                                             if ($isSelected) {
                                                                 $bgClass = $isOptionCorrect ? 'bg-success-subtle border-success' : 'bg-danger-subtle border-danger';
+                                                            } elseif ($isOptionCorrect) {
+                                                                $bgClass = 'bg-success-subtle border-success opacity-75';
                                                             }
                                                         @endphp
                                                         <label class="option-label p-3 border rounded-3 d-flex align-items-center gap-3 {{ $bgClass }}">
                                                             <input type="checkbox" class="form-check-input" disabled {{ $isSelected ? 'checked' : '' }}>
-                                                            <span class="option-key fw-bold text-muted">{{ $option['key'] }}.</span>
-                                                            <span class="option-text">{{ $option['value'] }}</span>
+                                                            <span class="option-key fw-bold text-muted">{{ $key }}.</span>
+                                                            <span class="option-text">{{ $val }}</span>
                                                         </label>
                                                     @endforeach
                                                 </div>
@@ -196,52 +215,43 @@
             @endforeach
         </section>
     </main>
-
-    <!-- Footer -->
-    <footer class="test-footer bg-white border-top px-4 d-flex align-items-center justify-content-between">
-        <div class="footer-left d-flex align-items-center gap-4 overflow-hidden">
-            @foreach ($test->questionGroups as $g_index => $group)
-                <div class="nav-part d-flex align-items-center gap-2 {{ $g_index === 0 ? 'active' : '' }}" onclick="activatePart('{{ $group->id }}')">
-                    <span class="part-label fw-bold">Part {{ $g_index + 1 }}</span>
-                    <div class="part-questions d-flex gap-2">
-                        @foreach ($group->questions as $q)
-                            <a href="javascript:void(0)" 
-                               class="question-nav-link text-decoration-none {{ !empty($attempt->answers[$q->id]) ? 'text-success' : 'text-muted' }}" 
-                               onclick="scrollToQuestion('q-{{ $q->id }}')">
-                                {{ $q->question_number }}
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </footer>
 </div>
 
 <style>
     /* Premium Look */
     :root { --main-dark: #0d1624; }
-    body { background: #f8fafc; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
-    .test-header { height: 70px; background: white; z-index: 100; }
-    .test-resizer { width: 12px; background: #f1f5f9; cursor: col-resize; display: flex; align-items: center; justify-content: center; }
+    body { background: #f8fafc; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
+    .test-container { height: 100vh; display: flex; flex-direction: column; }
+    .test-header { height: 70px; background: white; z-index: 100; flex-shrink: 0; }
+    .test-main { flex: 1; display: flex; overflow: hidden; }
+    .test-resizer { width: 12px; background: #f1f5f9; cursor: col-resize; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .resizer-handle { background: #3b82f6; width: 4px; height: 30px; border-radius: 2px; }
     .test-passage, .test-questions { width: 50%; overflow-y: auto; scrollbar-width: thin; }
-    .test-footer { height: 60px; }
     .nav-part { cursor: pointer; opacity: 0.6; transition: 0.3s; padding: 5px 15px; border-radius: 20px; }
     .nav-part.active { opacity: 1; background: #f1f5f9; }
+    .nav-part-btn.active { background: #3b82f6 !important; color: white !important; border-color: #3b82f6 !important; }
     .option-label { transition: 0.2s; }
 </style>
 
 <script>
     function activatePart(groupId) {
-        document.querySelectorAll('.nav-part').forEach(p => p.classList.toggle('active', p.id === `nav-part-${groupId}`));
+        document.querySelectorAll('.nav-part-btn').forEach(b => b.classList.toggle('active', b.id === `header-nav-part-${groupId}`));
         document.querySelectorAll('.passage-group, .question-group').forEach(el => {
             el.classList.toggle('d-none', el.dataset.groupId != groupId && el.id != `passage-group-${groupId}`);
         });
     }
     function scrollToQuestion(id) {
         const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (el) {
+            // Find parent group and activate it
+            const group = el.closest('.question-group');
+            if (group) {
+                activatePart(group.dataset.groupId);
+            }
+            setTimeout(() => {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
     }
 </script>
 @endsection

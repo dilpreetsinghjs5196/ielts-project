@@ -29,6 +29,13 @@ class ResultController extends Controller
         return view('admin.results.show', compact('attempt'));
     }
 
+    public function review(TestAttempt $attempt)
+    {
+        $attempt->load(['student', 'test.questionGroups.questions', 'test.questionGroups.category']);
+        $test = $attempt->test;
+        return view('student.tests.review', compact('test', 'attempt'));
+    }
+
     public function destroy(TestAttempt $attempt)
     {
         $attempt->delete();

@@ -56,6 +56,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     // User Management
     Route::resource('students', StudentController::class);
     Route::resource('results', ResultController::class);
+    Route::get('results/{attempt}/review', [ResultController::class, 'review'])->name('results.review');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

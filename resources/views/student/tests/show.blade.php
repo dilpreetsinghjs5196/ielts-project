@@ -191,7 +191,10 @@
                                 @php $lastTitle = $question->title; @endphp
                             @endif
 
-                            <div class="question-item mb-4 pb-4 border-bottom {{ $isHidden ? 'd-none' : '' }}" id="q-{{ $question->id }}" data-q-id="{{ $question->id }}">
+                            <div class="question-item mb-4 pb-4 border-bottom {{ $isHidden ? 'd-none' : '' }}" 
+                                 id="q-{{ $question->id }}" 
+                                 data-q-id="{{ $question->id }}" 
+                                 data-q-type="{{ $question->question_type }}">
                                 <div class="d-flex gap-3">
                                     <div class="q-number-box">
                                         <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 32px; height: 32px; font-size: 0.85rem; flex-shrink: 0;">
@@ -593,8 +596,8 @@
     function collectAnswers() {
         const answers = {};
         
-        // 1. Collect from regular question items
-        document.querySelectorAll('.question-item:not(.d-none)').forEach(q => {
+        // Target ALL possible inputs, even in hidden parts
+        document.querySelectorAll('.question-item').forEach(q => {
             const qId = q.dataset.qId;
             const type = q.dataset.qType;
             
@@ -605,27 +608,30 @@
                 const checked = Array.from(q.querySelectorAll('input:checked')).map(i => i.value);
                 answers[qId] = checked;
             } else if (type === 'fill_blanks' || type === 'short_answer') {
-                const input = q.querySelector('input');
-                answers[qId] = input ? input.value : '';
+                // Check for either a single input or embedded smart-inputs
+                const smartInputs = q.querySelectorAll('.smart-q-input');
+                if (smartInputs.length > 0) {
+                    const vals = [];
+                    smartInputs.forEach(si => {
+                        if(si.value.trim() !== "") vals.push(si.value.trim());
+                    });
+                    answers[qId] = vals.join(', ');
+                } else {
+                    const input = q.querySelector('input[type="text"]');
+                    answers[qId] = input ? input.value : '';
+                }
             } else if (type === 'match_heading') {
-                const hidden = document.getElementById(`hidden_q_${qId}`);
+                const hidden = q.querySelector('input[type="hidden"]');
                 answers[qId] = hidden ? hidden.value : null;
             }
         });
 
-        // 2. Collect from smart inputs (can be multiple per Q-ID)
-        const smartAnswers = {};
+        // Also check for smart inputs that might not be inside a .question-item (if any exist in instructions)
         document.querySelectorAll('.smart-q-input').forEach(input => {
             const qId = input.dataset.qId;
-            const qNum = input.dataset.qNum;
-            if (!smartAnswers[qId]) smartAnswers[qId] = {};
-            smartAnswers[qId][qNum] = input.value;
-        });
-
-        // Merge smart answers into main answers (joining with commas or storing as object if preferred)
-        Object.entries(smartAnswers).forEach(([qId, vals]) => {
-            // Join all blank values. Filter out empties if you want, but better to keep positions
-            answers[qId] = Object.values(vals).join(', ');
+            if (!answers[qId]) {
+                answers[qId] = input.value;
+            }
         });
 
         return answers;
@@ -779,37 +785,6 @@
         zone.innerHTML = `<span class="text-muted small">Drag a heading here</span>`;
     }
 
-    function collectAnswers() {
-        const answers = {};
-        
-        // 1. Collect all Fill-in-the-blanks and Short Answers ([q] tags)
-        document.querySelectorAll('input[type="text"][data-q-id]').forEach(input => {
-            answers[input.dataset.qId] = input.value;
-        });
-
-        // 2. Collect MCQs and TFNG (Radios)
-        document.querySelectorAll('.question-item[data-q-type="mcq"], .question-item[data-q-type="tfng"]').forEach(q => {
-            const qId = q.dataset.qId;
-            const checked = q.querySelector('input:checked');
-            if (qId) answers[qId] = checked ? checked.value : null;
-        });
-
-        // 3. Collect Multi-MCQs (Checkboxes)
-        document.querySelectorAll('.question-item[data-q-type="mcq_multi"]').forEach(q => {
-            const qId = q.dataset.qId;
-            const checked = Array.from(q.querySelectorAll('input:checked')).map(i => i.value);
-            if (qId) answers[qId] = checked;
-        });
-
-        // 4. Collect Match Headings (Hidden Inputs)
-        document.querySelectorAll('input[id^="hidden_q_"]').forEach(input => {
-            const qId = input.id.replace('hidden_q_', '');
-            answers[qId] = input.value;
-        });
-
-        return answers;
-    }
-
     function submitTest() {
         if (confirm("Are you sure you want to finish and submit your answers?")) {
             const btn = document.querySelector('button[onclick="submitTest()"]');
@@ -817,9 +792,10 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
 
+            // Use the consolidated collectAnswers() defined above
             const answers = collectAnswers();
 
-            // Add CSRF token
+            // Store in a proper form and submit or use fetch
             fetch("{{ route('student.tests.submit', $test) }}", {
                 method: 'POST',
                 headers: {
@@ -831,15 +807,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    } else {
-                        window.location.href = "{{ route('student.dashboard') }}";
-                    }
+                    window.location.href = data.redirect || "{{ route('student.dashboard') }}";
                 } else {
                     btn.disabled = false;
                     btn.innerHTML = originalText;
-                    alert("Submission failed. Please try again.");
+                    alert("Submission failed: " + (data.message || "Please try again."));
                 }
             })
             .catch(error => {
