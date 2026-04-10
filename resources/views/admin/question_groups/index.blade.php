@@ -59,6 +59,7 @@
 
     @php
         $isDirectLevel = $levelId && in_array($levelId, $noModuleLevels);
+        $isWriting = $activeCategory->slug === 'writing';
     @endphp
 
     @if (!$testTypeId)
@@ -152,7 +153,7 @@
         <div class="row gx-4 gy-4">
             <div class="col-12 mb-2 d-flex justify-content-between align-items-center">
                 <h5 class="text-secondary mb-0"><a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId, 'level' => $levelId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> {{ $isDirectLevel ? 'Step 3' : 'Step 4' }}: Select Test</h5>
-                <a href="{{ route('admin.tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'module_set_id' => $moduleSetId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary d-flex align-items-center shadow-sm" style="border-radius: 10px;">
+                <a href="{{ route($isWriting ? 'admin.writing-tests.create' : 'admin.tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'module_set_id' => $moduleSetId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary d-flex align-items-center shadow-sm" style="border-radius: 10px;">
                     <i class="fas fa-plus me-2"></i> Add Test
                 </a>
             </div>
@@ -164,7 +165,13 @@
                         </div>
                         <div class="card-body p-4 text-center">
                             <h5 class="fw-bold text-dark mb-1">{{ $test_item->name }}</h5>
-                            <span class="badge bg-light text-primary mb-3">{{ $test_item->questionGroups->count() }} Segments</span>
+                            <span class="badge bg-light text-primary mb-3">
+                                @if($isWriting)
+                                    {{ $test_item->tasks->count() }} Tasks
+                                @else
+                                    {{ $test_item->questionGroups->count() }} Segments
+                                @endif
+                            </span>
                             <div class="mt-2">
                                 <a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId, 'level' => $levelId, 'module_set' => $moduleSetId, 'test' => $test_item->id]) }}" class="btn btn-outline-primary btn-sm w-100 py-2 fw-bold" style="border-radius: 10px;">
                                     View Mock Questions <i class="fas fa-arrow-right ms-1"></i>
@@ -183,7 +190,7 @@
                                 ? 'Add mock tests to this level to begin adding questions.' 
                                 : 'Add mock tests to this portfolio to begin adding questions.' }}
                         </p>
-                        <a href="{{ route('admin.tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'module_set_id' => $moduleSetId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary px-4 py-2" style="border-radius: 10px;">+ Create First Test</a>
+                        <a href="{{ route($isWriting ? 'admin.writing-tests.create' : 'admin.tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'module_set_id' => $moduleSetId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary px-4 py-2" style="border-radius: 10px;">+ Create First Test</a>
                     </div>
                 </div>
             @endforelse

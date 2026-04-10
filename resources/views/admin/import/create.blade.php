@@ -9,6 +9,18 @@
         </div>
     </div>
 
+    @if (session('success'))
+        <div class="alert alert-success border-0 shadow-sm mb-4" style="border-radius: 10px;">
+            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger border-0 shadow-sm mb-4" style="border-radius: 10px;">
+            <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+        </div>
+    @endif
+
     <div class="card border-0 shadow-sm" style="border-radius: 15px;">
         <div class="card-body p-5">
             <form action="{{ route('admin.import.store') }}" method="POST" enctype="multipart/form-data">
@@ -16,7 +28,7 @@
                 <div class="row g-4">
                     <div class="col-md-12">
                         <label for="test_name" class="form-label fw-bold">Test Name</label>
-                        <input type="text" name="test_name" id="test_name" class="form-control" placeholder="e.g. Cambridge 15 Test 1" required>
+                        <input type="text" name="test_name" id="test_name" class="form-control" placeholder="e.g. Cambridge 15 Test 1">
                     </div>
 
                     <div class="col-md-4">

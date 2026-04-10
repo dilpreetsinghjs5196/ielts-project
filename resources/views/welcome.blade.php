@@ -827,7 +827,6 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -1058,7 +1057,7 @@
                     container.innerHTML = `
                         <div class="list-group shadow-sm" style="border-radius:14px;overflow:hidden;">
                             ${tests.map((test, i) => {
-                                const testUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id);
+                                const testUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id) + (test.category === 'writing' ? '?category=writing' : '');
                                 return `
                                     <a href="${testUrl}"
                                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4"

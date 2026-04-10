@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Level;
 use App\Models\TestType;
 use App\Models\ModuleSet;
+use App\Models\WritingTest;
 use Illuminate\Http\Request;
 
 class TestController extends Controller
@@ -71,8 +72,33 @@ class TestController extends Controller
         }
 
         $categories = Category::withCount('tests')->get();
+        $writingCategory = Category::where('slug', 'writing')->first();
         
-        return view('admin.tests.index', compact('levels', 'categories', 'selectedCategory', 'selectedTestType', 'selectedModuleSet', 'selectedLevel', 'testTypes', 'noModuleLevels'));
+        foreach ($categories as $cat) {
+            if ($writingCategory && $cat->id === $writingCategory->id) {
+                $cat->tests_count = $cat->tests_count + \App\Models\WritingTest::count();
+            }
+        }
+        
+        // Handle Writing Tests collection for the view
+        $writingTests = collect();
+        if ($selectedCategory && $selectedCategory->slug === 'writing') {
+            if ($selectedLevel) {
+                $writingTests = WritingTest::where('level_id', $selectedLevel->id)
+                    ->where('test_type_id', $effectiveTestTypeId)
+                    ->withCount('tasks')
+                    ->latest()
+                    ->get();
+            } elseif ($selectedModuleSet) {
+                // If writing tests ever use module sets
+                $writingTests = WritingTest::where('test_type_id', $selectedModuleSet->test_type_id)
+                    ->withCount('tasks')
+                    ->latest()
+                    ->get();
+            }
+        }
+        
+        return view('admin.tests.index', compact('levels', 'categories', 'selectedCategory', 'selectedTestType', 'selectedModuleSet', 'selectedLevel', 'testTypes', 'noModuleLevels', 'writingTests'));
     }
 
     public function create(Request $request)

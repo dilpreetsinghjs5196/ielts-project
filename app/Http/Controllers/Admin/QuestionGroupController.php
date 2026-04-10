@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\TestType;
 use App\Models\Level;
 use App\Models\Test;
+use App\Models\WritingTest;
 use Illuminate\Http\Request;
 
 class QuestionGroupController extends Controller
@@ -44,14 +45,29 @@ class QuestionGroupController extends Controller
             : collect();
 
         $tests = collect();
-        if ($moduleSetId) {
-            $tests = Test::where('module_set_id', $moduleSetId)->get();
-        } elseif ($levelId && $testTypeId) {
-            // Fetch directly by level, category and type for levels without module system
-            $tests = Test::where('level_id', $levelId)
-                ->where('category_id', $activeCategory->id)
-                ->where('test_type_id', $testTypeId)
-                ->get();
+        $isWriting = $activeCategory->slug === 'writing';
+
+        if ($isWriting) {
+            if ($levelId && $testTypeId) {
+                $tests = WritingTest::where('level_id', $levelId)
+                    ->where('test_type_id', $testTypeId)
+                    ->get();
+            }
+        } else {
+            if ($moduleSetId) {
+                $tests = Test::where('module_set_id', $moduleSetId)->get();
+            } elseif ($levelId && $testTypeId) {
+                // Fetch directly by level, category and type for levels without module system
+                $tests = Test::where('level_id', $levelId)
+                    ->where('category_id', $activeCategory->id)
+                    ->where('test_type_id', $testTypeId)
+                    ->get();
+            }
+        }
+
+        // REDIRECT IF WRITING TEST SELECTED
+        if ($isWriting && $testId) {
+            return redirect()->route('admin.writing-tests.edit', $testId);
         }
 
         // Final groups list

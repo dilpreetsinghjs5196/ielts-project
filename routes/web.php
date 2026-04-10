@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\ModuleSetController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\QuestionGroupController;
 use App\Http\Controllers\Admin\ResultController;
+use App\Http\Controllers\Admin\WritingTestController;
+use App\Http\Controllers\Admin\WritingTaskController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 
 // Public frontend API routes
@@ -46,6 +48,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     Route::resource('levels', LevelController::class);
     Route::resource('module-sets', ModuleSetController::class);
     Route::resource('tests', TestController::class);
+    Route::resource('writing-tests', WritingTestController::class);
+    Route::resource('writing-tasks', WritingTaskController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('question-groups', QuestionGroupController::class);
     
@@ -99,5 +103,6 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
     Route::post('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submit'])->name('tests.submit');
     Route::post('/tests/{test}/save-progress', [\App\Http\Controllers\Student\MockTestController::class, 'saveProgress'])->name('tests.save-progress');
     Route::get('/tests/{test}/restart', [\App\Http\Controllers\Student\MockTestController::class, 'restart'])->name('tests.restart');
+    Route::post('/writing-tests/{id}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submitWriting'])->name('writing-tests.submit');
 });
 

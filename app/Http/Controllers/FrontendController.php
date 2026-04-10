@@ -64,7 +64,30 @@ class FrontendController extends Controller
     {
         $moduleSetId = $request->get('module_set_id');
         $studentId   = auth('student')->id();
+        $category    = Category::where('slug', $request->get('category'))->first();
+        $testType    = TestType::where('name', $request->get('test_type'))->first();
+        $levelId     = $request->get('level_id');
 
+        // SPECIAL HANDLING FOR WRITING
+        if ($category && $category->slug === 'writing') {
+            $query = \App\Models\WritingTest::where('status', 'active');
+            if ($levelId) $query->where('level_id', $levelId);
+            if ($testType) $query->where('test_type_id', $testType->id);
+            
+            $tests = $query->get()->map(function($test) use ($studentId) {
+                // For now, no attempts table for writing implemented yet? 
+                // We'll return 'not_started' always for now as requested
+                return [
+                    'id' => $test->id,
+                    'name' => $test->name,
+                    'status' => 'not_started',
+                    'category' => 'writing'
+                ];
+            });
+            return response()->json($tests);
+        }
+
+        // REGULAR HANDLING (Reading/Listening)
         $query = Test::where('status', 'active')
             ->with(['attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
@@ -73,11 +96,6 @@ class FrontendController extends Controller
         if ($moduleSetId) {
             $query->where('module_set_id', $moduleSetId);
         } else {
-            // Fetch directly by level, category, and type
-            $levelId  = $request->get('level_id');
-            $testType = TestType::where('name', $request->get('test_type'))->first();
-            $category = Category::where('slug', $request->get('category'))->first();
-
             if ($levelId) $query->where('level_id', $levelId);
             if ($testType) $query->where('test_type_id', $testType->id);
             if ($category) $query->where('category_id', $category->id);
@@ -89,7 +107,8 @@ class FrontendController extends Controller
                 return [
                     'id' => $test->id,
                     'name' => $test->name,
-                    'status' => $attempt ? $attempt->status : 'not_started'
+                    'status' => $attempt ? $attempt->status : 'not_started',
+                    'category' => 'standard'
                 ];
             });
 

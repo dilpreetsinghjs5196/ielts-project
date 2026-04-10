@@ -227,7 +227,12 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $testsToShow = $selectedModuleSet ? $selectedModuleSet->tests : $selectedLevel->tests;
+                                        $isWriting = $selectedCategory && $selectedCategory->slug === 'writing';
+                                        if ($isWriting) {
+                                            $testsToShow = $writingTests;
+                                        } else {
+                                            $testsToShow = $selectedModuleSet ? $selectedModuleSet->tests : $selectedLevel->tests;
+                                        }
                                     @endphp
                                     @forelse ($testsToShow as $test)
                                     <tr>
@@ -236,7 +241,11 @@
                                             <small class="text-muted">ID: #{{ $test->id }}</small>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 rounded-pill">{{ $test->questionGroups->count() }} Segments</span>
+                                            @if($isWriting)
+                                                <span class="badge bg-info bg-opacity-10 text-info px-3 rounded-pill">{{ $test->tasks_count }} Tasks</span>
+                                            @else
+                                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 rounded-pill">{{ $test->questionGroups->count() }} Segments</span>
+                                            @endif
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-{{ $test->status == 'active' ? 'success' : 'secondary' }} rounded-pill px-3 py-1 small">
@@ -249,10 +258,10 @@
                                                     <i class="fa fa-ellipsis-v"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
-                                                    <li><a class="dropdown-item py-2" href="{{ route('admin.tests.edit', $test) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit</a></li>
+                                                    <li><a class="dropdown-item py-2" href="{{ route($isWriting ? 'admin.writing-tests.edit' : 'admin.tests.edit', $test) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit</a></li>
                                                     <li><hr class="dropdown-divider"></li>
                                                     <li>
-                                                        <form action="{{ route('admin.tests.destroy', $test) }}" method="POST" onsubmit="return confirm('Delete this test?');">
+                                                        <form action="{{ route($isWriting ? 'admin.writing-tests.destroy' : 'admin.tests.destroy', $test) }}" method="POST" onsubmit="return confirm('Delete this test?');">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="dropdown-item py-2 text-danger"><i class="fas fa-trash-alt me-2"></i> Delete</button>

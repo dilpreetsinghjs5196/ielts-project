@@ -29,9 +29,21 @@ class MockTestController extends Controller
         return view('student.tests.index', compact('tests'));
     }
 
-    public function show(Test $test)
+    public function show(Request $request, $id)
     {
         $student = auth('student')->user();
+        $categorySlug = $request->get('category');
+
+        // IF CATEGORY IS WRITING, LOAD FROM WRITING_TESTS
+        if ($categorySlug === 'writing') {
+            $test = \App\Models\WritingTest::with('tasks')->findOrFail($id);
+            
+            // For now, we will create a direct view for writing
+            return view('student.writing.show', compact('test'));
+        }
+
+        // REGULAR TEST HANDLING
+        $test = Test::findOrFail($id);
         
         // Check for completed attempt first
         $completedAttempt = \App\Models\TestAttempt::where('student_id', $student->id)
@@ -98,6 +110,28 @@ class MockTestController extends Controller
             'message' => 'Test submitted successfully!',
             'score' => $score ?? 0,
             'redirect' => route('student.tests.thank-you', $test)
+        ]);
+    }
+
+    public function submitWriting(Request $request, $id)
+    {
+        $student = auth('student')->user();
+        $test = \App\Models\WritingTest::findOrFail($id);
+        
+        $answers = $request->answers; // JSON/Array of part_number => text
+
+        $attempt = \App\Models\WritingAttempt::create([
+            'student_id' => $student->id,
+            'writing_test_id' => $test->id,
+            'answers' => $answers,
+            'status' => 'completed',
+            'completed_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Writing test submitted successfully!',
+            'redirect' => route('student.dashboard')
         ]);
     }
 
