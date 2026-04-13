@@ -71,6 +71,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
 Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(function () {
     Route::get('/dashboard', function () {
         $studentId = auth('student')->id();
+        
         $tests = \App\Models\Test::whereHas('attempts', function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             })
@@ -78,13 +79,21 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
                 $q->where('student_id', $studentId);
             }])->get();
             
+        $writingTests = \App\Models\WritingTest::whereHas('attempts', function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            })
+            ->with(['attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])->get();
+            
         $stats = [
-            'assigned' => $tests->count(),
-            'completed' => $tests->filter(fn($t) => $t->attempts->where('status', 'completed')->count() > 0)->count(),
+            'assigned' => $tests->count() + $writingTests->count(),
+            'completed' => $tests->filter(fn($t) => $t->attempts->where('status', 'completed')->count() > 0)->count() + 
+                         $writingTests->filter(fn($t) => $t->attempts->where('status', 'completed')->count() > 0)->count(),
             'average' => $tests->flatMap(fn($t) => $t->attempts->where('status', 'completed'))->avg('score') ?? 0
         ];
         
-        return view('student.dashboard', compact('tests', 'stats'));
+        return view('student.dashboard', compact('tests', 'writingTests', 'stats'));
     })->name('dashboard');
 
     Route::get('/profile', function () {

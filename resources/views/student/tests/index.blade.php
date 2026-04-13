@@ -29,22 +29,40 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($tests as $test)
+                                @php
+                                    $allTests = $tests->map(function($t) { 
+                                        $t->view_category = 'reading_listening'; 
+                                        return $t; 
+                                    })->concat($writingTests->map(function($t) { 
+                                        $t->view_category = 'writing'; 
+                                        return $t; 
+                                    }));
+                                @endphp
+
+                                @foreach($allTests as $test)
                                     @php $attempt = $test->attempts->first(); @endphp
                                     <tr>
                                         <td class="px-4 py-4">
                                             <div class="fw-bold text-dark">{{ $test->name }}</div>
                                         </td>
                                         <td class="py-4">
-                                            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">{{ $test->category->name ?? 'N/A' }}</span>
+                                            <span class="badge bg-{{ $test->view_category === 'writing' ? 'info' : 'primary' }}-subtle text-{{ $test->view_category === 'writing' ? 'info' : 'primary' }} px-3 py-2 rounded-pill">
+                                                {{ $test->view_category === 'writing' ? 'Writing' : ($test->category->name ?? 'N/A') }}
+                                            </span>
                                         </td>
                                         <td class="py-4 text-muted small">
-                                            {{ $test->moduleSet->name ?? 'N/A' }}
+                                            {{ $test->moduleSet->name ?? ($test->level->name ?? 'N/A') }}
                                         </td>
                                         <td class="py-4 fw-bold">
-                                            @if($attempt && $attempt->status === 'completed')
-                                                <span class="text-primary">{{ $attempt->score ?? 0 }}</span>
-                                                <small class="text-muted">/ {{ $test->questionGroups->sum(fn($g) => $g->questions->sum('marks')) }}</small>
+                                            @if($attempt && $attempt->status === 'completed' || ($attempt->status ?? '') === 'graded')
+                                                @if($test->view_category === 'writing')
+                                                    <span class="text-primary">{{ $attempt->score ?? 'Pending' }}</span>
+                                                    @if($attempt->score) <small class="text-muted">/ 9.0</small> @endif
+                                                @else
+                                                    <span class="text-primary">{{ $attempt->score ?? 0 }}</span>
+                                                    @php $totalMarks = $test->questionGroups->sum(fn($g) => $g->questions->sum('marks')); @endphp
+                                                    <small class="text-muted">/ {{ $totalMarks > 0 ? $totalMarks : 40 }}</small>
+                                                @endif
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
@@ -54,18 +72,24 @@
                                                 <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill">Not Started</span>
                                             @elseif($attempt->status === 'pending')
                                                 <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">In Progress</span>
+                                            @elseif($test->view_category === 'writing' && $attempt->status === 'completed')
+                                                <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill">Submitted</span>
                                             @else
                                                 <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Completed</span>
                                             @endif
                                         </td>
                                         <td class="py-4 text-center">
                                             @if(!$attempt)
-                                                <a href="{{ route('student.tests.show', $test) }}" class="btn btn-sm btn-primary rounded-pill px-4">Take Test</a>
+                                                <a href="{{ route('student.tests.show', $test->id) }}{{ $test->view_category === 'writing' ? '?category=writing' : '' }}" class="btn btn-sm btn-primary rounded-pill px-4">Take Test</a>
                                             @elseif($attempt->status === 'pending')
                                                 <div class="d-flex gap-2 justify-content-center">
-                                                    <a href="{{ route('student.tests.show', $test) }}" class="btn btn-sm btn-info text-white rounded-pill px-3">Resume</a>
-                                                    <a href="{{ route('student.tests.restart', $test) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
+                                                    <a href="{{ route('student.tests.show', $test->id) }}{{ $test->view_category === 'writing' ? '?category=writing' : '' }}" class="btn btn-sm btn-info text-white rounded-pill px-3">Resume</a>
+                                                    @if($test->view_category !== 'writing')
+                                                        <a href="{{ route('student.tests.restart', $test) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
+                                                    @endif
                                                 </div>
+                                            @elseif($test->view_category === 'writing')
+                                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" disabled>Awaiting Grade</button>
                                             @else
                                                 <a href="{{ route('student.tests.review', $test) }}" class="btn btn-sm btn-outline-success rounded-pill px-4">Review Result</a>
                                             @endif

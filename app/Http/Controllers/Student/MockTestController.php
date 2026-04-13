@@ -19,14 +19,24 @@ class MockTestController extends Controller
     public function index()
     {
         $studentId = auth('student')->id();
+        
+        // Regular Tests (Listening/Reading/Speaking)
         $tests = Test::whereHas('attempts', function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             })
             ->with(['moduleSet', 'category', 'questionGroups.questions', 'attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
+
+        // Writing Tests
+        $writingTests = \App\Models\WritingTest::whereHas('attempts', function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            })
+            ->with(['attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])->get();
             
-        return view('student.tests.index', compact('tests'));
+        return view('student.tests.index', compact('tests', 'writingTests'));
     }
 
     public function show(Request $request, $id)

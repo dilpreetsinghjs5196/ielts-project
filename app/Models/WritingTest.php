@@ -25,4 +25,9 @@ class WritingTest extends Model
     {
         return $this->belongsTo(Level::class);
     }
+
+    public function attempts()
+    {
+        return $this->hasMany(WritingAttempt::class);
+    }
 }

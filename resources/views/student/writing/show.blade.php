@@ -219,6 +219,58 @@
             border-top: 1px solid #ddd;
             margin: 20px 0;
         }
+
+        /* --- Success Popup --- */
+        #submission-popup {
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.85); 
+            z-index: 10000; 
+            align-items: center; 
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .popup-content {
+            background: white; 
+            padding: 40px; 
+            border-radius: 16px; 
+            text-align: center; 
+            max-width: 450px; 
+            width: 90%; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .popup-icon {
+            color: #10b981; 
+            font-size: 60px; 
+            margin-bottom: 20px;
+        }
+        .btn-group {
+            display: flex; 
+            gap: 15px; 
+            margin-top: 30px;
+        }
+        .popup-btn {
+            flex: 1; 
+            padding: 14px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        .popup-btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn-home { background: #0d1624; color: white; }
+        .btn-admin { background: #e31837; color: white; }
     </style>
 </head>
 <body>
@@ -294,6 +346,21 @@
         </div>
     </footer>
 
+    <!-- Submission Success Popup -->
+    <div id="submission-popup">
+        <div class="popup-content">
+            <div class="popup-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 style="margin-bottom: 12px; font-weight: 800; color: #111;">Test Submitted!</h2>
+            <p style="color: #666; font-size: 1.1rem; line-height: 1.6;">Your writing test has been submitted successfully. What would you like to do next?</p>
+            <div class="btn-group">
+                <a href="/" class="popup-btn btn-home">Home Page</a>
+                <a href="{{ route('login') }}" class="popup-btn btn-admin">Admin Panel</a>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentTask = 1;
         const totalTasks = {{ $test->tasks->count() }};
@@ -344,7 +411,7 @@
             document.querySelector('.btn-check').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             document.querySelector('.btn-check').disabled = true;
 
-            fetch("{{ route('writing-tests.submit', $test->id) }}", {
+            fetch("{{ route('student.writing-tests.submit', $test->id) }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -356,8 +423,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
-                    window.location.href = data.redirect;
+                    // Show success popup
+                    document.getElementById('submission-popup').style.display = 'flex';
                 } else {
                     alert("Submission failed. Please try again.");
                 }
