@@ -12,6 +12,10 @@ use App\Models\WritingTask;
 use App\Models\QuestionGroup;
 use App\Models\Question;
 use App\Models\Category;
+use App\Models\SpeakingTest;
+use App\Models\SpeakingPart;
+use App\Models\SpeakingQuestion;
+use App\Services\SpeakingParserService;
 use App\Models\Level;
 use App\Models\TestType;
 use PhpOffice\PhpWord\IOFactory;
@@ -21,11 +25,13 @@ class IeltsImportController extends Controller
 {
     protected $parser;
     protected $writingParser;
+    protected $speakingParser;
 
-    public function __construct(IeltsParserService $parser, WritingParserService $writingParser)
+    public function __construct(IeltsParserService $parser, WritingParserService $writingParser, SpeakingParserService $speakingParser)
     {
         $this->parser = $parser;
         $this->writingParser = $writingParser;
+        $this->speakingParser = $speakingParser;
     }
 
     public function create()
@@ -65,6 +71,11 @@ class IeltsImportController extends Controller
             // HANDLE WRITING CATEGORY
             if ($activeCategory->slug === 'writing') {
                 return $this->handleWritingImport($request, $text, $testName);
+            }
+
+            // HANDLE SPEAKING CATEGORY
+            if ($activeCategory->slug === 'speaking') {
+                return $this->handleSpeakingImport($request, $text, $testName);
             }
 
             // HANDLE READING/LISTENING
@@ -136,6 +147,37 @@ class IeltsImportController extends Controller
 
         return redirect()->route('admin.writing-tests.edit', $writingTest->id)
             ->with('success', "Writing Test '{$testName}' imported successfully! You can now review the tasks.");
+    }
+
+    protected function handleSpeakingImport($request, $text, $testName)
+    {
+        $parsedSegments = $this->speakingParser->parseText($text);
+        
+        $speakingTest = SpeakingTest::create([
+            'name' => $testName,
+            'level_id' => $request->level_id,
+            'test_type_id' => $request->test_type_id,
+            'status' => 'inactive',
+        ]);
+
+        foreach ($parsedSegments as $index => $segmentData) {
+            $part = SpeakingPart::create([
+                'speaking_test_id' => $speakingTest->id,
+                'part_number' => $index + 1,
+                'title' => $segmentData['title'],
+                'passage' => $segmentData['passage'],
+            ]);
+
+            foreach ($segmentData['questions'] as $qData) {
+                SpeakingQuestion::create([
+                    'speaking_part_id' => $part->id,
+                    'question_text' => $qData['body'],
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.speaking-tests.edit', $speakingTest->id)
+            ->with('success', "Speaking Test '{$testName}' imported successfully into new dedicated tables!");
     }
 
     protected function extractText($file)

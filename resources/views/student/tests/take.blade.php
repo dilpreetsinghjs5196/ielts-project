@@ -259,7 +259,7 @@
                                         </div>
                                         <h5 class="fw-bold mb-1">${test.name}</h5>
                                         <p class="text-muted small mb-3">Standard IELTS Format</p>
-                                        <button onclick="handleStart('${test.id}', '${test.status}')" class="btn btn-primary w-100 rounded-pill py-2" ${test.status === 'completed' ? 'disabled' : ''}>
+                                        <button onclick="handleStart('${test.id}', '${test.status}', '${test.category || ''}')" class="btn btn-primary w-100 rounded-pill py-2" ${test.status === 'completed' ? 'disabled' : ''}>
                                             ${buttonText} <i class="fas ${test.status === 'pending' ? 'fa-redo' : 'fa-play'} ms-2"></i>
                                         </button>
                                     </div>
@@ -272,9 +272,14 @@
             });
     }
 
-    function handleStart(testId, status) {
-        const showRoute = "{{ route('student.tests.show', ':id') }}".replace(':id', testId);
-        const restartRoute = "{{ route('student.tests.restart', ':id') }}".replace(':id', testId);
+    function handleStart(testId, status, categorySlug) {
+        let showRoute = "{{ route('student.tests.show', ':id') }}".replace(':id', testId);
+        let restartRoute = "{{ route('student.tests.restart', ':id') }}".replace(':id', testId);
+
+        if (categorySlug) {
+            showRoute += `?category=${categorySlug}`;
+            restartRoute += `?category=${categorySlug}`;
+        }
 
         if (status === 'pending') {
             if (confirm("You have a test in progress. \n\nOK -> Continue where you left off \nCancel -> Restart from the beginning")) {

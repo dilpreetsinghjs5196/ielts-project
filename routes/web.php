@@ -50,6 +50,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     Route::resource('tests', TestController::class);
     Route::resource('writing-tests', WritingTestController::class);
     Route::resource('writing-tasks', WritingTaskController::class);
+    Route::resource('speaking-tests', App\Http\Controllers\Admin\SpeakingTestController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('question-groups', QuestionGroupController::class);
     

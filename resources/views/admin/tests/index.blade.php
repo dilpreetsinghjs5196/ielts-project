@@ -228,8 +228,11 @@
                                 <tbody>
                                     @php
                                         $isWriting = $selectedCategory && $selectedCategory->slug === 'writing';
+                                        $isSpeaking = $selectedCategory && $selectedCategory->slug === 'speaking';
                                         if ($isWriting) {
                                             $testsToShow = $writingTests;
+                                        } elseif ($isSpeaking) {
+                                            $testsToShow = $speakingTests;
                                         } else {
                                             $testsToShow = $selectedModuleSet ? $selectedModuleSet->tests : $selectedLevel->tests;
                                         }
@@ -243,6 +246,8 @@
                                         <td class="text-center">
                                             @if($isWriting)
                                                 <span class="badge bg-info bg-opacity-10 text-info px-3 rounded-pill">{{ $test->tasks_count }} Tasks</span>
+                                            @elseif($isSpeaking)
+                                                <span class="badge bg-warning bg-opacity-10 text-warning px-3 rounded-pill">{{ $test->parts_count }} Parts</span>
                                             @else
                                                 <span class="badge bg-primary bg-opacity-10 text-primary px-3 rounded-pill">{{ $test->questionGroups->count() }} Segments</span>
                                             @endif
@@ -258,10 +263,17 @@
                                                     <i class="fa fa-ellipsis-v"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
-                                                    <li><a class="dropdown-item py-2" href="{{ route($isWriting ? 'admin.writing-tests.edit' : 'admin.tests.edit', $test) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit</a></li>
+                                                    <li>
+                                                        @php
+                                                            $editRoute = 'admin.tests.edit';
+                                                            if ($isWriting) $editRoute = 'admin.writing-tests.edit';
+                                                            if ($isSpeaking) $editRoute = 'admin.speaking-tests.edit';
+                                                        @endphp
+                                                        <a class="dropdown-item py-2" href="{{ route($editRoute, $test) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit</a>
+                                                    </li>
                                                     <li><hr class="dropdown-divider"></li>
                                                     <li>
-                                                        <form action="{{ route($isWriting ? 'admin.writing-tests.destroy' : 'admin.tests.destroy', $test) }}" method="POST" onsubmit="return confirm('Delete this test?');">
+                                                        <form action="{{ route($isWriting ? 'admin.writing-tests.destroy' : ($isSpeaking ? 'admin.speaking-tests.destroy' : 'admin.tests.destroy'), $test) }}" method="POST" onsubmit="return confirm('Delete this test?');">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="dropdown-item py-2 text-danger"><i class="fas fa-trash-alt me-2"></i> Delete</button>

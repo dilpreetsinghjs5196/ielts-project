@@ -1041,6 +1041,8 @@
                 url += `level_id=${currentLevelId}&category=${currentModule}&test_type=${currentType}`;
             }
 
+            const isStudentLoggedIn = {{ auth('student')->check() ? 'true' : 'false' }};
+
             fetch(url)
                 .then(r => r.json())
                 .then(tests => {
@@ -1057,7 +1059,10 @@
                     container.innerHTML = `
                         <div class="list-group shadow-sm" style="border-radius:14px;overflow:hidden;">
                             ${tests.map((test, i) => {
-                                const testUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id) + (test.category === 'writing' ? '?category=writing' : '');
+                                const targetUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id) + (['writing', 'speaking'].includes(test.category) ? '?category=' + test.category : '');
+                                const testUrl = targetUrl; // Leave the URL as the target test to trigger `url.intended`
+                                const btnText = isStudentLoggedIn ? `Start <i class="fas fa-arrow-right ms-1"></i>` : `Login to Start <i class="fas fa-lock ms-1"></i>`;
+                                
                                 return `
                                     <a href="${testUrl}"
                                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4"
@@ -1070,7 +1075,7 @@
                                             <span class="fw-semibold" style="color:#0d1624;">${test.name}</span>
                                         </div>
                                         <span class="btn btn-sm btn-warning px-3" style="border-radius:50px;font-size:0.78rem;font-weight:600;">
-                                            Start <i class="fas fa-arrow-right ms-1"></i>
+                                            ${btnText}
                                         </span>
                                     </a>
                                 `;

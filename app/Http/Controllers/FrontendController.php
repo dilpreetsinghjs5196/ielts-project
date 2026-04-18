@@ -75,13 +75,28 @@ class FrontendController extends Controller
             if ($testType) $query->where('test_type_id', $testType->id);
             
             $tests = $query->get()->map(function($test) use ($studentId) {
-                // For now, no attempts table for writing implemented yet? 
-                // We'll return 'not_started' always for now as requested
                 return [
                     'id' => $test->id,
                     'name' => $test->name,
                     'status' => 'not_started',
                     'category' => 'writing'
+                ];
+            });
+            return response()->json($tests);
+        }
+
+        // SPECIAL HANDLING FOR SPEAKING
+        if ($category && $category->slug === 'speaking') {
+            $query = \App\Models\SpeakingTest::where('status', 'active');
+            if ($levelId) $query->where('level_id', $levelId);
+            if ($testType) $query->where('test_type_id', $testType->id);
+            
+            $tests = $query->get()->map(function($test) use ($studentId) {
+                return [
+                    'id' => $test->id,
+                    'name' => $test->name,
+                    'status' => 'not_started',
+                    'category' => 'speaking'
                 ];
             });
             return response()->json($tests);

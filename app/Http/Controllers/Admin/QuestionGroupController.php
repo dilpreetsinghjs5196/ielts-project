@@ -16,6 +16,12 @@ class QuestionGroupController extends Controller
     public function index(Request $request)
     {
         $categorySlug = $request->query('category', 'listening');
+        
+        // REDIRECT SPEAKING FULLY TO TESTS INDEX
+        if ($categorySlug === 'speaking') {
+            return redirect()->route('admin.tests.index', ['category' => 'speaking']);
+        }
+        
         $activeCategory = Category::where('slug', $categorySlug)->firstOrFail();
         
         $testTypeId = $request->query('test_type');

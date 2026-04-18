@@ -9,6 +9,7 @@ use App\Models\Level;
 use App\Models\TestType;
 use App\Models\ModuleSet;
 use App\Models\WritingTest;
+use App\Models\SpeakingTest;
 use Illuminate\Http\Request;
 
 class TestController extends Controller
@@ -73,10 +74,14 @@ class TestController extends Controller
 
         $categories = Category::withCount('tests')->get();
         $writingCategory = Category::where('slug', 'writing')->first();
+        $speakingCategory = Category::where('slug', 'speaking')->first();
         
         foreach ($categories as $cat) {
             if ($writingCategory && $cat->id === $writingCategory->id) {
                 $cat->tests_count = $cat->tests_count + \App\Models\WritingTest::count();
+            }
+            if ($speakingCategory && $cat->id === $speakingCategory->id) {
+                $cat->tests_count = $cat->tests_count + \App\Models\SpeakingTest::count();
             }
         }
         
@@ -97,8 +102,21 @@ class TestController extends Controller
                     ->get();
             }
         }
+
         
-        return view('admin.tests.index', compact('levels', 'categories', 'selectedCategory', 'selectedTestType', 'selectedModuleSet', 'selectedLevel', 'testTypes', 'noModuleLevels', 'writingTests'));
+        // Handle Speaking Tests collection for the view
+        $speakingTests = collect();
+        if ($selectedCategory && $selectedCategory->slug === 'speaking') {
+            if ($selectedLevel) {
+                $speakingTests = SpeakingTest::where('level_id', $selectedLevel->id)
+                    ->where('test_type_id', $effectiveTestTypeId)
+                    ->withCount('parts')
+                    ->latest()
+                    ->get();
+            }
+        }
+        
+        return view('admin.tests.index', compact('levels', 'categories', 'selectedCategory', 'selectedTestType', 'selectedModuleSet', 'selectedLevel', 'testTypes', 'noModuleLevels', 'writingTests', 'speakingTests'));
     }
 
     public function create(Request $request)

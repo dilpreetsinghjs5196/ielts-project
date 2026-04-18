@@ -36,7 +36,10 @@
                                     })->concat($writingTests->map(function($t) { 
                                         $t->view_category = 'writing'; 
                                         return $t; 
-                                    }));
+                                    }))->concat(isset($speakingTests) ? $speakingTests->map(function($t) { 
+                                        $t->view_category = 'speaking'; 
+                                        return $t; 
+                                    }) : collect());
                                 @endphp
 
                                 @foreach($allTests as $test)
@@ -46,8 +49,8 @@
                                             <div class="fw-bold text-dark">{{ $test->name }}</div>
                                         </td>
                                         <td class="py-4">
-                                            <span class="badge bg-{{ $test->view_category === 'writing' ? 'info' : 'primary' }}-subtle text-{{ $test->view_category === 'writing' ? 'info' : 'primary' }} px-3 py-2 rounded-pill">
-                                                {{ $test->view_category === 'writing' ? 'Writing' : ($test->category->name ?? 'N/A') }}
+                                            <span class="badge bg-{{ in_array($test->view_category, ['writing', 'speaking']) ? 'info' : 'primary' }}-subtle text-{{ in_array($test->view_category, ['writing', 'speaking']) ? 'info' : 'primary' }} px-3 py-2 rounded-pill">
+                                                {{ ucfirst($test->view_category === 'reading_listening' ? ($test->category->name ?? 'N/A') : $test->view_category) }}
                                             </span>
                                         </td>
                                         <td class="py-4 text-muted small">
@@ -55,7 +58,7 @@
                                         </td>
                                         <td class="py-4 fw-bold">
                                             @if($attempt && $attempt->status === 'completed' || ($attempt->status ?? '') === 'graded')
-                                                @if($test->view_category === 'writing')
+                                                @if(in_array($test->view_category, ['writing', 'speaking']))
                                                     <span class="text-primary">{{ $attempt->score ?? 'Pending' }}</span>
                                                     @if($attempt->score) <small class="text-muted">/ 9.0</small> @endif
                                                 @else
@@ -72,7 +75,7 @@
                                                 <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill">Not Started</span>
                                             @elseif($attempt->status === 'pending')
                                                 <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">In Progress</span>
-                                            @elseif($test->view_category === 'writing' && $attempt->status === 'completed')
+                                            @elseif(in_array($test->view_category, ['writing', 'speaking']) && $attempt->status === 'completed')
                                                 <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill">Submitted</span>
                                             @else
                                                 <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Completed</span>
@@ -80,15 +83,15 @@
                                         </td>
                                         <td class="py-4 text-center">
                                             @if(!$attempt)
-                                                <a href="{{ route('student.tests.show', $test->id) }}{{ $test->view_category === 'writing' ? '?category=writing' : '' }}" class="btn btn-sm btn-primary rounded-pill px-4">Take Test</a>
+                                                <a href="{{ route('student.tests.show', $test->id) }}{{ in_array($test->view_category, ['writing', 'speaking']) ? '?category=' . $test->view_category : '' }}" class="btn btn-sm btn-primary rounded-pill px-4">Take Test</a>
                                             @elseif($attempt->status === 'pending')
                                                 <div class="d-flex gap-2 justify-content-center">
-                                                    <a href="{{ route('student.tests.show', $test->id) }}{{ $test->view_category === 'writing' ? '?category=writing' : '' }}" class="btn btn-sm btn-info text-white rounded-pill px-3">Resume</a>
-                                                    @if($test->view_category !== 'writing')
+                                                    <a href="{{ route('student.tests.show', $test->id) }}{{ in_array($test->view_category, ['writing', 'speaking']) ? '?category=' . $test->view_category : '' }}" class="btn btn-sm btn-info text-white rounded-pill px-3">Resume</a>
+                                                    @if(!in_array($test->view_category, ['writing', 'speaking']))
                                                         <a href="{{ route('student.tests.restart', $test) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
                                                     @endif
                                                 </div>
-                                            @elseif($test->view_category === 'writing')
+                                            @elseif(in_array($test->view_category, ['writing', 'speaking']))
                                                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" disabled>Awaiting Grade</button>
                                             @else
                                                 <a href="{{ route('student.tests.review', $test) }}" class="btn btn-sm btn-outline-success rounded-pill px-4">Review Result</a>

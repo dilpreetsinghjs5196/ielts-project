@@ -36,7 +36,15 @@ class MockTestController extends Controller
                 $q->where('student_id', $studentId);
             }])->get();
             
-        return view('student.tests.index', compact('tests', 'writingTests'));
+        // Speaking Tests
+        $speakingTests = \App\Models\SpeakingTest::whereHas('attempts', function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            })
+            ->with(['attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])->get();
+            
+        return view('student.tests.index', compact('tests', 'writingTests', 'speakingTests'));
     }
 
     public function show(Request $request, $id)
@@ -50,6 +58,12 @@ class MockTestController extends Controller
             
             // For now, we will create a direct view for writing
             return view('student.writing.show', compact('test'));
+        }
+
+        // IF CATEGORY IS SPEAKING, LOAD FROM SPEAKING_TESTS
+        if ($categorySlug === 'speaking') {
+            $test = \App\Models\SpeakingTest::with('parts.questions')->findOrFail($id);
+            return view('student.speaking.show', compact('test'));
         }
 
         // REGULAR TEST HANDLING
