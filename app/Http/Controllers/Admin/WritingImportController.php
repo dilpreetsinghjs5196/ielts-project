@@ -26,13 +26,19 @@ class WritingImportController extends Controller
     {
         try {
             $request->validate([
-                'test_file' => 'required|file|mimes:pdf,docx',
+                'test_file' => 'required|file',
                 'level_id' => 'required|exists:levels,id',
                 'test_type_id' => 'required|exists:test_types,id',
                 'test_name' => 'nullable|string|max:255',
             ]);
 
             $file = $request->file('test_file');
+            
+            $extension = strtolower($file->getClientOriginalExtension());
+            if (!in_array($extension, ['pdf', 'docx', 'doc'])) {
+                return redirect()->back()->with('error', 'Import failed: The test file field must be a file of type: pdf, docx.');
+            }
+            
             $text = $this->extractText($file);
             
             if (empty(trim($text))) {

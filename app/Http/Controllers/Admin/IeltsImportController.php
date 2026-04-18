@@ -40,7 +40,7 @@ class IeltsImportController extends Controller
     {
         try {
             $request->validate([
-                'test_file' => 'required|file|mimes:pdf,docx',
+                'test_file' => 'required|file',
                 'category_id' => 'required|exists:categories,id',
                 'level_id' => 'required|exists:levels,id',
                 'test_type_id' => 'required|exists:test_types,id',
@@ -48,6 +48,10 @@ class IeltsImportController extends Controller
             ]);
 
             $file = $request->file('test_file');
+            $extension = strtolower($file->getClientOriginalExtension());
+            if (!in_array($extension, ['pdf', 'docx', 'doc'])) {
+                return redirect()->back()->with('error', 'Import failed: The test file field must be a file of type: pdf, docx.');
+            }
             $activeCategory = Category::find($request->category_id);
             $text = $this->extractText($file);
 
