@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,8 +9,10 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -32,7 +35,12 @@
             letter-spacing: -0.01em;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
             letter-spacing: -0.02em;
@@ -44,19 +52,22 @@
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             position: sticky;
             top: 0;
             z-index: 1000;
             transition: all 0.4s ease;
         }
+
         .navbar-brand img {
             height: 65px;
             transition: transform 0.3s;
         }
+
         .navbar-brand:hover img {
             transform: scale(1.05);
         }
+
         .nav-link {
             font-weight: 500;
             color: var(--main-dark);
@@ -66,6 +77,7 @@
             position: relative;
             transition: all 0.3s;
         }
+
         .nav-link:hover {
             color: var(--primary-gold);
             background: rgba(206, 157, 60, 0.05);
@@ -78,22 +90,26 @@
             font-size: 0.9rem;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
+
         .btn-login {
             color: var(--main-dark);
             border: 1px solid #e2e8f0;
             background: #fff;
         }
+
         .btn-login:hover {
             background: #f8fafc;
             border-color: var(--main-dark);
             transform: translateY(-1px);
         }
+
         .btn-book {
             background: linear-gradient(135deg, var(--primary-gold) 0%, #b88a35 100%);
             color: #fff;
             border: none;
             box-shadow: 0 8px 15px rgba(206, 157, 60, 0.25);
         }
+
         .btn-book:hover {
             transform: translateY(-2px);
             background: linear-gradient(135deg, #b88a35 0%, #9e762b 100%);
@@ -113,6 +129,7 @@
             align-items: center;
             border-bottom: 4px solid var(--primary-gold);
         }
+
         .hero::before {
             content: '';
             position: absolute;
@@ -120,26 +137,37 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.15);
+            background: rgba(0, 0, 0, 0.15);
             z-index: 1;
         }
+
         .hero .container {
             position: relative;
             z-index: 2;
         }
+
         .hero-card {
             background: rgba(255, 255, 255, 0.98);
             padding: 3.5rem;
             max-width: 580px;
             border-radius: 12px;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.12);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.12);
             position: relative;
             animation: slideUp 0.8s ease-out;
         }
+
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .hero-card::before {
             content: '';
             position: absolute;
@@ -150,12 +178,14 @@
             background-color: var(--primary-gold);
             border-radius: 0 4px 4px 0;
         }
+
         .hero-card h1 {
             font-size: 3.2rem;
             line-height: 1.05;
             margin-bottom: 1.2rem;
             color: var(--main-dark);
         }
+
         .hero-card p {
             color: #475569;
             font-size: 1.05rem;
@@ -167,15 +197,18 @@
         .section {
             padding: 100px 0;
         }
+
         .section-title {
             text-align: center;
             margin-bottom: 4rem;
         }
+
         .section-title h2 {
             font-size: 2.4rem;
             margin-bottom: 1rem;
             color: var(--main-dark);
         }
+
         .section-title .underline {
             width: 50px;
             height: 4px;
@@ -190,7 +223,7 @@
             border-radius: 24px;
             padding: 2.5rem 2rem;
             text-align: center;
-            border: 1px solid rgba(0,0,0,0.03);
+            border: 1px solid rgba(0, 0, 0, 0.03);
             transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
             height: 100%;
             display: flex;
@@ -198,11 +231,13 @@
             justify-content: center;
             cursor: pointer;
         }
+
         .module-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
             border-color: rgba(206, 157, 60, 0.2);
         }
+
         .module-icon {
             width: 80px;
             height: 80px;
@@ -216,16 +251,19 @@
             margin: 0 auto 1.8rem;
             transition: all 0.4s;
         }
+
         .module-card:hover .module-icon {
             background-color: var(--primary-gold);
             color: #fff;
             transform: scale(1.1) rotate(5deg);
         }
+
         .module-card h4 {
             margin-bottom: 1rem;
             font-size: 1.5rem;
             font-weight: 700;
         }
+
         .module-card p {
             color: var(--text-gray);
             font-size: 0.95rem;
@@ -239,11 +277,13 @@
             color: #fff;
             padding: 60px 0 20px;
         }
+
         .footer-logo img {
             height: 40px;
             margin-bottom: 1.5rem;
             filter: brightness(100);
         }
+
         .footer-links h5 {
             margin-bottom: 1.5rem;
             font-size: 1.1rem;
@@ -251,25 +291,30 @@
             letter-spacing: 1px;
             color: var(--primary-gold);
         }
+
         .footer-links ul {
             padding: 0;
             list-style: none;
         }
+
         .footer-links ul li {
             margin-bottom: 0.8rem;
         }
+
         .footer-links ul li a {
             color: #cbd5e1;
             text-decoration: none;
             transition: color 0.3s;
         }
+
         .footer-links ul li a:hover {
             color: #fff;
         }
+
         .social-icons a {
             width: 40px;
             height: 40px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -278,6 +323,7 @@
             color: #fff;
             transition: all 0.3s;
         }
+
         .social-icons a:hover {
             background: var(--primary-gold);
             transform: scale(1.1);
@@ -289,24 +335,30 @@
             background: #fff;
             border-bottom: 1px solid #f1f5f9;
         }
+
         .breadcrumb-item {
             font-size: 0.8rem;
             color: var(--text-gray);
             font-weight: 400;
         }
+
         .breadcrumb-item a {
             color: var(--text-gray);
             text-decoration: none;
             transition: color 0.3s;
         }
+
         .breadcrumb-item a:hover {
             color: var(--primary-gold);
         }
+
         .breadcrumb-item.active {
-            color: #E31837; /* More standard IDP red */
+            color: #E31837;
+            /* More standard IDP red */
             font-weight: 600;
         }
-        .breadcrumb-item + .breadcrumb-item::before {
+
+        .breadcrumb-item+.breadcrumb-item::before {
             content: ">";
             padding: 0 10px;
             color: #cbd5e1;
@@ -319,6 +371,7 @@
             border-radius: 20px;
             overflow: hidden;
         }
+
         .selection-card {
             background: #fff;
             border: 1.5px solid #f1f5f9;
@@ -332,12 +385,14 @@
             display: block;
             color: inherit;
         }
+
         .selection-card:hover {
             border-color: var(--primary-gold);
             background: rgba(206, 157, 60, 0.05);
             transform: translateY(-8px);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
         }
+
         .selection-card .icon {
             width: 80px;
             height: 80px;
@@ -351,22 +406,26 @@
             margin: 0 auto 1.8rem;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
+
         .selection-card:hover .icon {
             background: var(--primary-gold);
             color: #fff;
             transform: scale(1.1) rotate(5deg);
         }
+
         .selection-card h4 {
             font-size: 1.4rem;
             margin-bottom: 1rem;
             font-weight: 700;
         }
+
         .selection-card p {
             font-size: 0.95rem;
             color: var(--text-gray);
             line-height: 1.6;
             margin-bottom: 1.8rem;
         }
+
         .selection-card .btn-select {
             padding: 0.75rem 2rem;
             border-radius: 50px;
@@ -377,6 +436,7 @@
             transition: all 0.3s;
             display: inline-block;
         }
+
         .selection-card:hover .btn-select {
             background: var(--primary-gold);
             color: #fff;
@@ -388,11 +448,13 @@
             .navbar-brand img {
                 height: 55px;
             }
+
             .nav-link {
                 font-size: 0.9rem;
                 margin: 0 0.2rem;
                 padding: 0.4rem 0.6rem !important;
             }
+
             .btn-auth {
                 padding: 0.45rem 1rem;
                 font-size: 0.75rem;
@@ -405,72 +467,88 @@
                 padding-left: 12px;
                 padding-right: 12px;
             }
+
             .hero {
                 padding: 40px 0;
                 min-height: auto;
             }
+
             .hero-card {
                 padding: 2rem;
                 margin: 0 12px;
                 border-radius: 16px;
                 text-align: center;
             }
+
             .hero-card::before {
                 display: none;
             }
+
             .hero-card h1 {
                 font-size: 2.1rem;
                 margin-bottom: 1rem;
             }
+
             .hero-card p {
                 font-size: 0.95rem;
                 margin-bottom: 1.5rem;
             }
+
             .navbar-brand img {
                 height: 50px;
             }
+
             .navbar-collapse {
                 margin-top: 0.75rem;
                 padding: 1rem;
                 border-radius: 12px;
             }
+
             .nav-link {
                 font-size: 0.9rem;
                 padding: 0.6rem 1rem !important;
             }
+
             .section {
                 padding: 60px 0;
             }
+
             .section-title h2 {
                 font-size: 1.8rem;
             }
+
             .module-card {
                 padding: 2rem 1.5rem;
                 border-radius: 16px;
             }
+
             .module-icon {
                 width: 60px;
                 height: 60px;
                 font-size: 1.5rem;
             }
+
             .btn-auth {
                 font-size: 0.85rem;
             }
         }
-        
+
         .navbar-toggler:focus {
             box-shadow: none;
         }
+
         .navbar-toggler {
             padding: 0.5rem;
             border-radius: 8px;
             transition: all 0.3s;
         }
+
         .navbar-toggler:hover {
             background: #f8fafc;
         }
     </style>
 </head>
+
 <body>
 
     <!-- Header / Navbar -->
@@ -485,10 +563,12 @@
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0)" onclick="startTypeSelection('Academic')">Academic</a>
+                        <a class="nav-link" href="javascript:void(0)"
+                            onclick="startTypeSelection('Academic')">Academic</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0)" onclick="startTypeSelection('General Training')">General Training</a>
+                        <a class="nav-link" href="javascript:void(0)"
+                            onclick="startTypeSelection('General Training')">General Training</a>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center gap-2">
@@ -497,9 +577,9 @@
                     @elseif(auth('student')->check())
                         <a href="{{ route('student.dashboard') }}" class="btn btn-auth btn-login">Student Portal</a>
                     @else
-                        <a href="{{ route('login') }}" class="btn btn-auth btn-login">Login</a>
+                        <a href="{{ route('login') }}" class="btn btn-auth btn-book">Login</a>
                     @endauth
-                    <a href="{{ route('login') }}" class="btn btn-auth btn-book">Book your test</a>
+                    {{-- <a href="{{ route('login') }}" class="btn btn-auth btn-book">Book your test</a> --}}
                 </div>
             </div>
         </div>
@@ -525,7 +605,8 @@
                 <div class="col-lg-7">
                     <div class="hero-card">
                         <h1>The Official IELTS Familiarisation Test</h1>
-                        <p>Are you taking your IELTS test on a computer soon? Take the free IELTS Familiarisation test on computer to know what to expect on your test day.</p>
+                        <p>Are you taking your IELTS test on a computer soon? Take the free IELTS Familiarisation test
+                            on computer to know what to expect on your test day.</p>
                         <a href="{{ route('login') }}" class="btn btn-auth btn-book px-5 py-3">Start Practice Now</a>
                     </div>
                 </div>
@@ -547,7 +628,8 @@
                             <i class="fas fa-headphones"></i>
                         </div>
                         <h4>Listening</h4>
-                        <p>Evaluate your ability to understand main ideas and factual information through various audio segments.</p>
+                        <p>Evaluate your ability to understand main ideas and factual information through various audio
+                            segments.</p>
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6" id="reading">
@@ -556,7 +638,8 @@
                             <i class="fas fa-book-open"></i>
                         </div>
                         <h4>Reading</h4>
-                        <p>Test your reading skills with three long texts ranging from descriptive to discursive and analytical.</p>
+                        <p>Test your reading skills with three long texts ranging from descriptive to discursive and
+                            analytical.</p>
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6" id="writing">
@@ -565,7 +648,8 @@
                             <i class="fas fa-pen-nib"></i>
                         </div>
                         <h4>Writing</h4>
-                        <p>Demonstrate your ability to write descriptive reports and discursive essays on diverse academic topics.</p>
+                        <p>Demonstrate your ability to write descriptive reports and discursive essays on diverse
+                            academic topics.</p>
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6" id="speaking">
@@ -574,7 +658,8 @@
                             <i class="fas fa-comments"></i>
                         </div>
                         <h4>Speaking</h4>
-                        <p>Simulate a face-to-face interview to assess your spoken fluency and communicative effectiveness.</p>
+                        <p>Simulate a face-to-face interview to assess your spoken fluency and communicative
+                            effectiveness.</p>
                     </div>
                 </div>
             </div>
@@ -593,21 +678,24 @@
                                 <i class="fas fa-check-circle mt-1" style="color: var(--primary-gold);"></i>
                                 <div>
                                     <h5 class="mb-1">Authentic Experience</h5>
-                                    <p class="mb-0 text-white-50">Our simulation matches the actual IELTS interface precisely.</p>
+                                    <p class="mb-0 text-white-50">Our simulation matches the actual IELTS interface
+                                        precisely.</p>
                                 </div>
                             </li>
                             <li class="mb-3 d-flex align-items-start gap-3">
                                 <i class="fas fa-check-circle mt-1" style="color: var(--primary-gold);"></i>
                                 <div>
                                     <h5 class="mb-1">Real-time Performance</h5>
-                                    <p class="mb-0 text-white-50">Get instant results and insights on your strengths and weaknesses.</p>
+                                    <p class="mb-0 text-white-50">Get instant results and insights on your strengths and
+                                        weaknesses.</p>
                                 </div>
                             </li>
                             <li class="mb-0 d-flex align-items-start gap-3">
                                 <i class="fas fa-check-circle mt-1" style="color: var(--primary-gold);"></i>
                                 <div>
                                     <h5 class="mb-1">Official Material</h5>
-                                    <p class="mb-0 text-white-50">All test questions follow the latest global IELTS standards.</p>
+                                    <p class="mb-0 text-white-50">All test questions follow the latest global IELTS
+                                        standards.</p>
                                 </div>
                             </li>
                         </ul>
@@ -616,10 +704,13 @@
                 <div class="col-lg-6 ps-lg-5">
                     <h2>Master the Test Format</h2>
                     <p class="lead text-muted mb-4">Preparation is the key to achieving your desired band score.</p>
-                    <p>Our platform provides a comprehensive environment for students to familiarize themselves with the computer-delivered IELTS format. From screen layouts to timing mechanisms, we ensure you are 100% prepared.</p>
+                    <p>Our platform provides a comprehensive environment for students to familiarize themselves with the
+                        computer-delivered IELTS format. From screen layouts to timing mechanisms, we ensure you are
+                        100% prepared.</p>
                     <div class="mt-4">
                         <a href="{{ route('login') }}" class="btn btn-auth btn-login me-3">Learn More</a>
-                        <a href="{{ route('login') }}" class="btn btn-auth btn-book">Get Started <i class="fas fa-arrow-right ms-2"></i></a>
+                        <a href="{{ route('login') }}" class="btn btn-auth btn-book">Get Started <i
+                                class="fas fa-arrow-right ms-2"></i></a>
                     </div>
                 </div>
             </div>
@@ -634,7 +725,8 @@
                     <div class="footer-logo">
                         <img src="{{ asset('images/opera-dark-logo.webp') }}" alt="Logo">
                     </div>
-                    <p class="text-white-50 pe-lg-5">Providing world-class IELTS preparation and training solutions since 2010. Our goal is to empower students to reach their international goals.</p>
+                    <p class="text-white-50 pe-lg-5">Providing world-class IELTS preparation and training solutions
+                        since 2010. Our goal is to empower students to reach their international goals.</p>
                     <div class="social-icons mt-4">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
@@ -692,36 +784,45 @@
                     <div id="step-module-category" style="display: none;">
                         <div class="text-center mb-5">
                             <h2 class="fw-bold mb-2">Select a Module</h2>
-                            <p class="text-muted">Choose a module for <span class="badge bg-warning text-dark px-2" id="selectedModuleType"></span></p>
+                            <p class="text-muted">Choose a module for <span class="badge bg-warning text-dark px-2"
+                                    id="selectedModuleType"></span></p>
                         </div>
                         <div class="row g-4">
                             <div class="col-md-3 col-6">
-                                <div class="selection-card p-3 shadow-sm border-0 bg-light" onclick="selectCategory('Listening')">
-                                    <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                <div class="selection-card p-3 shadow-sm border-0 bg-light"
+                                    onclick="selectCategory('Listening')">
+                                    <div class="icon"
+                                        style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
                                         <i class="fas fa-headphones"></i>
                                     </div>
                                     <h5 class="fw-bold">Listening</h5>
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
-                                <div class="selection-card p-3 shadow-sm border-0 bg-light" onclick="selectCategory('Reading')">
-                                    <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                <div class="selection-card p-3 shadow-sm border-0 bg-light"
+                                    onclick="selectCategory('Reading')">
+                                    <div class="icon"
+                                        style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
                                         <i class="fas fa-book-open"></i>
                                     </div>
                                     <h5 class="fw-bold">Reading</h5>
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
-                                <div class="selection-card p-3 shadow-sm border-0 bg-light" onclick="selectCategory('Writing')">
-                                    <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                <div class="selection-card p-3 shadow-sm border-0 bg-light"
+                                    onclick="selectCategory('Writing')">
+                                    <div class="icon"
+                                        style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
                                         <i class="fas fa-pen-nib"></i>
                                     </div>
                                     <h5 class="fw-bold">Writing</h5>
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
-                                <div class="selection-card p-3 shadow-sm border-0 bg-light" onclick="selectCategory('Speaking')">
-                                    <div class="icon" style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
+                                <div class="selection-card p-3 shadow-sm border-0 bg-light"
+                                    onclick="selectCategory('Speaking')">
+                                    <div class="icon"
+                                        style="width:60px;height:60px;font-size:1.5rem;border-radius:16px;">
                                         <i class="fas fa-comments"></i>
                                     </div>
                                     <h5 class="fw-bold">Speaking</h5>
@@ -734,7 +835,8 @@
                     <div id="step-test-type">
                         <div class="text-center mb-5">
                             <h2 class="fw-bold mb-2">Select Your Test Type</h2>
-                            <p class="text-muted" id="selectionModuleSubtitle">Please choose between Academic or General Training</p>
+                            <p class="text-muted" id="selectionModuleSubtitle">Please choose between Academic or General
+                                Training</p>
                         </div>
                         <div class="row g-4">
                             <div class="col-md-6">
@@ -743,7 +845,8 @@
                                         <i class="fas fa-graduation-cap"></i>
                                     </div>
                                     <h4>IELTS Academic</h4>
-                                    <p>For people applying for higher education or professional registration in an English-speaking environment.</p>
+                                    <p>For people applying for higher education or professional registration in an
+                                        English-speaking environment.</p>
                                     <span class="btn-select">Select Academic</span>
                                 </div>
                             </div>
@@ -753,7 +856,8 @@
                                         <i class="fas fa-briefcase"></i>
                                     </div>
                                     <h4>IELTS General</h4>
-                                    <p>For those going to English-speaking countries for secondary education, work experience, or migration.</p>
+                                    <p>For those going to English-speaking countries for secondary education, work
+                                        experience, or migration.</p>
                                     <span class="btn-select">Select General</span>
                                 </div>
                             </div>
@@ -764,7 +868,8 @@
                     <div id="step-level" style="display: none;">
                         <div class="text-center mb-5">
                             <div class="mb-3">
-                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 border" id="selectedTypeBadge">Academic</span>
+                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 border"
+                                    id="selectedTypeBadge">Academic</span>
                             </div>
                             <h2 class="fw-bold mb-2">Select Your Level</h2>
                             <p class="text-muted">Choose your current preparation stage</p>
@@ -776,7 +881,8 @@
                             </div>
                         </div>
                         <div class="text-center mt-5">
-                            <button class="btn btn-link text-muted text-decoration-none" id="backToTypeOrModule" onclick="goBackFromLevel()">
+                            <button class="btn btn-link text-muted text-decoration-none" id="backToTypeOrModule"
+                                onclick="goBackFromLevel()">
                                 <i class="fas fa-chevron-left me-2"></i> Back
                             </button>
                         </div>
@@ -786,8 +892,10 @@
                     <div id="step-modules" style="display: none;">
                         <div class="text-center mb-5">
                             <div class="mb-3 d-flex justify-content-center gap-2">
-                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 border" id="moduleBadgeType"></span>
-                                <span class="badge rounded-pill bg-warning text-dark px-3 py-2" id="moduleBadgeLevel"></span>
+                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 border"
+                                    id="moduleBadgeType"></span>
+                                <span class="badge rounded-pill bg-warning text-dark px-3 py-2"
+                                    id="moduleBadgeLevel"></span>
                             </div>
                             <h2 class="fw-bold mb-2">Select a Module</h2>
                             <p class="text-muted" id="moduleSubtitle">Choose a module to start your practice</p>
@@ -806,9 +914,12 @@
                     <div id="step-tests" style="display: none;">
                         <div class="text-center mb-4">
                             <div class="mb-3 d-flex justify-content-center gap-2">
-                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 border" id="testBadgeType"></span>
-                                <span class="badge rounded-pill bg-warning text-dark px-3 py-2" id="testBadgeLevel"></span>
-                                <span class="badge rounded-pill bg-dark text-white px-3 py-2" id="testBadgeModule"></span>
+                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 border"
+                                    id="testBadgeType"></span>
+                                <span class="badge rounded-pill bg-warning text-dark px-3 py-2"
+                                    id="testBadgeLevel"></span>
+                                <span class="badge rounded-pill bg-dark text-white px-3 py-2"
+                                    id="testBadgeModule"></span>
                             </div>
                             <h2 class="fw-bold mb-2">Available Tests</h2>
                             <p class="text-muted" id="testSubtitle">Login to attempt any test below</p>
@@ -817,7 +928,8 @@
                             <!-- Dynamically populated via JS -->
                         </div>
                         <div class="text-center mt-4">
-                            <button class="btn btn-link text-muted text-decoration-none" id="backFromTests" onclick="goBackFromTests()">
+                            <button class="btn btn-link text-muted text-decoration-none" id="backFromTests"
+                                onclick="goBackFromTests()">
                                 <i class="fas fa-chevron-left me-2"></i> Back
                             </button>
                         </div>
@@ -854,7 +966,7 @@
             activeFlow = 'navbar';
             currentType = typeName;
             document.getElementById('selectedModuleType').innerText = typeName;
-            
+
             showOnlyStep('module-category');
 
             var selectionModal = new bootstrap.Modal(document.getElementById('testSelectionModal'));
@@ -954,10 +1066,10 @@
             // Level ID 1: Level 1 and 2, Level ID 2: Level 3
             // Level ID 3: Exam Batch (Keep module selection)
             if (levelId == 1 || levelId == 2) {
-                document.getElementById('testBadgeType').innerText   = currentType;
-                document.getElementById('testBadgeLevel').innerText  = currentLevelName;
+                document.getElementById('testBadgeType').innerText = currentType;
+                document.getElementById('testBadgeLevel').innerText = currentLevelName;
                 document.getElementById('testBadgeModule').innerText = 'All Practice Tests';
-                document.getElementById('testSubtitle').innerText    =
+                document.getElementById('testSubtitle').innerText =
                     `Tests for ${currentModule} / ${currentType} / ${currentLevelName}`;
 
                 showOnlyStep('tests');
@@ -1019,10 +1131,10 @@
 
         // User clicked a module → show tests
         function selectModule(moduleSetId, moduleSetName) {
-            document.getElementById('testBadgeType').innerText   = currentType;
-            document.getElementById('testBadgeLevel').innerText  = currentLevelName;
+            document.getElementById('testBadgeType').innerText = currentType;
+            document.getElementById('testBadgeLevel').innerText = currentLevelName;
             document.getElementById('testBadgeModule').innerText = moduleSetName;
-            document.getElementById('testSubtitle').innerText    =
+            document.getElementById('testSubtitle').innerText =
                 `Tests inside: ${moduleSetName} — ${currentModule} / ${currentType} / ${currentLevelName}`;
 
             showOnlyStep('tests');
@@ -1059,12 +1171,12 @@
                     container.innerHTML = `
                         <div class="list-group shadow-sm" style="border-radius:14px;overflow:hidden;">
                             ${tests.map((test, i) => {
-                                const targetUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id) + (['writing', 'speaking'].includes(test.category) ? '?category=' + test.category : '');
-                                const loginUrl = "{{ route('login') }}?test_id=" + test.id + "&category=" + test.category;
-                                const testUrl = isStudentLoggedIn ? targetUrl : loginUrl;
-                                const btnText = isStudentLoggedIn ? `Start <i class="fas fa-arrow-right ms-1"></i>` : `Login to Start <i class="fas fa-lock ms-1"></i>`;
-                                
-                                return `
+                        const targetUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id) + (['writing', 'speaking'].includes(test.category) ? '?category=' + test.category : '');
+                        const loginUrl = "{{ route('login') }}?test_id=" + test.id + "&category=" + test.category;
+                        const testUrl = isStudentLoggedIn ? targetUrl : loginUrl;
+                        const btnText = isStudentLoggedIn ? `Start <i class="fas fa-arrow-right ms-1"></i>` : `Login to Start <i class="fas fa-lock ms-1"></i>`;
+
+                        return `
                                     <a href="${testUrl}"
                                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4"
                                        style="border-left:4px solid var(--primary-gold); transition:all 0.2s;"
@@ -1080,7 +1192,7 @@
                                         </span>
                                     </a>
                                 `;
-                            }).join('')}
+                    }).join('')}
                         </div>
                         <p class="text-center text-muted small mt-3">
                             <i class="fas fa-lock me-1"></i>Please <a href="{{ route('login') }}" class="text-warning fw-bold">login</a> to attempt a test.
@@ -1092,4 +1204,5 @@
         }
     </script>
 </body>
+
 </html>

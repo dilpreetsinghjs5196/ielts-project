@@ -80,9 +80,11 @@
                                     $studentArray = is_array($studentAnswer) ? array_map('trim', array_map('strtolower', $studentAnswer)) : [];
                                     sort($correctArray);
                                     sort($studentArray);
-                                    $isCorrect = ($correctArray == $studentArray && !empty($studentArray));
+                                    $hasAnswered = !empty($studentAnswer) && is_array($studentAnswer) && count($studentAnswer) > 0;
+                                    $isCorrect = ($correctArray == $studentArray && $hasAnswered);
                                 } else {
-                                    $isCorrect = (!empty($studentAnswer) && $correctAnswer === trim(strtolower((string)$studentAnswer)));
+                                    $hasAnswered = !empty($studentAnswer) && trim((string)$studentAnswer) !== '';
+                                    $isCorrect = ($hasAnswered && $correctAnswer === trim(strtolower((string)$studentAnswer)));
                                 }
                             @endphp
 
@@ -90,18 +92,18 @@
                                  id="q-{{ $question->id }}"
                                  data-q-id="{{ $question->id }}" 
                                  data-q-type="{{ $question->question_type }}"
-                                 style="border-left: 5px solid {{ $isCorrect ? '#10b981' : (!empty($studentAnswer) ? '#ef4444' : '#e2e8f0') }} !important;">
+                                 style="border-left: 5px solid {{ $isCorrect ? '#10b981' : ($hasAnswered ? '#ef4444' : '#e2e8f0') }} !important;">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-start gap-3 mb-3">
                                         <div class="q-number badge rounded-circle d-flex align-items-center justify-content-center text-white p-0" 
-                                             style="width: 30px; height: 30px; flex-shrink: 0; background-color: {{ $isCorrect ? '#10b981' : (!empty($studentAnswer) ? '#ef4444' : '#334155') }};">
+                                             style="width: 30px; height: 30px; flex-shrink: 0; background-color: {{ $isCorrect ? '#10b981' : ($hasAnswered ? '#ef4444' : '#334155') }};">
                                             {{ $question->question_number }}
                                         </div>
                                         <div class="q-content flex-grow-1">
-                                            @if(empty($studentAnswer))
+                                            @if(!$hasAnswered)
                                                 <div class="mb-2">
-                                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1" style="font-size: 0.7rem;">
-                                                        <i class="fas fa-exclamation-circle me-1"></i> Answer not given
+                                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1" style="font-size: 0.7rem; border: 1px solid #cbd5e1;">
+                                                        <i class="fas fa-exclamation-circle me-1"></i> Not Answered
                                                     </span>
                                                 </div>
                                             @endif
@@ -126,10 +128,15 @@
                                                             $displayVal = !empty($ans) ? $ans : 'Answer not given';
                                                             $textColor = !empty($ans) ? 'inherit' : '#94a3b8';
                                                             
+                                                            $correctHtml = '';
+                                                            if (!$isCorrect) {
+                                                                $correctHtml = '<span class="ms-2 badge bg-success-subtle text-success border border-success-subtle" title="Correct Answer">'.$targetQ->correct_answer.'</span>';
+                                                            }
+                                                            
                                                             return '<input type="text" disabled 
                                                                     class="form-control d-inline-block mx-2 text-center" 
                                                                     style="width: 150px; border: 2px solid '.$color.'; border-radius: 8px; background: white; color: '.$textColor.'; font-style: '.(!empty($ans)? 'normal' : 'italic').';" 
-                                                                    value="'.$displayVal.'"> ' . $icon;
+                                                                    value="'.$displayVal.'"> ' . $icon . $correctHtml;
                                                         }
                                                         return $matches[0];
                                                     }, $body);
@@ -172,6 +179,12 @@
                                                         </label>
                                                     @endforeach
                                                 </div>
+                                                @if(!$isCorrect)
+                                                    <div class="mt-2 p-2 bg-success-subtle rounded-3 border-start border-success border-4">
+                                                        <small class="text-success fw-bold d-block mb-1"><i class="fas fa-check-circle me-1"></i> Correct Answer:</small>
+                                                        <span class="text-dark fw-bold text-uppercase">{{ $question->correct_answer }}</span>
+                                                    </div>
+                                                @endif
                                             @elseif ($question->question_type === 'mcq_multi')
                                                 <div class="options-grid d-grid gap-2">
                                                     @foreach ($question->options as $index => $val)
@@ -195,15 +208,45 @@
                                                         </label>
                                                     @endforeach
                                                 </div>
-                                            @elseif ($question->question_type === 'fill_blanks')
-                                                @if(!$isEmbeddedInBody)
-                                                    <div class="mt-3">
-                                                        <input type="text" disabled 
-                                                               class="form-control {{ empty($studentAnswer) ? 'text-muted fst-italic' : 'fw-bold' }}" 
-                                                               style="height: 50px; border-radius: 12px; border: 2px solid {{ $isCorrect ? '#10b981' : (!empty($studentAnswer) ? '#ef4444' : '#e2e8f0') }};" 
-                                                               value="{{ !empty($studentAnswer) ? $studentAnswer : 'Answer not given' }}">
+                                                @if(!$isCorrect)
+                                                    <div class="mt-2 p-2 bg-success-subtle rounded-3 border-start border-success border-4">
+                                                        <small class="text-success fw-bold d-block mb-1"><i class="fas fa-check-circle me-1"></i> Correct Answers:</small>
+                                                        <span class="text-dark fw-bold text-uppercase">{{ $question->correct_answer }}</span>
                                                     </div>
                                                 @endif
+                                            @elseif ($question->question_type === 'fill_blanks' || $question->question_type === 'short_answer')
+                                                @if(!$isEmbeddedInBody)
+                                                    <div class="mt-3">
+                                                        <div class="small text-muted mb-1">Your Answer:</div>
+                                                        <input type="text" disabled 
+                                                               class="form-control {{ !$hasAnswered ? 'text-muted fst-italic' : 'fw-bold' }}" 
+                                                               style="height: 50px; border-radius: 12px; border: 2px solid {{ $isCorrect ? '#10b981' : ($hasAnswered ? '#ef4444' : '#cbd5e1') }};" 
+                                                               value="{{ $hasAnswered ? $studentAnswer : 'Answer not given' }}">
+                                                        
+                                                        @if(!$isCorrect)
+                                                            <div class="mt-2 p-2 bg-success-subtle rounded-3 border-start border-success border-4">
+                                                                <small class="text-success fw-bold d-block mb-1"><i class="fas fa-check-circle me-1"></i> Correct Answer:</small>
+                                                                <span class="text-dark fw-bold">{{ $question->correct_answer }}</span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            @else
+                                                {{-- Fallback for any other type --}}
+                                                <div class="mt-3 p-3 border rounded-3 bg-light" style="border: 1px solid #cbd5e1 !important;">
+                                                    <div class="mb-2">
+                                                        <small class="text-muted d-block mb-1">Your Answer:</small>
+                                                        <span class="fw-bold {{ $hasAnswered ? ($isCorrect ? 'text-success' : 'text-danger') : 'text-muted fst-italic' }}">
+                                                            {{ $hasAnswered ? (is_array($studentAnswer) ? implode(', ', $studentAnswer) : $studentAnswer) : 'Answer not given' }}
+                                                        </span>
+                                                    </div>
+                                                    @if(!$isCorrect)
+                                                        <div class="pt-2 border-top">
+                                                            <small class="text-success fw-bold d-block mb-1">Correct Answer:</small>
+                                                            <span class="fw-bold text-success">{{ $question->correct_answer }}</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </div>
                                     </div>

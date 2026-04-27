@@ -36,15 +36,7 @@ class MockTestController extends Controller
                 $q->where('student_id', $studentId);
             }])->get();
             
-        // Speaking Tests
-        $speakingTests = \App\Models\SpeakingTest::whereHas('attempts', function($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            })
-            ->with(['attempts' => function($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            }])->get();
-            
-        return view('student.tests.index', compact('tests', 'writingTests', 'speakingTests'));
+        return view('student.tests.index', compact('tests', 'writingTests'));
     }
 
     public function show(Request $request, $id)
