@@ -31,7 +31,14 @@ class LoginController extends Controller
         // Attempt Student Login
         if (Auth::guard('student')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
-            // Assuming student dashboard route is named 'student.dashboard'
+            
+            // If we came from a specific test, redirect back to that test
+            if ($request->filled('test_id')) {
+                $testId = $request->test_id;
+                $category = $request->category;
+                return redirect()->route('student.tests.show', ['id' => $testId, 'category' => $category]);
+            }
+            
             return redirect()->intended('/student/dashboard')->with('success', 'Welcome back!');
         }
 

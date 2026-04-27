@@ -56,8 +56,16 @@ class MockTestController extends Controller
         if ($categorySlug === 'writing') {
             $test = \App\Models\WritingTest::with('tasks')->findOrFail($id);
             
-            // For now, we will create a direct view for writing
-            return view('student.writing.show', compact('test'));
+            // Find latest writing attempt
+            $attempt = \App\Models\WritingAttempt::where('student_id', $student->id)
+                ->where('writing_test_id', $test->id)
+                ->latest()
+                ->first();
+
+            // If no attempt exists, we'll create a placeholder if needed or just handle it in view
+            // For writing, we usually just start fresh if no attempt.
+            
+            return view('student.writing.show', compact('test', 'attempt'));
         }
 
         // IF CATEGORY IS SPEAKING, LOAD FROM SPEAKING_TESTS
@@ -69,25 +77,22 @@ class MockTestController extends Controller
         // REGULAR TEST HANDLING
         $test = Test::findOrFail($id);
         
-        // Check for completed attempt first
-        $completedAttempt = \App\Models\TestAttempt::where('student_id', $student->id)
+        // Find latest attempt (completed or pending)
+        $attempt = \App\Models\TestAttempt::where('student_id', $student->id)
             ->where('test_id', $test->id)
-            ->where('status', 'completed')
+            ->latest()
             ->first();
 
-        if ($completedAttempt) {
-            return redirect()->route('student.tests.review', $test)->with('info', 'You have already completed this test.');
+        // If no attempt exists, create a new one
+        if (!$attempt) {
+            $attempt = \App\Models\TestAttempt::create([
+                'student_id' => $student->id,
+                'test_id' => $test->id,
+                'status' => 'pending',
+                'started_at' => now(),
+                'time_left' => 3600
+            ]);
         }
-
-        // Find or create pending attempt
-        $attempt = \App\Models\TestAttempt::firstOrCreate([
-            'student_id' => $student->id,
-            'test_id' => $test->id,
-            'status' => 'pending'
-        ], [
-            'started_at' => now(),
-            'time_left' => 3600
-        ]);
 
         $test->load(['moduleSet', 'questionGroups.questions', 'questionGroups.category']);
         
@@ -205,15 +210,23 @@ class MockTestController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function restart(Test $test)
+    public function restart(Request $request, $id)
     {
         $student = auth('student')->user();
-        
-        \App\Models\TestAttempt::where('student_id', $student->id)
-            ->where('test_id', $test->id)
-            ->delete(); // Delete all attempts for this test to restart fresh
+        $category = $request->get('category');
 
-        return redirect()->route('student.tests.show', $test)->with('success', 'Test restarted!');
+        if ($category === 'writing') {
+            \App\Models\WritingAttempt::where('student_id', $student->id)
+                ->where('writing_test_id', $id)
+                ->delete();
+            return redirect()->route('student.tests.show', ['id' => $id, 'category' => 'writing'])->with('success', 'Test restarted!');
+        }
+
+        \App\Models\TestAttempt::where('student_id', $student->id)
+            ->where('test_id', $id)
+            ->delete();
+
+        return redirect()->route('student.tests.show', $id)->with('success', 'Test restarted!');
     }
 
     public function thankYou(Test $test)
@@ -232,9 +245,28 @@ class MockTestController extends Controller
         return view('student.tests.thank-you', compact('test', 'attempt'));
     }
 
-    public function review(Test $test)
+    public function review(Request $request, $id)
     {
         $studentId = auth('student')->id();
+        $category = $request->get('category');
+
+        if ($category === 'writing') {
+            $test = \App\Models\WritingTest::with('tasks')->findOrFail($id);
+            $attempt = \App\Models\WritingAttempt::where('student_id', $studentId)
+                ->where('writing_test_id', $id)
+                ->where('status', 'completed')
+                ->latest()
+                ->first();
+
+            if (!$attempt) {
+                return redirect()->route('student.dashboard');
+            }
+
+            return view('student.writing.review', compact('test', 'attempt'));
+        }
+
+        // Default (Standard Test)
+        $test = Test::findOrFail($id);
         $attempt = \App\Models\TestAttempt::where('student_id', $studentId)
             ->where('test_id', $test->id)
             ->where('status', 'completed')

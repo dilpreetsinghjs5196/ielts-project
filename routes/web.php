@@ -107,12 +107,12 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
     // Test Management
     Route::get('/take-test', [\App\Http\Controllers\Student\MockTestController::class, 'take'])->name('tests.take');
     Route::get('/my-tests', [\App\Http\Controllers\Student\MockTestController::class, 'index'])->name('tests.index');
-    Route::get('/tests/{test}', [\App\Http\Controllers\Student\MockTestController::class, 'show'])->name('tests.show');
+    Route::get('/tests/{id}', [\App\Http\Controllers\Student\MockTestController::class, 'show'])->name('tests.show');
     Route::get('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'thankYou'])->name('tests.thank-you');
-    Route::get('/tests/{test}/review', [\App\Http\Controllers\Student\MockTestController::class, 'review'])->name('tests.review');
+    Route::get('/tests/{id}/review', [\App\Http\Controllers\Student\MockTestController::class, 'review'])->name('tests.review');
     Route::post('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submit'])->name('tests.submit');
     Route::post('/tests/{test}/save-progress', [\App\Http\Controllers\Student\MockTestController::class, 'saveProgress'])->name('tests.save-progress');
-    Route::get('/tests/{test}/restart', [\App\Http\Controllers\Student\MockTestController::class, 'restart'])->name('tests.restart');
+    Route::get('/tests/{id}/restart', [\App\Http\Controllers\Student\MockTestController::class, 'restart'])->name('tests.restart');
     Route::post('/writing-tests/{id}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submitWriting'])->name('writing-tests.submit');
 });
 

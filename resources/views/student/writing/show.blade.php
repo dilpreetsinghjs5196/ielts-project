@@ -274,6 +274,43 @@
     </style>
 </head>
 <body>
+@if($attempt && ($attempt->status === 'completed' || $attempt->id))
+<div id="resume-confirm-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999; background: rgba(13, 22, 36, 0.95); backdrop-filter: blur(10px);">
+    <div class="card border-0 shadow-lg text-center p-5" style="max-width: 500px; border-radius: 24px; font-family: 'Inter', sans-serif; background: #fff;">
+        <div class="mb-4">
+            <div class="rounded-circle bg-warning-subtle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; background: rgba(206, 157, 60, 0.1); border-radius: 50%;">
+                <i class="fas fa-history text-warning fs-1" style="color: #ce9d3c; font-size: 2.5rem;"></i>
+            </div>
+            <h2 class="fw-bold mb-3" style="font-weight: 700; color: #111;">{{ $attempt->status === 'completed' ? 'Test Already Given' : 'Resume Test?' }}</h2>
+            <p class="text-muted" style="color: #666;">
+                @if($attempt->status === 'completed')
+                    You have already submitted an attempt for this Writing test. What would you like to do?
+                @else
+                    You have an ongoing attempt for this Writing test. Would you like to pick up where you left off?
+                @endif
+            </p>
+        </div>
+        <div class="d-grid gap-3" style="display: grid; gap: 15px;">
+            @if($attempt->status === 'completed')
+                <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => 'writing']) }}" class="btn-home" style="padding: 15px; border-radius: 50px; font-weight: 700; text-decoration: none; border: 1px solid #ddd; color: #333; background: #fff; display: block; text-align: center;">
+                    <i class="fas fa-eye me-2"></i> Review Old Test
+                </a>
+                <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'writing']) }}" class="btn-admin" style="padding: 15px; border-radius: 50px; font-weight: 700; text-decoration: none; background: #ce9d3c; color: #fff; display: block; text-align: center;" onclick="return confirm('Are you sure you want to retry? This will delete your previous attempt.')">
+                    <i class="fas fa-redo me-2"></i> Retry Test Again
+                </a>
+            @else
+                <button class="btn-admin" style="padding: 15px; border-radius: 50px; font-weight: 700; border: none; background: #ce9d3c; color: #fff; cursor: pointer; width: 100%;" onclick="document.getElementById('resume-confirm-overlay').remove()">
+                    <i class="fas fa-play me-2"></i> Resume Old One Test
+                </button>
+                <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'writing']) }}" class="btn-home" style="padding: 15px; border-radius: 50px; font-weight: 700; text-decoration: none; border: 1px solid #ddd; color: #333; background: #fff; display: block; text-align: center;" onclick="return confirm('Starting fresh will permanently delete your current progress. Are you sure?')">
+                    <i class="fas fa-redo me-2"></i> Restart from Beginning
+                </a>
+            @endif
+            <a href="{{ route('student.dashboard') }}" class="btn btn-link text-muted text-decoration-none" style="color: #888; text-decoration: none; font-size: 0.9rem; text-align: center;">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+@endif
 
     <header>
         <div class="ielts-logo">IELTS</div>

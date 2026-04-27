@@ -400,6 +400,8 @@
 
                 <form method="POST" action="{{ route('login.post') }}">
                     @csrf
+                    <input type="hidden" name="test_id" value="{{ request('test_id') }}">
+                    <input type="hidden" name="category" value="{{ request('category') }}">
                     
                     <div class="form-floating mb-4 position-relative">
                         <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="name@example.com">

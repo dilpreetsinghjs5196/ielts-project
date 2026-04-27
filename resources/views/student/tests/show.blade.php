@@ -2,23 +2,39 @@
 
 @section('content')
 
-@if(!$attempt->wasRecentlyCreated)
+@if($attempt->status === 'completed' || !$attempt->wasRecentlyCreated)
 <div id="resume-confirm-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999; background: rgba(13, 22, 36, 0.95); backdrop-filter: blur(10px);">
     <div class="card border-0 shadow-lg text-center p-5" style="max-width: 500px; border-radius: 24px;">
         <div class="mb-4">
             <div class="rounded-circle bg-warning-subtle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                 <i class="fas fa-history text-warning fs-1"></i>
             </div>
-            <h2 class="fw-bold mb-3">Resume Test?</h2>
-            <p class="text-muted">You have an ongoing attempt for <strong>{{ $test->name }}</strong>. Would you like to pick up where you left off?</p>
+            <h2 class="fw-bold mb-3">{{ $attempt->status === 'completed' ? 'Test Already Given' : 'Resume Test?' }}</h2>
+            <p class="text-muted">
+                @if($attempt->status === 'completed')
+                    You have already submitted an attempt for <strong>{{ $test->name }}</strong>. What would you like to do?
+                @else
+                    You have an ongoing attempt for <strong>{{ $test->name }}</strong>. Would you like to pick up where you left off?
+                @endif
+            </p>
         </div>
         <div class="d-grid gap-3">
-            <button class="btn btn-warning py-3 rounded-pill fw-bold" onclick="document.getElementById('resume-confirm-overlay').remove()">
-                <i class="fas fa-play me-2"></i> Continue Previous Attempt
-            </button>
-            <a href="{{ route('student.tests.restart', $test) }}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold" onclick="return confirm('Starting fresh will permanently delete your current progress. Are you sure?')">
-                <i class="fas fa-redo me-2"></i> Restart from Beginning
-            </a>
+            @if($attempt->status === 'completed')
+                <a href="{{ route('student.tests.review', $test) }}" class="btn btn-outline-dark py-3 rounded-pill fw-bold">
+                    <i class="fas fa-eye me-2"></i> Review Old Test
+                </a>
+                <a href="{{ route('student.tests.restart', $test) }}" class="btn btn-warning py-3 rounded-pill fw-bold shadow-sm" onclick="return confirm('Are you sure you want to retry? This will delete your previous attempt.')">
+                    <i class="fas fa-redo me-2"></i> Retry Test Again
+                </a>
+            @else
+                <button class="btn btn-warning py-3 rounded-pill fw-bold shadow-sm" onclick="document.getElementById('resume-confirm-overlay').remove()">
+                    <i class="fas fa-play me-2"></i> Resume Old One Test
+                </button>
+                <a href="{{ route('student.tests.restart', $test) }}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold" onclick="return confirm('Starting fresh will permanently delete your current progress. Are you sure?')">
+                    <i class="fas fa-redo me-2"></i> Restart from Beginning
+                </a>
+            @endif
+            <a href="{{ route('student.dashboard') }}" class="btn btn-link text-muted text-decoration-none">Back to Dashboard</a>
         </div>
     </div>
 </div>
