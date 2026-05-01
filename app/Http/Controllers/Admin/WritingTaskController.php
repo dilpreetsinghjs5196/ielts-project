@@ -32,12 +32,15 @@ class WritingTaskController extends Controller
                 $file = $request->file('image');
                 $filename = time() . '_' . $file->getClientOriginalName();
                 
-                // Ensure directory exists
-                $targetDir = public_path('storage/writing_tasks');
+                // Determine target directory (Local uses public, Live often uses public_html)
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage/writing_tasks') 
+                    : public_path('storage/writing_tasks');
+
                 if (!file_exists($targetDir)) {
                     mkdir($targetDir, 0777, true);
                 }
-
+                
                 $file->move($targetDir, $filename);
                 $writingTask->image = 'writing_tasks/' . $filename;
             }
