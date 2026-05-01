@@ -66,6 +66,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Writing Grading
+    Route::post('writing-attempts/{id}/grade', [ResultController::class, 'gradeWriting'])->name('writing-attempts.grade');
 });
 
 // Student Protected Routes

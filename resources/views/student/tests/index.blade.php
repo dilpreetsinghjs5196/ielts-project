@@ -75,8 +75,12 @@
                                                 <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill">Not Started</span>
                                             @elseif($attempt->status === 'pending')
                                                 <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">In Progress</span>
-                                            @elseif(in_array($test->view_category, ['writing', 'speaking']) && $attempt->status === 'completed')
-                                                <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill">Submitted</span>
+                                            @elseif(in_array($test->view_category, ['writing', 'speaking']))
+                                                @if($attempt->score !== null)
+                                                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Graded</span>
+                                                @else
+                                                    <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill">Submitted</span>
+                                                @endif
                                             @else
                                                 <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Completed</span>
                                             @endif
@@ -91,10 +95,10 @@
                                                         <a href="{{ route('student.tests.restart', $test) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
                                                     @endif
                                                 </div>
-                                            @elseif(in_array($test->view_category, ['writing', 'speaking']))
+                                            @elseif(in_array($test->view_category, ['writing', 'speaking']) && $attempt->score === null)
                                                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" disabled>Awaiting Grade</button>
                                             @else
-                                                <a href="{{ route('student.tests.review', $test) }}" class="btn btn-sm btn-outline-success rounded-pill px-4">Review Result</a>
+                                                <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => $test->view_category]) }}" class="btn btn-sm btn-outline-success rounded-pill px-4">Review Result</a>
                                             @endif
                                         </td>
                                     </tr>

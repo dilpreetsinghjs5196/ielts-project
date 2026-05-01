@@ -31,6 +31,10 @@
                         </thead>
                         <tbody>
                             @forelse ($attempts as $attempt)
+                            @php
+                                $isWriting = $attempt->attempt_type === 'writing';
+                                $test = $isWriting ? $attempt->writingTest : $attempt->test;
+                            @endphp
                             <tr>
                                 <td class="px-4 py-4">
                                     <div class="d-flex align-items-center">
@@ -44,12 +48,18 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">{{ $attempt->test->name ?? 'Deleted Test' }}</h6>
-                                    <small class="text-muted">{{ $attempt->test->moduleSet->name ?? 'N/A' }}</small>
+                                    <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">{{ $test->name ?? 'Deleted Test' }}</h6>
+                                    <small class="text-muted">
+                                        @if($isWriting)
+                                            {{ $test->level->name ?? 'Writing Module' }}
+                                        @else
+                                            {{ $test->moduleSet->name ?? 'N/A' }}
+                                        @endif
+                                    </small>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2" style="font-size: 0.75rem;">
-                                        {{ $attempt->test->category->name ?? 'N/A' }}
+                                    <span class="badge {{ $isWriting ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary' }} rounded-pill px-3 py-2" style="font-size: 0.75rem;">
+                                        {{ $isWriting ? 'Writing' : ($test->category->name ?? 'N/A') }}
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -60,19 +70,22 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <h6 class="mb-0 font-weight-bold" style="color: {{ $attempt->score >= 20 ? '#10b981' : '#ef4444' }};">
-                                        {{ $attempt->score ?? 0 }} / 40
+                                    <h6 class="mb-0 font-weight-bold" style="color: {{ ($isWriting ? $attempt->score >= 5 : $attempt->score >= 20) ? '#10b981' : '#ef4444' }};">
+                                        {{ $attempt->score ?? 'N/A' }} {{ $isWriting ? '' : '/ 40' }}
                                     </h6>
+                                    @if($isWriting && $attempt->score === null)
+                                        <small class="text-muted">Not Graded</small>
+                                    @endif
                                 </td>
                                 <td class="text-center">
                                     <span class="text-muted small">
-                                        {{ $attempt->started_at ? $attempt->started_at->format('d M Y, H:i') : 'N/A' }}
+                                        {{ $attempt->created_at ? $attempt->created_at->format('d M Y, H:i') : 'N/A' }}
                                     </span>
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ route('admin.results.review', $attempt) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Review</a>
-                                        <form action="{{ route('admin.results.destroy', $attempt) }}" method="POST" onsubmit="return confirm('Delete this attempt?');">
+                                        <a href="{{ route('admin.results.review', ['attempt' => $attempt->id, 'type' => $attempt->attempt_type]) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Review</a>
+                                        <form action="{{ route('admin.results.destroy', ['result' => $attempt->id, 'type' => $attempt->attempt_type]) }}" method="POST" onsubmit="return confirm('Delete this attempt?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</button>

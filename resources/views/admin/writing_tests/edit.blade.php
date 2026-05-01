@@ -92,9 +92,8 @@
                             <textarea name="task_prompt" class="form-control form-control-sm" rows="4">{{ $task->question_text }}</textarea>
                         </div>
 
-                        @if($task->task_number == 1)
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Task 1 Image (Graph/Chart)</label>
+                            <label class="form-label small fw-bold text-muted">Task {{ $task->task_number }} Image (Optional)</label>
                             @if($task->image)
                                 <div class="mb-2">
                                     <img src="{{ asset('storage/' . $task->image) }}" class="img-thumbnail" style="max-height: 150px;">
@@ -102,7 +101,6 @@
                             @endif
                             <input type="file" name="image" class="form-control form-control-sm">
                         </div>
-                        @endif
 
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted">Sample Answer (Model Answer)</label>

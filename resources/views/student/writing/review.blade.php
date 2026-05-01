@@ -71,7 +71,7 @@
             <a class="navbar-brand fw-bold text-danger" href="#">IELTS REVIEW</a>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted small d-none d-md-block">Test: {{ $test->name }}</span>
-                <a href="{{ route('student.dashboard') }}" class="btn btn-outline-dark btn-sm rounded-pill px-4">
+                <a href="{{ auth('web')->check() ? route('admin.results.index') : route('student.dashboard') }}" class="btn btn-outline-dark btn-sm rounded-pill px-4">
                     <i class="fas fa-arrow-left me-2"></i> Exit Review
                 </a>
             </div>
@@ -79,6 +79,13 @@
     </nav>
 
     <div class="container py-5">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="mb-5 text-center">
@@ -118,13 +125,61 @@
                     </div>
                 @endforeach
 
-                <div class="text-center mt-5">
-                    <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'writing']) }}" 
-                       class="btn btn-warning px-5 py-3 fw-bold rounded-pill shadow"
-                       onclick="return confirm('Are you sure you want to retry? This will delete your current submission.')">
-                        <i class="fas fa-redo me-2"></i> Retry This Test Again
-                    </a>
-                </div>
+                @if(auth('web')->check())
+                    <div class="review-card shadow-sm border-primary" style="border-top: 5px solid #0d6efd;">
+                        <div class="card-header-task bg-primary text-white">
+                            <i class="fas fa-edit me-2"></i> Grade This Submission (Admin Only)
+                        </div>
+                        <div class="task-body">
+                            <form action="{{ route('admin.writing-attempts.grade', $attempt->id) }}" method="POST">
+                                @csrf
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">Band Score (0-9)</label>
+                                        <input type="number" name="score" step="0.5" min="0" max="9" class="form-control" value="{{ $attempt->score }}" placeholder="e.g. 7.5" required>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label fw-bold">Overall Feedback</label>
+                                        <textarea name="feedback" class="form-control" rows="5" placeholder="Provide detailed feedback for the student...">{{ $attempt->feedback }}</textarea>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary px-5 fw-bold">Save Grade & Feedback</button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    @if($attempt->score || $attempt->feedback)
+                        <div class="review-card shadow-sm border-success" style="border-top: 5px solid #198754;">
+                            <div class="card-header-task bg-success text-white">
+                                <i class="fas fa-comment-dots me-2"></i> Trainer's Feedback & Score
+                            </div>
+                            <div class="task-body">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="me-4">
+                                        <div class="text-muted small text-uppercase fw-bold">Band Score</div>
+                                        <div class="h2 fw-bold text-success mb-0">{{ $attempt->score ?? 'N/A' }}</div>
+                                    </div>
+                                    <div class="border-start ps-4">
+                                        <div class="text-muted small text-uppercase fw-bold">Status</div>
+                                        <div class="badge bg-success">Graded</div>
+                                    </div>
+                                </div>
+                                <h6 class="fw-bold">Feedback:</h6>
+                                <div class="p-3 bg-light rounded border">
+                                    {!! nl2br(e($attempt->feedback ?? 'No feedback provided yet.')) !!}
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="text-center mt-5">
+                        <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'writing']) }}" 
+                           class="btn btn-warning px-5 py-3 fw-bold rounded-pill shadow"
+                           onclick="return confirm('Are you sure you want to retry? This will delete your current submission.')">
+                            <i class="fas fa-redo me-2"></i> Retry This Test Again
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
