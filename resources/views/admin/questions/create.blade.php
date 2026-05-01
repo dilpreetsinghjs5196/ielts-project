@@ -81,7 +81,17 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
                     @endif
+
+                    <div class="mb-3" id="image_section">
+                        <label for="image" class="form-label font-weight-bold">Optional Question Image</label>
+                        <input type="file" name="image" id="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">
+                        <small class="text-muted">Upload an image specific to this question (Optional).</small>
+                        @error('image')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
                     <div class="mb-3">
                         <label for="q_content" class="form-label font-weight-bold" id="contentLabel">Question Instruction</label>

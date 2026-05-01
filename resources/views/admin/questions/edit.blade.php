@@ -84,6 +84,20 @@
                         @enderror
                     </div>
 
+                    <div class="mb-3" id="image_section">
+                        <label for="image" class="form-label font-weight-bold">Optional Question Image</label>
+                        @if ($question->image)
+                            <div class="mb-2">
+                                <img src="{{ asset('storage/' . $question->image) }}" alt="Question Image" class="img-fluid rounded border" style="max-height: 200px;">
+                            </div>
+                        @endif
+                        <input type="file" name="image" id="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">
+                        <small class="text-muted">Upload an image specific to this question (Optional).</small>
+                        @error('image')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="mb-3">
                         <label for="q_content" class="form-label font-weight-bold" id="contentLabel">Question Content</label>
                         <textarea name="content" id="q_content" rows="4" class="form-control @error('content') is-invalid @enderror" placeholder="Type the specific question prompt here..." required>{{ old('content', $question->content) }}</textarea>

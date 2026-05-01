@@ -23,6 +23,7 @@ class Question extends Model
         'correct_answer',
         'explanation',
         'marks',
+        'image',
         'status',
     ];
 

@@ -49,6 +49,12 @@
                             <label for="attachment" class="form-label font-weight-bold">Writing Task Image (Chart/Graph)</label>
                             <input type="file" name="attachment" id="attachment" class="form-control" accept="image/*">
                         </div>
+
+                        <div class="mb-4" id="image_section">
+                            <label for="image" class="form-label font-weight-bold">Optional Segment Image (For Reading/Others)</label>
+                            <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                            <small class="text-muted">Upload an image that will appear in the passage/segment area.</small>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -86,6 +86,23 @@ class QuestionController extends Controller
             $data['attachment'] = $request->file('attachment')->store('questions/attachments', 'public');
         }
 
+        // Handle Dynamic Path Image
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            
+            $targetDir = is_dir(base_path('../public_html')) 
+                ? base_path('../public_html/storage/test_images') 
+                : public_path('storage/test_images');
+
+            if (!file_exists($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+
+            $file->move($targetDir, $filename);
+            $data['image'] = 'test_images/' . $filename;
+        }
+
         // Handle options if it's a type that requires options
         if (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
             $data['options'] = array_filter($request->options);
@@ -151,6 +168,23 @@ class QuestionController extends Controller
         // Handle Image Attachment
         if ($request->hasFile('attachment')) {
             $data['attachment'] = $request->file('attachment')->store('questions/attachments', 'public');
+        }
+
+        // Handle Dynamic Path Image
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            
+            $targetDir = is_dir(base_path('../public_html')) 
+                ? base_path('../public_html/storage/writing_tasks') 
+                : public_path('storage/writing_tasks');
+
+            if (!file_exists($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+
+            $file->move($targetDir, $filename);
+            $data['image'] = 'writing_tasks/' . $filename;
         }
 
         if (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {

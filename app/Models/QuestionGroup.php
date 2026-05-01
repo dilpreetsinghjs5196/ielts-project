@@ -19,6 +19,7 @@ class QuestionGroup extends Model
         'audio_file',
         'attachment',
         'instruction',
+        'image',
         'status',
     ];
 

@@ -60,6 +60,18 @@
                             @endif
                             <input type="file" name="attachment" id="attachment" class="form-control" accept="image/*">
                         </div>
+
+                        <div class="mb-4" id="image_section">
+                            <label for="image" class="form-label font-weight-bold">Optional Segment Image (For Reading/Others)</label>
+                            @if ($questionGroup->image)
+                                <div class="mb-3 p-2 bg-light rounded border text-center">
+                                    <p class="small text-muted mb-2 text-start">Current Optional Image:</p>
+                                    <img src="{{ asset('storage/' . $questionGroup->image) }}" class="img-fluid rounded shadow-sm" style="max-height: 300px;">
+                                </div>
+                            @endif
+                            <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                            <small class="text-muted">Upload an image that will appear in the passage/segment area.</small>
+                        </div>
                     </div>
                 </div>
             </div>

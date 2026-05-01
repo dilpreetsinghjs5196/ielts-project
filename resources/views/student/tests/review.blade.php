@@ -43,6 +43,11 @@
                             <div class="passage-text">
                                 {!! $group->passage !!}
                             </div>
+                            @if ($group->image)
+                                <div class="segment-image mt-4 text-center">
+                                    <img src="{{ asset('storage/' . $group->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 500px;">
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -143,6 +148,12 @@
                                                 @endphp
                                                 {!! $renderedBody !!}
                                             </div>
+
+                                            @if ($question->image)
+                                                <div class="question-image mb-3">
+                                                    <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 400px;">
+                                                </div>
+                                            @endif
 
                                             @if ($question->question_type === 'mcq' || $question->question_type === 'tfng')
                                                 <div class="options-grid d-grid gap-2">

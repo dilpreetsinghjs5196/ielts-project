@@ -134,6 +134,22 @@ class QuestionGroupController extends Controller
             $data['attachment'] = $request->file('attachment')->store('groups/attachments', 'public');
         }
 
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            
+            $targetDir = is_dir(base_path('../public_html')) 
+                ? base_path('../public_html/storage/test_images') 
+                : public_path('storage/test_images');
+
+            if (!file_exists($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+
+            $file->move($targetDir, $filename);
+            $data['image'] = 'test_images/' . $filename;
+        }
+
         $group = QuestionGroup::create($data);
 
         return redirect()->route('admin.question-groups.show', $group)->with('success', 'Question Group (Segment) created successfully. Now add questions to it.');
@@ -176,6 +192,22 @@ class QuestionGroupController extends Controller
 
         if ($request->hasFile('attachment')) {
             $data['attachment'] = $request->file('attachment')->store('groups/attachments', 'public');
+        }
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            
+            $targetDir = is_dir(base_path('../public_html')) 
+                ? base_path('../public_html/storage/test_images') 
+                : public_path('storage/test_images');
+
+            if (!file_exists($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+
+            $file->move($targetDir, $filename);
+            $data['image'] = 'test_images/' . $filename;
         }
 
         $questionGroup->update($data);

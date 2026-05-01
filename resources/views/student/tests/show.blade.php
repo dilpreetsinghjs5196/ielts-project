@@ -98,6 +98,12 @@
                                 <img src="{{ asset('storage/' . $group->attachment) }}" class="img-fluid rounded-3 border shadow-sm">
                             </div>
                         @endif
+
+                        @if ($group->image)
+                            <div class="segment-image mt-4">
+                                <img src="{{ asset('storage/' . $group->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 500px;">
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endforeach
@@ -221,6 +227,12 @@
                                         <div class="fw-semibold mb-3" style="line-height: 2.5;">
                                             {!! nl2br($qContent) !!}
                                         </div>
+
+                                        @if ($question->image)
+                                            <div class="question-image mb-3">
+                                                <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 400px;">
+                                            </div>
+                                        @endif
 
                                         {{-- Standard inputs (only show if tags didn't replace them) --}}
                                         @if ($question->question_type === 'match_heading')
