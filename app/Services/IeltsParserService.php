@@ -10,7 +10,11 @@ class IeltsParserService
         $text = preg_replace('/Page\s+\d+/i', '', $text);
         
         $segments = [];
-        $passageMarkers = ['READING PASSAGE 1', 'READING PASSAGE 2', 'READING PASSAGE 3', 'Section 1', 'Section 2', 'Section 3', 'Part 1', 'Part 2', 'Part 3'];
+        $passageMarkers = [
+            '/READING\s+PASSAGE\s+\d+/i', 
+            '/\b(?:Section|Part)\s+(\d+)\b/i',
+            '/TRANSCRIPT\s+FOR\s+(?:PART|SECTION)\s+(\d+)/i'
+        ];
         
         $lines = explode("\n", $text);
         
@@ -22,8 +26,8 @@ class IeltsParserService
             if (empty($trimmedLine)) continue;
 
             $isMarker = false;
-            foreach ($passageMarkers as $marker) {
-                if (strcasecmp($trimmedLine, $marker) === 0) {
+            foreach ($passageMarkers as $pattern) {
+                if (preg_match($pattern, $trimmedLine)) {
                     $isMarker = true;
                     break;
                 }
@@ -31,7 +35,7 @@ class IeltsParserService
 
             if ($isMarker) {
                 // Save previous segment if exists
-                if (!empty($currentContent)) {
+                if (!empty(trim($currentContent))) {
                     $passageAndQuestions = $this->splitPassageAndQuestions($currentContent);
                     $segments[] = [
                         'title' => $currentPassageTitle,
@@ -40,14 +44,20 @@ class IeltsParserService
                     ];
                 }
                 $currentPassageTitle = $trimmedLine;
-                $currentContent = "";
+                
+                // If the marker line also contains "Questions X-Y", keep that part for the new segment's content
+                if (preg_match('/Questions?\s+\d+\s*(?:[\-\–\—to\s+and\s+]*\s*\d+)?/i', $trimmedLine, $qMatch, PREG_OFFSET_CAPTURE)) {
+                    $currentContent = substr($trimmedLine, $qMatch[0][1]) . "\n";
+                } else {
+                    $currentContent = "";
+                }
             } else {
                 $currentContent .= $line . "\n";
             }
         }
 
         // Final segment
-        if (!empty($currentContent)) {
+        if (!empty(trim($currentContent))) {
             $passageAndQuestions = $this->splitPassageAndQuestions($currentContent);
             $segments[] = [
                 'title' => $currentPassageTitle,
@@ -61,16 +71,18 @@ class IeltsParserService
 
     protected function splitPassageAndQuestions($text)
     {
-        // 1. Identify the 'Actual' question start. 
-        // We skip the boilerplate "You should spend about 20 minutes on Questions 1-13..."
-        $searchOffset = 0;
-        if (preg_match('/You\s+should\s+spend\s+.*?minutes\s+on\s+Questions\s+\d+/i', $text, $m, PREG_OFFSET_CAPTURE)) {
-            $searchOffset = $m[0][1] + strlen($m[0][0]);
-        }
-
-        // 2. Find the first REAL "Questions X-Y" header after the boilerplate
-        if (preg_match('/Questions\s+\d+/i', $text, $matches, PREG_OFFSET_CAPTURE, $searchOffset)) {
+        // For listening, the 'passage' is the transcript. Often it's BEFORE the questions.
+        // We look for the first occurrence of "Questions X-Y"
+        if (preg_match('/Questions\s+\d+/i', $text, $matches, PREG_OFFSET_CAPTURE)) {
             $offset = $matches[0][1];
+            
+            // Check if there's an "instructions" block like "You should spend..." 
+            // We want to keep that with the questions, not the passage.
+            $searchBefore = substr($text, 0, $offset);
+            if (preg_match('/You\s+should\s+spend\s+.*?minutes\s+on\s+Questions\s+\d+/i', $searchBefore, $m, PREG_OFFSET_CAPTURE)) {
+                $offset = $m[0][1];
+            }
+
             return [
                 'passage' => trim(substr($text, 0, $offset)),
                 'questions' => trim(substr($text, $offset))
@@ -86,16 +98,20 @@ class IeltsParserService
     protected function parseSubSegments($text)
     {
         // Support all dash types: -, –, — and "to"
-        preg_match_all('/Questions\s+(\d+)\s*[\-\–\—to]+\s*(\d+)/i', $text, $matches, PREG_OFFSET_CAPTURE);
+        // Standard IELTS labels: Part X, Section X, Questions X-Y, Questions X and Y
+        preg_match_all('/(?:Questions?|Q\.?|Part\s?\d+|Section\s?\d+)\s*(\d+)\s*(?:[\-\–\—to\s+and\s+]*\s*(\d+))?/i', $text, $matches, PREG_OFFSET_CAPTURE);
         
         $subSegments = [];
         
         if (empty($matches[0])) {
-            $subSegments[] = [
-                'header' => 'General Questions',
-                'instructions' => 'Follow the instructions below.',
-                'questions' => $this->extractQuestions($text)
-            ];
+            $questions = $this->extractQuestions($text);
+            if (!empty($questions)) {
+                $subSegments[] = [
+                    'header' => 'General Questions',
+                    'instructions' => 'Follow the instructions below.',
+                    'questions' => $questions
+                ];
+            }
             return $subSegments;
         }
         
@@ -112,8 +128,11 @@ class IeltsParserService
             
             $reachedQuestions = false;
             foreach ($lines as $line) {
-                // Numbered questions (1. 2.) or any line with a blank
-                if (preg_match('/(\d+)[\.\)\s]\s+/', $line) || strpos($line, '___') !== false) {
+                $trimmed = trim($line);
+                if (empty($trimmed)) continue;
+
+                // Numbered questions (1. 2. or just 1 2) or any line with a blank
+                if (preg_match('/^(\d+)[\.\)\s]/', $trimmed) || strpos($trimmed, '___') !== false || strpos($trimmed, '[q') !== false) {
                     $reachedQuestions = true;
                 }
                 
@@ -124,28 +143,29 @@ class IeltsParserService
                 }
             }
 
-            // Fallback: If we have a range but NO questions were detected yet,
-            // then everything except the first 2-3 lines of instructions must be questions.
-            if (!$reachedQuestions && !empty($matches[1][$i][0])) {
+            // Fallback: If we have a range but NO questions were detected yet
+            if (!$reachedQuestions) {
                 $tempLines = array_filter(array_map('trim', $lines));
-                if (count($tempLines) > 1) {
-                    // Keep first line as instruction header, rest as questions
-                    $instructions = array_shift($tempLines) . "\n";
+                if (count($tempLines) > 0) {
                     $questionLines = $tempLines;
                 }
             }
 
-            // Detect global options for Matching tasks
-            $globalOptions = $this->extractOptions($subText);
+            $startNum = $matches[1][$i][0];
+            $endNum = $matches[2][$i][0] ?? $startNum;
             
             // Extract questions
-            $questions = $this->extractQuestions(implode("\n", $questionLines), $matches[1][$i][0], $matches[2][$i][0]);
+            $questions = $this->extractQuestions(implode("\n", $questionLines), $startNum, $endNum);
+            
+            // Detect global options for Matching tasks
+            $globalOptions = $this->extractOptions($subText);
             
             // Improved Instruction-based type detection
             $isTFNG = preg_match('/TRUE\s*[\/\-]\s*FALSE/i', $instructions) || preg_match('/YES\s*[\/\-]\s*NO/i', $instructions);
             $isHeading = preg_match('/List\s*of\s*Headings/i', $instructions) || preg_match('/List\s*of\s*Headings/i', $subText);
             // Paragraph Matching: "Write the correct letter, A-G"
             $isParaMatch = preg_match('/Write\s+the\s+correct\s+letter/i', $instructions) && preg_match('/[A-G]\-[A-G]/i', $instructions);
+            $isMultiMCQ = preg_match('/Choose\s+(?:TWO|THREE|FOUR|2|3|4)\s+letters/i', $instructions);
 
             // Assign types and global options
             foreach ($questions as &$q) {
@@ -164,6 +184,9 @@ class IeltsParserService
                     } else {
                         $q['options'] = $globalOptions;
                     }
+                } elseif ($isMultiMCQ) {
+                    $q['type'] = 'mcq_multi';
+                    if (!empty($globalOptions)) $q['options'] = $globalOptions;
                 } elseif (!$hasBlank && empty($q['options']) && count($globalOptions) >= 2) {
                     $q['options'] = $globalOptions;
                     $q['type'] = 'mcq';
@@ -182,14 +205,16 @@ class IeltsParserService
     
     protected function extractQuestions($text, $startRange = null, $endRange = null)
     {
-        // 1. Try to find explicitly numbered questions (Standard list: 1. 2. 3.)
-        $pattern = '/(^|\n)\s*(\d+)[\.\)\s]\s+(.*?)(?=\s*\n\s*\d+[\.\)\s]\s+|$)/s';
+        // 1. Try to find explicitly numbered questions (Standard list: 1. 2. 3. or 1 2 3)
+        // Improved pattern: catch numbers at start of line, after separator, or in table, or just mid-line if clearly a question
+        $pattern = '/(?:^|\n| \| |\t|(?<=[a-z])\s+)\s*(\d+)[ \.\)\:\-]+\s*(.*?)(?=\s*(?:\n| \| |\t|\s{2,})\s*\d+[ \.\)\:\-]+|$)/s';
         preg_match_all($pattern, $text, $matches);
         
         $questions = [];
-        if (!empty($matches[2])) {
-            foreach ($matches[2] as $index => $number) {
-                $qBody = trim($matches[3][$index]);
+        $foundNumbers = [];
+        if (!empty($matches[1])) {
+            foreach ($matches[1] as $index => $number) {
+                $qBody = trim($matches[2][$index]);
                 $type = $this->detectType($qBody);
                 $questions[] = [
                     'number' => $number,
@@ -197,26 +222,24 @@ class IeltsParserService
                     'type' => $type,
                     'options' => ($type === 'mcq' || $type === 'mcq_multi' || $type === 'match_heading') ? $this->extractOptions($qBody) : []
                 ];
+                $foundNumbers[] = (int)$number;
             }
         } 
         
         // 2. Check for Summary Completion / Embedded Numbers (e.g. 32______, 4 ______)
-        // We find all embedded numbers and split the text into chunks for each question
         preg_match_all('/(?:^|[^0-9])(\d{1,2})[ \t\x{00A0}]*(?:_{2,}|[\. ]_{2,})/u', $text, $embeddedMatches, PREG_OFFSET_CAPTURE);
         
         if (!empty($embeddedMatches[1])) {
-            $questions = [];
+            $embeddedQuestions = [];
             
-            // Check if it's a single paragraph (summary) or multiple questions in a range (4-7)
-            $newlineCount = substr_count(trim($text), "\n");
-            $isSummary = count($embeddedMatches[1]) > 1; 
+            // Check if it's a single paragraph (summary)
+            $isSummary = count($embeddedMatches[1]) > 1 && substr_count(trim($text), "\n") < count($embeddedMatches[1]); 
 
             if ($isSummary) {
-                // Keep whole block together for the first question, others are markers
                 $processedText = preg_replace('/(?:^|[^0-9])(\d{1,2})[ \t\x{00A0}]*(?:_{2,}|[\. ]_{2,})/u', ' [q$1] ', $text);
                 foreach ($embeddedMatches[1] as $idx => $match) {
                     $num = $match[0];
-                    $questions[] = [
+                    $embeddedQuestions[] = [
                         'number' => $num,
                         'body' => ($idx === 0) ? trim($processedText) : "[q$num]",
                         'type' => 'fill_blanks',
@@ -224,16 +247,20 @@ class IeltsParserService
                     ];
                 }
             } else {
-                // Process as individual bulleted segments
+                $lastOffset = 0;
                 foreach ($embeddedMatches[1] as $idx => $match) {
                     $num = $match[0];
                     $offset = $match[1];
                     $nextOffset = isset($embeddedMatches[1][$idx + 1]) ? $embeddedMatches[1][$idx + 1][1] : strlen($text);
-                    $start = ($idx === 0) ? 0 : $offset - 2; 
-                    $segmentText = substr($text, $start, $nextOffset - $start);
+                    
+                    // Capture text from where the last question ended up to where the next one starts
+                    $segmentText = substr($text, $lastOffset, $nextOffset - $lastOffset);
+                    $lastOffset = $nextOffset; // Update for next iteration
+
+                    // Replace the current number's blank with [qX] but leave other numbers alone
                     $processedBody = preg_replace('/(?:^|[^0-9])' . $num . '[ \t\x{00A0}]*(?:_{2,}|[\. ]_{2,})/u', ' [q'.$num.'] ', $segmentText);
                     
-                    $questions[] = [
+                    $embeddedQuestions[] = [
                         'number' => $num,
                         'body' => trim($processedBody),
                         'type' => 'fill_blanks',
@@ -241,33 +268,78 @@ class IeltsParserService
                     ];
                 }
             }
-            return $questions;
+
+            // Merge embedded questions into the main list if they weren't found by the first pattern
+            foreach ($embeddedQuestions as $eq) {
+                if (!in_array((int)$eq['number'], $foundNumbers)) {
+                    $questions[] = $eq;
+                    $foundNumbers[] = (int)$eq['number'];
+                }
+            }
         }
 
-        // 3. Fallback: If no numbers found, and we have a range, use the 'line-by-line' or 'aggressive' approach
-        if (empty($questions) && $startRange && $endRange) {
-            $currentNum = (int)$startRange;
-            $endNum = (int)$endRange;
-            
-            // Split by newline OR by our new table cell separator " | "
-            $blocks = preg_split('/\n| \| /', $text);
-            foreach ($blocks as $block) {
-                $block = trim($block);
-                if (empty($block)) continue;
-                if ($currentNum > $endNum) break;
+        // Sort questions by number
+        usort($questions, function($a, $b) {
+            return (int)$a['number'] <=> (int)$b['number'];
+        });
 
-                $body = preg_replace('/^[ \t]*[\-\*\•\.\)]\s+/u', '', $block);
-                if (strpos($body, '___') === false && strpos($body, '[q') === false) {
-                    $body = "______ " . $body;
+        // 3. Fallback: If we have a range but some questions are still missing
+        if ($startRange && $endRange) {
+            $expectedCount = (int)$endRange - (int)$startRange + 1;
+            if (count($questions) < $expectedCount) {
+                $currentNum = (int)$startRange;
+                $endNum = (int)$endRange;
+                
+                // If we found NO questions, use the line-by-line approach
+                if (empty($questions)) {
+                    $blocks = preg_split('/\n| \| /', $text);
+                    foreach ($blocks as $block) {
+                        $block = trim($block);
+                        if (empty($block) || $currentNum > $endNum) continue;
+
+                        $body = preg_replace('/^[ \t]*[\-\*\•\.\)]\s+/u', '', $block);
+                        if (strpos($body, '___') === false && strpos($body, '[q') === false) {
+                            $body = "______ " . $body;
+                        }
+
+                        $questions[] = [
+                            'number' => (string)$currentNum,
+                            'body' => $body,
+                            'type' => 'fill_blanks',
+                            'options' => []
+                        ];
+                        $currentNum++;
+                    }
+                } else {
+                    // We found some, but not all. Fill missing numbers in the range with placeholders
+                    $start = (int)$startRange;
+                    $end = (int)$endRange;
+                    
+                    // If range is large (like 1-10) but we only found a few, fill the rest
+                    for ($n = $start; $n <= $end; $n++) {
+                        $exists = false;
+                        foreach ($questions as $q) {
+                            if ((int)$q['number'] === $n) {
+                                $exists = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!$exists) {
+                            $questions[] = [
+                                'number' => (string)$n,
+                                'body' => 'Question ' . $n . ' (Auto-placeholder)',
+                                'type' => 'short_answer',
+                                'options' => []
+                            ];
+                        }
+                    }
+
+                    // Sort again to maintain order
+                    usort($questions, function($a, $b) {
+                        return (int)$a['number'] <=> (int)$b['number'];
+                    });
                 }
-
-                $questions[] = [
-                    'number' => (string)$currentNum,
-                    'body' => $body,
-                    'type' => 'fill_blanks',
-                    'options' => []
-                ];
-                $currentNum++;
             }
         }
         
@@ -286,8 +358,8 @@ class IeltsParserService
     public function extractOptions($body)
     {
         // 1. Try alphabet A., B., C...
-        // Strictly stop if we see a number (e.g. 36.) followed by a dot, even without a newline
-        $patternAlpha = '/([A-G])[\.\)\s]\s+(.*?)(?=\s+[A-G][\.\)\s]\s+|\s+\d+[\.\)\s]|$)/s';
+        // Support table separators " | " and flexible separators, and mid-line options
+        $patternAlpha = '/(?:^|\n| \| |\t|(?<=[a-z])\s{2,})\s*([A-G])[\.\)\s]+\s*(.*?)(?=\s*(?:\n| \| |\t|\s{2,})\s*[A-G][\.\)\s]+|\s*\d+[ \.\)\:\-]+|$)/s';
         preg_match_all($patternAlpha, $body, $matches);
         
         if (!empty($matches[1])) {
@@ -295,7 +367,7 @@ class IeltsParserService
         }
 
         // 2. Try Roman numerals i., ii., iii... (for Headings)
-        $patternRoman = '/(v?i{0,3}|iv)[\.\)\s]\s+(.*?)(?=\s+(?:v?i{1,3}|iv|v)[\.\)\s]\s+|\s+\d+[\.\)\s]|$)/s';
+        $patternRoman = '/(?:^|\n| \| |\t|(?<=[a-z])\s{2,})\s*(v?i{0,3}|iv)[\.\)\s]+\s*(.*?)(?=\s*(?:\n| \| |\t|\s{2,})\s*(?:v?i{1,3}|iv|v)[\.\)\s]+|\s*\d+[ \.\)\:\-]+|$)/s';
         preg_match_all($patternRoman, $body, $matches);
         
         if (!empty($matches[1])) {

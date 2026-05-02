@@ -21,6 +21,11 @@ class QuestionGroupController extends Controller
         if ($categorySlug === 'speaking') {
             return redirect()->route('admin.tests.index', ['category' => 'speaking']);
         }
+
+        // REDIRECT LISTENING FULLY TO NEW LISTENING CONTROLLER
+        if ($categorySlug === 'listening') {
+            return redirect()->route('admin.listening-tests.index', $request->all());
+        }
         
         $activeCategory = Category::where('slug', $categorySlug)->firstOrFail();
         

@@ -51,6 +51,17 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     Route::resource('writing-tests', WritingTestController::class);
     Route::resource('writing-tasks', WritingTaskController::class);
     Route::resource('speaking-tests', App\Http\Controllers\Admin\SpeakingTestController::class);
+    Route::resource('listening-tests', App\Http\Controllers\Admin\ListeningTestController::class);
+    Route::get('listening-parts/create', [App\Http\Controllers\Admin\ListeningTestController::class, 'createPart'])->name('listening-parts.create');
+    Route::post('listening-parts', [App\Http\Controllers\Admin\ListeningTestController::class, 'storePart'])->name('listening-parts.store');
+    Route::get('listening-parts/{part}', [App\Http\Controllers\Admin\ListeningTestController::class, 'showPart'])->name('listening-parts.show');
+    Route::post('listening-parts/{part}/update', [App\Http\Controllers\Admin\ListeningTestController::class, 'updatePart'])->name('listening-parts.update');
+    Route::delete('listening-parts/{part}', [App\Http\Controllers\Admin\ListeningTestController::class, 'destroyPart'])->name('listening-parts.destroy');
+
+    Route::get('listening-questions/create', [App\Http\Controllers\Admin\ListeningTestController::class, 'createQuestion'])->name('listening-questions.create');
+    Route::post('listening-questions', [App\Http\Controllers\Admin\ListeningTestController::class, 'storeQuestion'])->name('listening-questions.store');
+    Route::post('listening-questions/{question}/update', [App\Http\Controllers\Admin\ListeningTestController::class, 'updateQuestion'])->name('listening-questions.update');
+    Route::delete('listening-questions/{question}', [App\Http\Controllers\Admin\ListeningTestController::class, 'destroyQuestion'])->name('listening-questions.destroy');
     Route::resource('questions', QuestionController::class);
     Route::resource('question-groups', QuestionGroupController::class);
     
@@ -111,10 +122,10 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
     Route::get('/take-test', [\App\Http\Controllers\Student\MockTestController::class, 'take'])->name('tests.take');
     Route::get('/my-tests', [\App\Http\Controllers\Student\MockTestController::class, 'index'])->name('tests.index');
     Route::get('/tests/{id}', [\App\Http\Controllers\Student\MockTestController::class, 'show'])->name('tests.show');
-    Route::get('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'thankYou'])->name('tests.thank-you');
+    Route::get('/tests/{id}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'thankYou'])->name('tests.thank-you');
     Route::get('/tests/{id}/review', [\App\Http\Controllers\Student\MockTestController::class, 'review'])->name('tests.review');
-    Route::post('/tests/{test}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submit'])->name('tests.submit');
-    Route::post('/tests/{test}/save-progress', [\App\Http\Controllers\Student\MockTestController::class, 'saveProgress'])->name('tests.save-progress');
+    Route::post('/tests/{id}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submit'])->name('tests.submit');
+    Route::post('/tests/{id}/save-progress', [\App\Http\Controllers\Student\MockTestController::class, 'saveProgress'])->name('tests.save-progress');
     Route::get('/tests/{id}/restart', [\App\Http\Controllers\Student\MockTestController::class, 'restart'])->name('tests.restart');
     Route::post('/writing-tests/{id}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submitWriting'])->name('writing-tests.submit');
 });

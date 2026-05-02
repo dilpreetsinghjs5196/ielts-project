@@ -1,0 +1,228 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\ListeningTest;
+use App\Models\ListeningPart;
+use App\Models\ListeningQuestion;
+use App\Models\Level;
+use App\Models\TestType;
+use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class ListeningTestController extends Controller
+{
+    public function index(Request $request)
+    {
+        $categorySlug = 'listening';
+        $activeCategory = Category::where('slug', $categorySlug)->firstOrFail();
+        
+        $testTypeId = $request->query('test_type') ?: session('last_test_type_id');
+        if ($request->query('test_type')) session(['last_test_type_id' => $testTypeId]);
+
+        $levelId = $request->query('level');
+        $testId = $request->query('test');
+
+        $testTypes = TestType::all();
+        $levels = $testTypeId ? Level::all() : collect();
+        
+        $tests = ($testTypeId && $levelId) 
+            ? ListeningTest::where('test_type_id', $testTypeId)->where('level_id', $levelId)->get()
+            : collect();
+
+        $parts = $testId ? ListeningPart::where('listening_test_id', $testId)->withCount('questions')->get() : collect();
+        
+        $noModuleLevels = [1, 2];
+
+        return view('admin.listening_parts.index', compact(
+            'parts', 
+            'activeCategory', 
+            'testTypes', 
+            'levels', 
+            'tests',
+            'testTypeId',
+            'levelId',
+            'testId',
+            'noModuleLevels'
+        ));
+    }
+
+    public function showPart(ListeningPart $part)
+    {
+        $part->load('questions');
+        $activeCategory = Category::where('slug', 'listening')->first();
+        return view('admin.listening_parts.show', compact('part', 'activeCategory'));
+    }
+
+    public function createPart(Request $request)
+    {
+        $testId = $request->query('test_id');
+        $test = ListeningTest::findOrFail($testId);
+        return view('admin.listening_parts.create', compact('test'));
+    }
+
+    public function storePart(Request $request)
+    {
+        $request->validate([
+            'listening_test_id' => 'required|exists:listening_tests,id',
+            'part_number' => 'required|integer',
+            'title' => 'required|string|max:255',
+            'instruction' => 'nullable|string',
+            'passage' => 'nullable|string',
+        ]);
+
+        $part = ListeningPart::create($request->all());
+
+        return redirect()->route('admin.listening-parts.show', $part)->with('success', 'Part created successfully. Now add questions.');
+    }
+
+    public function createQuestion(Request $request)
+    {
+        $partId = $request->query('part_id');
+        $part = ListeningPart::findOrFail($partId);
+        return view('admin.listening_questions.create', compact('part'));
+    }
+
+    public function storeQuestion(Request $request)
+    {
+        $request->validate([
+            'listening_part_id' => 'required|exists:listening_parts,id',
+            'question_number' => 'required|string',
+            'question_type' => 'required|string',
+            'title' => 'required|string',
+            'marks' => 'required|integer',
+        ]);
+
+        $question = ListeningQuestion::create($request->all());
+
+        return redirect()->route('admin.listening-parts.show', $request->listening_part_id)->with('success', 'Question added successfully.');
+    }
+
+    public function edit(ListeningTest $listeningTest)
+    {
+        $levels = Level::all();
+        $testTypes = TestType::all();
+        $listeningTest->load('parts.questions');
+        return view('admin.listening_tests.edit', compact('listeningTest', 'levels', 'testTypes'));
+    }
+
+    public function update(Request $request, ListeningTest $listeningTest)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'level_id' => 'required|exists:levels,id',
+            'test_type_id' => 'required|exists:test_types,id',
+            'status' => 'required|in:active,inactive',
+            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:20480',
+        ]);
+
+        $data = $request->only(['name', 'level_id', 'test_type_id', 'status']);
+
+        if ($request->hasFile('audio_file')) {
+            if ($listeningTest->audio_file) {
+                Storage::disk('public')->delete($listeningTest->audio_file);
+            }
+            $data['audio_file'] = $request->file('audio_file')->store('listening/audio', 'public');
+        }
+
+        $listeningTest->update($data);
+
+        return redirect()->route('admin.tests.index', [
+            'category' => 'listening',
+            'test_type_id' => $listeningTest->test_type_id,
+            'level_id' => $listeningTest->level_id
+        ])->with('success', 'Listening Test updated successfully.');
+    }
+
+    public function updatePart(Request $request, ListeningPart $part)
+    {
+        $request->validate([
+            'title' => 'nullable|string|max:255',
+            'instruction' => 'nullable|string',
+            'passage' => 'nullable|string',
+            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:20480',
+            'image' => 'nullable|image|max:5120',
+        ]);
+
+        $data = $request->only(['title', 'instruction', 'passage']);
+
+        if ($request->hasFile('audio_file')) {
+            if ($part->audio_file) {
+                Storage::disk('public')->delete($part->audio_file);
+            }
+            $data['audio_file'] = $request->file('audio_file')->store('listening/parts/audio', 'public');
+        }
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $this->handleImageUpload($request->file('image'), 'listening_parts');
+        }
+
+        $part->update($data);
+
+        return redirect()->back()->with('success', 'Part updated successfully.');
+    }
+
+    public function updateQuestion(Request $request, ListeningQuestion $question)
+    {
+        $request->validate([
+            'question_number' => 'required|string',
+            'question_type' => 'required|string',
+            'title' => 'nullable|string',
+            'content' => 'nullable|string',
+            'correct_answer' => 'nullable|string',
+            'image' => 'nullable|image|max:5120',
+            'marks' => 'required|integer',
+        ]);
+
+        $data = $request->only(['question_number', 'question_type', 'title', 'content', 'correct_answer', 'marks']);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $this->handleImageUpload($request->file('image'), 'listening_questions');
+        }
+
+        if ($request->has('options')) {
+            $data['options'] = array_filter($request->options);
+        }
+
+        $question->update($data);
+
+        return redirect()->back()->with('success', 'Question updated successfully.');
+    }
+
+    protected function handleImageUpload($file, $subDir)
+    {
+        $filename = time() . '_' . $file->getClientOriginalName();
+        
+        $targetDir = is_dir(base_path('../public_html')) 
+            ? base_path('../public_html/storage/' . $subDir) 
+            : public_path('storage/' . $subDir);
+
+        if (!file_exists($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $file->move($targetDir, $filename);
+        return $subDir . '/' . $filename;
+    }
+
+    public function destroy(ListeningTest $listeningTest)
+    {
+        $listeningTest->delete();
+        return redirect()->route('admin.listening-tests.index')->with('success', 'Listening Test deleted successfully.');
+    }
+
+    public function destroyPart(ListeningPart $part)
+    {
+        $testId = $part->listening_test_id;
+        $part->delete();
+        return redirect()->route('admin.listening-tests.index', ['test' => $testId])->with('success', 'Part deleted successfully.');
+    }
+
+    public function destroyQuestion(ListeningQuestion $question)
+    {
+        $question->delete();
+        return redirect()->back()->with('success', 'Question deleted successfully.');
+    }
+}

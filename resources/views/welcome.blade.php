@@ -1171,7 +1171,7 @@
                     container.innerHTML = `
                         <div class="list-group shadow-sm" style="border-radius:14px;overflow:hidden;">
                             ${tests.map((test, i) => {
-                        const targetUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id) + (['writing', 'speaking'].includes(test.category) ? '?category=' + test.category : '');
+                        const targetUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id) + (['writing', 'speaking', 'listening'].includes(test.category) ? '?category=' + test.category : '');
                         const loginUrl = "{{ route('login') }}?test_id=" + test.id + "&category=" + test.category;
                         const testUrl = isStudentLoggedIn ? targetUrl : loginUrl;
                         const btnText = isStudentLoggedIn ? `Start <i class="fas fa-arrow-right ms-1"></i>` : `Login to Start <i class="fas fa-lock ms-1"></i>`;

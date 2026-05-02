@@ -18,6 +18,9 @@ use App\Models\SpeakingQuestion;
 use App\Services\SpeakingParserService;
 use App\Models\Level;
 use App\Models\TestType;
+use App\Models\ListeningTest;
+use App\Models\ListeningPart;
+use App\Models\ListeningQuestion;
 use PhpOffice\PhpWord\IOFactory;
 use Smalot\PdfParser\Parser as PdfParser;
 
@@ -78,7 +81,12 @@ class IeltsImportController extends Controller
                 return $this->handleSpeakingImport($request, $text, $testName);
             }
 
-            // HANDLE READING/LISTENING
+            // HANDLE LISTENING CATEGORY
+            if ($activeCategory->slug === 'listening') {
+                return $this->handleListeningImport($request, $text, $testName);
+            }
+
+            // HANDLE READING
             $parsedData = $this->parser->parseText($text);
             
             $test = Test::create([
@@ -178,6 +186,58 @@ class IeltsImportController extends Controller
 
         return redirect()->route('admin.speaking-tests.edit', $speakingTest->id)
             ->with('success', "Speaking Test '{$testName}' imported successfully into new dedicated tables!");
+    }
+
+    protected function handleListeningImport($request, $text, $testName)
+    {
+        $parsedData = $this->parser->parseText($text);
+        
+        $listeningTest = ListeningTest::create([
+            'name' => $testName,
+            'test_type_id' => $request->test_type_id,
+            'level_id' => $request->level_id,
+            'status' => 'inactive',
+        ]);
+
+        $partsCreated = 0;
+        foreach ($parsedData as $index => $segmentData) {
+            // Check if there are any questions in this segment
+            $totalQuestions = 0;
+            foreach ($segmentData['sub_segments'] as $sub) {
+                $totalQuestions += count($sub['questions']);
+            }
+            if ($totalQuestions === 0) continue;
+
+            $part = ListeningPart::create([
+                'listening_test_id' => $listeningTest->id,
+                'part_number' => $partsCreated + 1,
+                'title' => $segmentData['title'],
+                'instruction' => $segmentData['sub_segments'][0]['header'] ?? null,
+                'passage' => $segmentData['content'], // This stores the transcript if provided
+            ]);
+
+            foreach ($segmentData['sub_segments'] as $subSegment) {
+                foreach ($subSegment['questions'] as $qData) {
+                    ListeningQuestion::create([
+                        'listening_part_id' => $part->id,
+                        'question_number' => $qData['number'],
+                        'question_type' => $qData['type'],
+                        'title' => $qData['body'],
+                        'options' => $qData['options'],
+                        'marks' => 1,
+                    ]);
+                }
+            }
+            $partsCreated++;
+        }
+
+        if ($partsCreated === 0) {
+            $listeningTest->delete();
+            throw new \Exception("No valid parts or questions found in the file.");
+        }
+
+        return redirect()->route('admin.listening-tests.edit', $listeningTest->id)
+            ->with('success', "Listening Test '{$testName}' imported successfully! You can now upload audio and images.");
     }
 
     protected function extractText($file)

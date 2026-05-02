@@ -10,6 +10,7 @@ use App\Models\TestType;
 use App\Models\ModuleSet;
 use App\Models\WritingTest;
 use App\Models\SpeakingTest;
+use App\Models\ListeningTest;
 use Illuminate\Http\Request;
 
 class TestController extends Controller
@@ -75,6 +76,7 @@ class TestController extends Controller
         $categories = Category::withCount('tests')->get();
         $writingCategory = Category::where('slug', 'writing')->first();
         $speakingCategory = Category::where('slug', 'speaking')->first();
+        $listeningCategory = Category::where('slug', 'listening')->first();
         
         foreach ($categories as $cat) {
             if ($writingCategory && $cat->id === $writingCategory->id) {
@@ -82,6 +84,9 @@ class TestController extends Controller
             }
             if ($speakingCategory && $cat->id === $speakingCategory->id) {
                 $cat->tests_count = $cat->tests_count + \App\Models\SpeakingTest::count();
+            }
+            if ($listeningCategory && $cat->id === $listeningCategory->id) {
+                $cat->tests_count = $cat->tests_count + \App\Models\ListeningTest::count();
             }
         }
         
@@ -116,7 +121,19 @@ class TestController extends Controller
             }
         }
         
-        return view('admin.tests.index', compact('levels', 'categories', 'selectedCategory', 'selectedTestType', 'selectedModuleSet', 'selectedLevel', 'testTypes', 'noModuleLevels', 'writingTests', 'speakingTests'));
+        // Handle Listening Tests collection for the view
+        $listeningTests = collect();
+        if ($selectedCategory && $selectedCategory->slug === 'listening') {
+            if ($selectedLevel) {
+                $listeningTests = ListeningTest::where('level_id', $selectedLevel->id)
+                    ->where('test_type_id', $effectiveTestTypeId)
+                    ->withCount('parts')
+                    ->latest()
+                    ->get();
+            }
+        }
+        
+        return view('admin.tests.index', compact('levels', 'categories', 'selectedCategory', 'selectedTestType', 'selectedModuleSet', 'selectedLevel', 'testTypes', 'noModuleLevels', 'writingTests', 'speakingTests', 'listeningTests'));
     }
 
     public function create(Request $request)

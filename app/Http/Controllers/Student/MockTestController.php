@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 use App\Models\Test;
 use App\Models\Category;
+use App\Models\ListeningTest;
+use App\Models\SpeakingTest;
+use App\Models\WritingTest;
+use App\Models\ListeningPart;
+use App\Models\TestAttempt;
+use App\Models\ListeningAttempt;
 
 class MockTestController extends Controller
 {
@@ -46,7 +52,7 @@ class MockTestController extends Controller
 
         // IF CATEGORY IS WRITING, LOAD FROM WRITING_TESTS
         if ($categorySlug === 'writing') {
-            $test = \App\Models\WritingTest::with('tasks')->findOrFail($id);
+            $test = WritingTest::with('tasks')->findOrFail($id);
             
             // Find latest writing attempt
             $attempt = \App\Models\WritingAttempt::where('student_id', $student->id)
@@ -54,16 +60,36 @@ class MockTestController extends Controller
                 ->latest()
                 ->first();
 
-            // If no attempt exists, we'll create a placeholder if needed or just handle it in view
-            // For writing, we usually just start fresh if no attempt.
-            
             return view('student.writing.show', compact('test', 'attempt'));
         }
 
         // IF CATEGORY IS SPEAKING, LOAD FROM SPEAKING_TESTS
         if ($categorySlug === 'speaking') {
-            $test = \App\Models\SpeakingTest::with('parts.questions')->findOrFail($id);
+            $test = SpeakingTest::with('parts.questions')->findOrFail($id);
             return view('student.speaking.show', compact('test'));
+        }
+
+        // IF CATEGORY IS LISTENING, LOAD FROM LISTENING_TESTS
+        if ($categorySlug === 'listening') {
+            $test = ListeningTest::with('parts.questions')->findOrFail($id);
+            
+            // Find or create attempt
+            $attempt = ListeningAttempt::where('student_id', $student->id)
+                ->where('listening_test_id', $test->id)
+                ->latest()
+                ->first();
+
+            if (!$attempt) {
+                $attempt = ListeningAttempt::create([
+                    'student_id' => $student->id,
+                    'listening_test_id' => $test->id,
+                    'status' => 'pending',
+                    'started_at' => now(),
+                    'time_left' => 2400
+                ]);
+            }
+            
+            return view('student.listening.show', compact('test', 'attempt'));
         }
 
         // REGULAR TEST HANDLING
@@ -91,10 +117,51 @@ class MockTestController extends Controller
         return view('student.tests.show', compact('test', 'attempt'));
     }
 
-    public function submit(Request $request, Test $test)
+    public function submit(Request $request, $id)
     {
         $student = auth('student')->user();
-        
+        $category = $request->get('category');
+
+        if ($category === 'listening') {
+            $test = ListeningTest::with('parts.questions')->findOrFail($id);
+            $attempt = ListeningAttempt::where('student_id', $student->id)
+                ->where('listening_test_id', $test->id)
+                ->where('status', 'pending')
+                ->first();
+
+            if ($attempt) {
+                $studentAnswers = $request->answers;
+                $score = 0;
+                
+                foreach ($test->parts as $part) {
+                    foreach ($part->questions as $question) {
+                        $qId = $question->id;
+                        if (isset($studentAnswers[$qId])) {
+                            if ($this->gradeQuestion($question, $studentAnswers[$qId])) {
+                                $score += $question->marks;
+                            }
+                        }
+                    }
+                }
+
+                $attempt->update([
+                    'status' => 'completed',
+                    'answers' => $studentAnswers,
+                    'score' => $score,
+                    'completed_at' => now()
+                ]);
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Listening test submitted successfully!',
+                'score' => $score ?? 0,
+                'redirect' => route('student.dashboard')
+            ]);
+        }
+
+        // Default: Reading/General Test
+        $test = Test::with('questionGroups.questions')->findOrFail($id);
         $attempt = \App\Models\TestAttempt::where('student_id', $student->id)
             ->where('test_id', $test->id)
             ->where('status', 'pending')
@@ -103,9 +170,6 @@ class MockTestController extends Controller
         if ($attempt) {
             $studentAnswers = $request->answers;
             $score = 0;
-            
-            // Load questions for grading
-            $test->load('questionGroups.questions');
             
             foreach ($test->questionGroups as $group) {
                 foreach ($group->questions as $question) {
@@ -130,7 +194,7 @@ class MockTestController extends Controller
             'success' => true, 
             'message' => 'Test submitted successfully!',
             'score' => $score ?? 0,
-            'redirect' => route('student.tests.thank-you', $test)
+            'redirect' => route('student.tests.thank-you', $test->id)
         ]);
     }
 
@@ -183,14 +247,22 @@ class MockTestController extends Controller
         return $correct === trim(strtolower((string)$studentAnswer));
     }
 
-    public function saveProgress(Request $request, Test $test)
+    public function saveProgress(Request $request, $id)
     {
         $student = auth('student')->user();
-        
-        $attempt = \App\Models\TestAttempt::where('student_id', $student->id)
-            ->where('test_id', $test->id)
-            ->where('status', 'pending')
-            ->first();
+        $category = $request->get('category');
+
+        if ($category === 'listening') {
+            $attempt = ListeningAttempt::where('student_id', $student->id)
+                ->where('listening_test_id', $id)
+                ->where('status', 'pending')
+                ->first();
+        } else {
+            $attempt = TestAttempt::where('student_id', $student->id)
+                ->where('test_id', $id)
+                ->where('status', 'pending')
+                ->first();
+        }
 
         if ($attempt) {
             $attempt->update([
@@ -214,6 +286,13 @@ class MockTestController extends Controller
             return redirect()->route('student.tests.show', ['id' => $id, 'category' => 'writing'])->with('success', 'Test restarted!');
         }
 
+        if ($category === 'listening') {
+            \App\Models\ListeningAttempt::where('student_id', $student->id)
+                ->where('listening_test_id', $id)
+                ->delete();
+            return redirect()->route('student.tests.show', ['id' => $id, 'category' => 'listening'])->with('success', 'Test restarted!');
+        }
+
         \App\Models\TestAttempt::where('student_id', $student->id)
             ->where('test_id', $id)
             ->delete();
@@ -221,14 +300,26 @@ class MockTestController extends Controller
         return redirect()->route('student.tests.show', $id)->with('success', 'Test restarted!');
     }
 
-    public function thankYou(Test $test)
+    public function thankYou(Request $request, $id)
     {
         $studentId = auth('student')->id();
-        $attempt = \App\Models\TestAttempt::where('student_id', $studentId)
-            ->where('test_id', $test->id)
-            ->where('status', 'completed')
-            ->latest()
-            ->first();
+        $category = $request->get('category');
+
+        if ($category === 'listening') {
+            $test = ListeningTest::findOrFail($id);
+            $attempt = ListeningAttempt::where('student_id', $studentId)
+                ->where('listening_test_id', $id)
+                ->where('status', 'completed')
+                ->latest()
+                ->first();
+        } else {
+            $test = Test::findOrFail($id);
+            $attempt = \App\Models\TestAttempt::where('student_id', $studentId)
+                ->where('test_id', $id)
+                ->where('status', 'completed')
+                ->latest()
+                ->first();
+        }
 
         if (!$attempt) {
             return redirect()->route('student.dashboard');

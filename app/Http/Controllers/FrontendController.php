@@ -7,6 +7,9 @@ use App\Models\ModuleSet;
 use App\Models\Category;
 use App\Models\TestType;
 use App\Models\Test;
+use App\Models\ListeningTest;
+use App\Models\SpeakingTest;
+use App\Models\WritingTest;
 use Illuminate\Http\Request;
 
 class FrontendController extends Controller
@@ -35,7 +38,7 @@ class FrontendController extends Controller
      */
     public function getModuleSets(Request $request)
     {
-        $category = Category::where('slug', $request->get('category'))->first();
+        $category = Category::where('slug', strtolower($request->get('category')))->first();
         $testType = TestType::where('name', $request->get('test_type'))->first();
         $levelId  = $request->get('level_id');
 
@@ -64,7 +67,7 @@ class FrontendController extends Controller
     {
         $moduleSetId = $request->get('module_set_id');
         $studentId   = auth('student')->id();
-        $category    = Category::where('slug', $request->get('category'))->first();
+        $category    = Category::where('slug', strtolower($request->get('category')))->first();
         $testType    = TestType::where('name', $request->get('test_type'))->first();
         $levelId     = $request->get('level_id');
 
@@ -101,8 +104,25 @@ class FrontendController extends Controller
             });
             return response()->json($tests);
         }
+        
+        // SPECIAL HANDLING FOR LISTENING
+        if ($category && $category->slug === 'listening') {
+            $query = ListeningTest::where('status', 'active');
+            if ($levelId) $query->where('level_id', $levelId);
+            if ($testType) $query->where('test_type_id', $testType->id);
+            
+            $tests = $query->get()->map(function($test) use ($studentId) {
+                return [
+                    'id' => $test->id,
+                    'name' => $test->name,
+                    'status' => 'not_started', // We can improve this with attempt check later
+                    'category' => 'listening'
+                ];
+            });
+            return response()->json($tests);
+        }
 
-        // REGULAR HANDLING (Reading/Listening)
+        // REGULAR HANDLING (Reading)
         $query = Test::where('status', 'active')
             ->with(['attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
