@@ -116,10 +116,29 @@
             @foreach ($test->parts as $p_idx => $part)
                 <div class="question-group mb-5 {{ $p_idx === 0 ? '' : 'd-none' }}" data-group-id="{{ $part->id }}">
                     
+                    @php
+                        // 1. Prepare Question Mapping
+                        $renderedInstruction = $part->instruction;
+                        $embeddedQIds = [];
+                        $pattern = '/\[\s*q?(\d+)\s*\]/i';
+                        
+                        // Process Title tags in all questions of this part
+                        foreach ($part->questions as $q) {
+                            if (preg_match_all($pattern, $q->title, $matches)) {
+                                foreach ($matches[1] as $num) {
+                                    $targetQ = $part->questions->filter(fn($pq) => $pq->question_number == $num)->first();
+                                    if ($targetQ && $targetQ->id != $q->id) {
+                                        $embeddedQIds[] = $targetQ->id;
+                                    }
+                                }
+                            }
+                        }
+                    @endphp
+
                     <div class="group-instruction mb-4 p-3 bg-warning-subtle rounded-3 border-start border-warning border-4">
                         <h6 class="fw-bold mb-1">Instructions</h6>
-                        <div class="mb-0 text-muted instruction-content">
-                            {!! nl2br($part->instruction) !!}
+                        <div class="mb-0 text-muted instruction-content" style="line-height: 1.8;">
+                            {!! nl2br($renderedInstruction) !!}
                         </div>
                     </div>
 
@@ -127,18 +146,20 @@
                         @foreach ($part->questions as $question)
                             @php
                                 $qContent = $question->title;
-                                $pattern = '/\[\s*q?(\d+)\s*\]/i';
-                                $isEmbedded = preg_match($pattern, $qContent);
+                                $isEmbeddedInBody = preg_match($pattern, $qContent);
                                 
-                                if ($isEmbedded) {
-                                    $qContent = preg_replace_callback($pattern, function($m) use ($question) {
+                                if ($isEmbeddedInBody) {
+                                    $qContent = preg_replace_callback($pattern, function($m) use ($question, $part) {
                                         $num = $m[1];
                                         return '<input type="text" name="q_'.$question->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center smart-q-input" style="width: 80px; border-bottom: 2px solid #ce9d3c; border-top:0; border-left:0; border-right:0; border-radius:0;" data-q-id="'.$question->id.'" data-q-num="'.$num.'" placeholder="'.$num.'">';
                                     }, $qContent);
                                 }
+                                
+                                // Logic to hide cards that are embedded elsewhere
+                                $isHidden = in_array($question->id, $embeddedQIds);
                             @endphp
 
-                            <div class="question-item mb-4 pb-4 border-bottom" 
+                            <div class="question-item mb-4 pb-4 border-bottom {{ $isHidden ? 'd-none' : '' }}" 
                                  id="q-{{ $question->id }}" 
                                  data-q-id="{{ $question->id }}" 
                                  data-q-type="{{ $question->question_type }}">
@@ -169,8 +190,17 @@
                                                     </label>
                                                 @endforeach
                                             </div>
+                                        @elseif ($question->question_type === 'mcq_multi')
+                                            <div class="mcq-options d-flex flex-column gap-2">
+                                                @foreach ($question->options as $opt_idx => $option)
+                                                    <label class="option-label d-flex align-items-center gap-3 p-3 bg-white border rounded-3 cursor-pointer">
+                                                        <input type="checkbox" name="q_{{ $question->id }}[]" value="{{ $opt_idx }}" class="form-check-input">
+                                                        <span class="option-text">{{ $opt_idx }}. {{ $option }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
                                         @elseif ($question->question_type === 'fill_blanks' || $question->question_type === 'short_answer')
-                                            @if(!$isEmbedded)
+                                            @if(!$isEmbeddedInBody)
                                                 <div class="fill-blanks-container mt-3">
                                                     <input type="text" name="q_{{ $question->id }}" class="form-control border-bottom border-top-0 border-start-0 border-end-0 bg-light px-3" placeholder="Enter answer..." style="height: 45px; border-radius: 8px;">
                                                 </div>
@@ -274,9 +304,20 @@
             if (type === 'mcq') {
                 const checked = q.querySelector('input:checked');
                 answers[id] = checked ? checked.value : null;
+            } else if (type === 'mcq_multi') {
+                const checked = q.querySelectorAll('input:checked');
+                answers[id] = Array.from(checked).map(c => c.value).join(', ');
             } else {
                 const input = q.querySelector('input[type="text"]');
-                answers[id] = input ? input.value : '';
+                if (input) {
+                    // Collect all smart inputs for this question if it's a merged one
+                    const allInputs = q.querySelectorAll('.smart-q-input');
+                    if (allInputs.length > 1) {
+                        answers[id] = Array.from(allInputs).map(i => i.value).join(', ');
+                    } else {
+                        answers[id] = input.value;
+                    }
+                }
             }
         });
 

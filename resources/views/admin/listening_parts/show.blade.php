@@ -83,8 +83,15 @@
                                     {{ $question->question_number }}
                                 </div>
                                 <div>
-                                    <p class="mb-0 font-weight-bold text-dark">{{ Str::limit($question->title, 120) }}</p>
-                                    <small class="text-muted">{{ strtoupper($question->question_type) }} | Marks: {{ $question->marks }}</small>
+                                    <p class="mb-0 font-weight-bold text-dark">{!! Str::limit(htmlspecialchars_decode($question->title, ENT_QUOTES), 150) !!}</p>
+                                    <div class="mt-1 d-flex align-items-center gap-2">
+                                        <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.7rem; border-radius: 6px;">
+                                            {{ str_replace('_', ' ', strtoupper($question->question_type)) }}
+                                        </span>
+                                        <span class="text-muted" style="font-size: 0.75rem;">
+                                            <i class="fas fa-star me-1 text-warning" style="font-size: 0.65rem;"></i> {{ $question->marks }} {{ Str::plural('Mark', $question->marks) }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -92,7 +99,7 @@
                                     <i class="fa fa-ellipsis-v text-xs"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
-                                    <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#editQuestion{{ $question->id }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Question</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ route('admin.listening-questions.edit', $question) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Question</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form action="{{ route('admin.listening-questions.destroy', $question) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
@@ -105,63 +112,6 @@
                                     </li>
                                 </ul>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Question Edit Modal (reused from edit view logic) -->
-                <div class="modal fade" id="editQuestion{{ $question->id }}" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
-                            <form action="{{ route('admin.listening-questions.update', $question) }}" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                <div class="modal-header border-0 pt-4 px-4">
-                                    <h5 class="modal-title fw-bold">Edit Question {{ $question->question_number }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body p-4">
-                                    <div class="row">
-                                        <div class="col-md-3 mb-3">
-                                            <label class="form-label fw-bold text-muted small uppercase">Number</label>
-                                            <input type="text" name="question_number" class="form-control" value="{{ $question->question_number }}" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold text-muted small uppercase">Type</label>
-                                            <select name="question_type" class="form-select" required>
-                                                <option value="mcq" {{ $question->question_type == 'mcq' ? 'selected' : '' }}>MCQ</option>
-                                                <option value="fill_blanks" {{ $question->question_type == 'fill_blanks' ? 'selected' : '' }}>Fill Blanks</option>
-                                                <option value="short_answer" {{ $question->question_type == 'short_answer' ? 'selected' : '' }}>Short Answer</option>
-                                                <option value="tfng" {{ $question->question_type == 'tfng' ? 'selected' : '' }}>TFNG</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <label class="form-label fw-bold text-muted small uppercase">Marks</label>
-                                            <input type="number" name="marks" class="form-control" value="{{ $question->marks }}" required>
-                                        </div>
-                                        <div class="col-12 mb-3">
-                                            <label class="form-label fw-bold text-muted small uppercase">Question Title / Body</label>
-                                            <textarea name="title" class="form-control" rows="3">{{ $question->title }}</textarea>
-                                        </div>
-                                        <div class="col-12 mb-3">
-                                            <label class="form-label fw-bold text-muted small uppercase">Correct Answer</label>
-                                            <input type="text" name="correct_answer" class="form-control" value="{{ $question->correct_answer }}">
-                                        </div>
-                                        <div class="col-12 mb-3">
-                                            <label class="form-label fw-bold text-muted small uppercase">Question Image</label>
-                                            <input type="file" name="image" class="form-control" accept="image/*">
-                                            @if($question->image)
-                                                <div class="mt-2 text-center">
-                                                    <img src="{{ asset('storage/' . $question->image) }}" class="img-thumbnail" style="max-height: 150px;">
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer border-0 pb-4 px-4">
-                                    <button type="button" class="btn btn-light fw-bold px-4" data-bs-dismiss="modal" style="border-radius: 10px;">Close</button>
-                                    <button type="submit" class="btn btn-primary fw-bold px-4" style="border-radius: 10px;">Save Changes</button>
-                                </div>
-                            </form>
                         </div>
                     </div>
                 </div>

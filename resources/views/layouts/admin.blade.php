@@ -140,7 +140,7 @@
             background-color: var(--primary-bg);
             position: relative;
             margin-left: 260px;
-            z-index: 10;
+            /* Removed z-index: 10 to prevent stacking context issues with modals */
             overflow-x: hidden;
             max-width: calc(100% - 260px);
         }
@@ -287,6 +287,13 @@
                 max-width: 100% !important;
                 width: 100% !important;
             }
+        }
+        /* Fix for Bootstrap Modals Stacking Context */
+        .modal {
+            z-index: 2000 !important;
+        }
+        .modal-backdrop {
+            z-index: 1900 !important;
         }
     </style>
     @stack('styles')

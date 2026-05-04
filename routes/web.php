@@ -60,6 +60,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
 
     Route::get('listening-questions/create', [App\Http\Controllers\Admin\ListeningTestController::class, 'createQuestion'])->name('listening-questions.create');
     Route::post('listening-questions', [App\Http\Controllers\Admin\ListeningTestController::class, 'storeQuestion'])->name('listening-questions.store');
+    Route::get('listening-questions/{question}/edit', [App\Http\Controllers\Admin\ListeningTestController::class, 'editQuestion'])->name('listening-questions.edit');
     Route::post('listening-questions/{question}/update', [App\Http\Controllers\Admin\ListeningTestController::class, 'updateQuestion'])->name('listening-questions.update');
     Route::delete('listening-questions/{question}', [App\Http\Controllers\Admin\ListeningTestController::class, 'destroyQuestion'])->name('listening-questions.destroy');
     Route::resource('questions', QuestionController::class);

@@ -33,7 +33,8 @@
                             @forelse ($attempts as $attempt)
                             @php
                                 $isWriting = $attempt->attempt_type === 'writing';
-                                $test = $isWriting ? $attempt->writingTest : $attempt->test;
+                                $isListening = $attempt->attempt_type === 'listening';
+                                $test = $isWriting ? $attempt->writingTest : ($isListening ? $attempt->listeningTest : $attempt->test);
                             @endphp
                             <tr>
                                 <td class="px-4 py-4">
@@ -50,16 +51,23 @@
                                 <td>
                                     <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">{{ $test->name ?? 'Deleted Test' }}</h6>
                                     <small class="text-muted">
-                                        @if($isWriting)
-                                            {{ $test->level->name ?? 'Writing Module' }}
+                                        @if($isWriting || $isListening)
+                                            {{ $test->level->name ?? ($isWriting ? 'Writing' : 'Listening') . ' Module' }}
                                         @else
                                             {{ $test->moduleSet->name ?? 'N/A' }}
                                         @endif
                                     </small>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge {{ $isWriting ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary' }} rounded-pill px-3 py-2" style="font-size: 0.75rem;">
-                                        {{ $isWriting ? 'Writing' : ($test->category->name ?? 'N/A') }}
+                                    @php
+                                        $badgeClass = 'bg-primary-subtle text-primary';
+                                        $moduleName = 'Standard';
+                                        if($isWriting) { $badgeClass = 'bg-info-subtle text-info'; $moduleName = 'Writing'; }
+                                        elseif($isListening) { $badgeClass = 'bg-warning-subtle text-warning'; $moduleName = 'Listening'; }
+                                        else { $moduleName = $test->category->name ?? 'Standard'; }
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }} rounded-pill px-3 py-2" style="font-size: 0.75rem;">
+                                        {{ $moduleName }}
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -70,7 +78,7 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <h6 class="mb-0 font-weight-bold" style="color: {{ ($isWriting ? $attempt->score >= 5 : $attempt->score >= 20) ? '#10b981' : '#ef4444' }};">
+                                    <h6 class="mb-0 font-weight-bold" style="color: {{ ($isWriting ? $attempt->score >= 5 : ($isListening ? $attempt->score >= 20 : $attempt->score >= 20)) ? '#10b981' : '#ef4444' }};">
                                         {{ $attempt->score ?? 'N/A' }} {{ $isWriting ? '' : '/ 40' }}
                                     </h6>
                                     @if($isWriting && $attempt->score === null)

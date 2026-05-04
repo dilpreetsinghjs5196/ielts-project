@@ -137,9 +137,7 @@ class MockTestController extends Controller
                     foreach ($part->questions as $question) {
                         $qId = $question->id;
                         if (isset($studentAnswers[$qId])) {
-                            if ($this->gradeQuestion($question, $studentAnswers[$qId])) {
-                                $score += $question->marks;
-                            }
+                            $score += $this->gradeQuestion($question, $studentAnswers[$qId]);
                         }
                     }
                 }
@@ -175,9 +173,7 @@ class MockTestController extends Controller
                 foreach ($group->questions as $question) {
                     $qId = $question->id;
                     if (isset($studentAnswers[$qId])) {
-                        if ($this->gradeQuestion($question, $studentAnswers[$qId])) {
-                            $score += $question->marks;
-                        }
+                        $score += $this->gradeQuestion($question, $studentAnswers[$qId]);
                     }
                 }
             }
@@ -222,29 +218,51 @@ class MockTestController extends Controller
 
     private function gradeQuestion($question, $studentAnswer)
     {
-        if (empty($studentAnswer)) return false;
+        if (empty($studentAnswer)) return 0;
         
         $correct = trim(strtolower($question->correct_answer));
+
+        // Handle Range Questions (e.g. "1-10") - Partial Scoring
+        if (strpos($question->question_number, '-') !== false) {
+            // Split correct answers by comma, " and ", or semicolon
+            $correctArray = preg_split('/[,]| and |;/', $correct);
+            $correctArray = array_map('trim', $correctArray);
+            
+            // Split student answers (usually joined by comma in JS)
+            $studentArray = is_array($studentAnswer) ? $studentAnswer : explode(',', $studentAnswer);
+            $studentArray = array_map('trim', array_map('strtolower', $studentArray));
+
+            $score = 0;
+            foreach ($correctArray as $idx => $val) {
+                if (isset($studentArray[$idx]) && $val === $studentArray[$idx]) {
+                    $score++;
+                }
+            }
+            return $score;
+        }
         
         if ($question->question_type === 'mcq_multi') {
             // Student answer is array e.g. ['A', 'B']
-            if (!is_array($studentAnswer)) return false;
+            if (!is_array($studentAnswer)) return 0;
             
             // Normalize correct answer (e.g. "A, B" or "A and B")
-            $correctArray = preg_split('/[,]| and /', $correct);
+            $correctArray = preg_split('/[,]| and |;/', $correct);
             $correctArray = array_map('trim', $correctArray);
             
             // Normalize student answer
             $studentArray = array_map('trim', array_map('strtolower', $studentAnswer));
             
-            sort($correctArray);
-            sort($studentArray);
-            
-            return $correctArray == $studentArray;
+            $score = 0;
+            foreach ($studentArray as $ans) {
+                if (in_array($ans, $correctArray)) {
+                    $score++;
+                }
+            }
+            return $score;
         }
         
         // Single answer comparison (case-insensitive)
-        return $correct === trim(strtolower((string)$studentAnswer));
+        return ($correct === trim(strtolower((string)$studentAnswer))) ? ($question->marks ?: 1) : 0;
     }
 
     public function saveProgress(Request $request, $id)
@@ -346,6 +364,21 @@ class MockTestController extends Controller
             }
 
             return view('student.writing.review', compact('test', 'attempt'));
+        }
+
+        if ($category === 'listening') {
+            $test = ListeningTest::with('parts.questions')->findOrFail($id);
+            $attempt = ListeningAttempt::where('student_id', $studentId)
+                ->where('listening_test_id', $id)
+                ->where('status', 'completed')
+                ->latest()
+                ->first();
+
+            if (!$attempt) {
+                return redirect()->route('student.dashboard');
+            }
+
+            return view('student.listening.review', compact('test', 'attempt'));
         }
 
         // Default (Standard Test)

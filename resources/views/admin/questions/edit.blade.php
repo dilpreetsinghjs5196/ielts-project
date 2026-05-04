@@ -144,7 +144,8 @@
                             <strong>Formatting Guide:</strong><br>
                             - <span class="text-primary font-weight-bold">Single Choice / TFNG</span>: Enter just the letter/word (e.g., <code class="bg-white px-1">A</code> or <code class="bg-white px-1">TRUE</code>)<br>
                             - <span class="text-primary font-weight-bold">Multi-select</span>: Enter letters separated by comma or 'and' (e.g., <code class="bg-white px-1">A, B</code> or <code class="bg-white px-1">A and B</code>)<br>
-                            - <span class="text-primary font-weight-bold">Short Answer</span>: Enter the exact case-insensitive word (limit special characters)
+                            - <span class="text-primary font-weight-bold">Short Answer</span>: Enter the exact case-insensitive word (limit special characters)<br>
+                            - <span class="text-primary font-weight-bold">Range Questions (e.g. 1-10)</span>: Enter answers separated by comma in order (e.g. <code class="bg-white px-1">Apple, Banana, Orange</code>)
                         </div>
                         @error('correct_answer')
                             <div class="invalid-feedback">{{ $message }}</div>

@@ -164,6 +164,12 @@ class ListeningTestController extends Controller
         return redirect()->back()->with('success', 'Part updated successfully.');
     }
 
+    public function editQuestion(ListeningQuestion $question)
+    {
+        $question->load('part');
+        return view('admin.listening_questions.edit', compact('question'));
+    }
+
     public function updateQuestion(Request $request, ListeningQuestion $question)
     {
         $request->validate([

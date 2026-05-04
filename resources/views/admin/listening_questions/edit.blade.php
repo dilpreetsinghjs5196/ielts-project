@@ -7,21 +7,19 @@
         <ol class="breadcrumb bg-transparent p-0 mb-0">
             <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="{{ route('admin.listening-tests.index') }}" class="text-decoration-none">Listening Test</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('admin.listening-parts.show', $part->id) }}" class="text-decoration-none">Part {{ $part->part_number }}</a></li>
-            <li class="breadcrumb-item active">Add Question</li>
+            <li class="breadcrumb-item"><a href="{{ route('admin.listening-parts.show', $question->part->id) }}" class="text-decoration-none">Part {{ $question->part->part_number }}</a></li>
+            <li class="breadcrumb-item active">Edit Question #{{ $question->id }}</li>
         </ol>
     </nav>
 
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="display-6 fw-bold text-dark">Add New Question</h2>
+            <h2 class="display-6 fw-bold text-dark">Edit Question: #{{ $question->id }}</h2>
         </div>
     </div>
 
-    <form action="{{ route('admin.listening-questions.store') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('admin.listening-questions.update', $question) }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <input type="hidden" name="listening_part_id" value="{{ $part->id }}">
-
         <div class="row g-4">
             <!-- Main Content Area -->
             <div class="col-lg-8">
@@ -29,27 +27,27 @@
                     <div class="card-body p-4">
                         <div class="alert alert-info border-0 shadow-sm mb-4 d-flex align-items-center" style="border-radius: 12px; background: rgba(59, 130, 246, 0.05); color: #1e40af;">
                             <i class="fas fa-info-circle me-3 fs-4"></i>
-                            <div>Creating a new question for <strong>Listening Part {{ $part->part_number }}</strong>.</div>
+                            <div>Editing a question for the <strong>Listening module</strong>.</div>
                         </div>
 
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <div class="form-group mb-4">
                                     <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Q. Number</label>
-                                    <input type="text" name="question_number" class="form-control form-control-lg border-2" placeholder="e.g., 14" style="border-radius: 12px;" required>
+                                    <input type="text" name="question_number" class="form-control form-control-lg border-2" value="{{ $question->question_number }}" style="border-radius: 12px;" required>
                                 </div>
                             </div>
                             <div class="col-md-8">
                                 <div class="form-group mb-4">
                                     <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Heading / Title</label>
-                                    <input type="text" name="title_placeholder" class="form-control form-control-lg border-2" placeholder="Brief descriptive title..." style="border-radius: 12px;">
+                                    <input type="text" name="title_placeholder" class="form-control form-control-lg border-2" value="{{ $question->title_placeholder ?? '' }}" placeholder="Brief descriptive title..." style="border-radius: 12px;">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group mb-4">
                             <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Content / Text</label>
-                            <textarea name="title" class="form-control border-2" rows="6" placeholder="Paste the question text here..." style="border-radius: 15px; font-size: 1.1rem; line-height: 1.6;" required></textarea>
+                            <textarea name="title" class="form-control border-2" rows="6" style="border-radius: 15px; font-size: 1.1rem; line-height: 1.6;" required>{{ $question->title }}</textarea>
                             <div class="form-text mt-2 text-muted">
                                 <i class="fas fa-keyboard me-1"></i> Use <code>____</code> (four underscores) to create a blank space for students to type.
                             </div>
@@ -57,7 +55,7 @@
 
                         <div class="form-group mb-4">
                             <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Correct Answer(s)</label>
-                            <input type="text" name="correct_answer" class="form-control form-control-lg border-2" placeholder="Enter answer..." style="border-radius: 12px; background: #f8fafc;">
+                            <input type="text" name="correct_answer" class="form-control form-control-lg border-2" value="{{ $question->correct_answer }}" style="border-radius: 12px; background: #f8fafc;">
                         </div>
 
                         <!-- Formatting Guide -->
@@ -73,8 +71,8 @@
                             </div>
                         </div>
 
-                        <!-- Options Section (Visible for MCQ) -->
-                        <div id="optionsSection" style="display: none;">
+                        <!-- Options Section -->
+                        <div id="optionsSection" style="{{ in_array($question->question_type, ['mcq', 'mcq_multi']) ? '' : 'display: none;' }}">
                             <div class="form-group mb-4">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider mb-0">Options (A, B, C...)</label>
@@ -83,18 +81,17 @@
                                     </button>
                                 </div>
                                 <div id="optionsContainer" class="row g-3">
-                                    <div class="col-md-6 option-item">
-                                        <div class="input-group">
-                                            <span class="input-group-text border-2 bg-light fw-bold">A</span>
-                                            <input type="text" name="options[A]" class="form-control border-2" placeholder="Option text">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 option-item">
-                                        <div class="input-group">
-                                            <span class="input-group-text border-2 bg-light fw-bold">B</span>
-                                            <input type="text" name="options[B]" class="form-control border-2" placeholder="Option text">
-                                        </div>
-                                    </div>
+                                    @if($question->options && is_array($question->options))
+                                        @foreach($question->options as $letter => $val)
+                                            <div class="col-md-6 option-item">
+                                                <div class="input-group">
+                                                    <span class="input-group-text border-2 bg-light fw-bold">{{ $letter }}</span>
+                                                    <input type="text" name="options[{{ $letter }}]" class="form-control border-2" value="{{ $val }}" placeholder="Option text">
+                                                    <button type="button" class="btn btn-outline-danger border-2" onclick="this.closest('.option-item').remove()"><i class="fas fa-times"></i></button>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -105,6 +102,12 @@
                                 <input type="file" name="image" class="form-control border-2" accept="image/*" style="border-radius: 12px 0 0 12px;">
                                 <span class="input-group-text bg-light border-2" style="border-radius: 0 12px 12px 0;"><i class="fas fa-image"></i></span>
                             </div>
+                            @if($question->image)
+                                <div class="mt-3 p-3 bg-light rounded border text-center">
+                                    <p class="small text-muted mb-2">Current Image Preview:</p>
+                                    <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded border shadow-sm" style="max-height: 200px;">
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -124,27 +127,27 @@
                         <div class="mb-4">
                             <label class="form-label text-muted small fw-bold">Question Format</label>
                             <select name="question_type" id="question_type" class="form-select form-select-lg border-2" style="border-radius: 12px; font-weight: 600;" required>
-                                <option value="mcq">Multiple Choice</option>
-                                <option value="mcq_multi">Multiple Choice (Multi-select)</option>
-                                <option value="fill_blanks" selected>Fill in the Blanks</option>
-                                <option value="short_answer">Short Answer</option>
-                                <option value="tfng">True/False/Not Given</option>
+                                <option value="mcq" {{ $question->question_type == 'mcq' ? 'selected' : '' }}>Multiple Choice</option>
+                                <option value="mcq_multi" {{ $question->question_type == 'mcq_multi' ? 'selected' : '' }}>Multiple Choice (Multi-select)</option>
+                                <option value="fill_blanks" {{ $question->question_type == 'fill_blanks' ? 'selected' : '' }}>Fill in the Blanks</option>
+                                <option value="short_answer" {{ $question->question_type == 'short_answer' ? 'selected' : '' }}>Short Answer</option>
+                                <option value="tfng" {{ $question->question_type == 'tfng' ? 'selected' : '' }}>True/False/Not Given</option>
                             </select>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label text-muted small fw-bold">Marks / Weightage</label>
                             <div class="input-group">
-                                <input type="number" name="marks" class="form-control form-control-lg border-2" value="1" style="border-radius: 12px 0 0 12px;" required>
+                                <input type="number" name="marks" class="form-control form-control-lg border-2" value="{{ $question->marks }}" style="border-radius: 12px 0 0 12px;" required>
                                 <span class="input-group-text bg-light border-2 fw-bold" style="border-radius: 0 12px 12px 0;">PTS</span>
                             </div>
                         </div>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg fw-bold shadow" style="border-radius: 15px;">
-                                <i class="fas fa-check-circle me-2"></i> Create Question
+                                <i class="fas fa-save me-2"></i> Update Question
                             </button>
-                            <a href="{{ route('admin.listening-parts.show', $part->id) }}" class="btn btn-light btn-lg fw-bold text-muted mt-2" style="border-radius: 15px;">
+                            <a href="{{ route('admin.listening-parts.show', $question->part->id) }}" class="btn btn-light btn-lg fw-bold text-muted mt-2" style="border-radius: 15px;">
                                 Cancel
                             </a>
                         </div>

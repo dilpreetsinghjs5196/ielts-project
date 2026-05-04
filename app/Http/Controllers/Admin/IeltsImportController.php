@@ -50,6 +50,7 @@ class IeltsImportController extends Controller
         try {
             $request->validate([
                 'test_file' => 'required|file',
+                'answer_file' => 'nullable|file',
                 'category_id' => 'required|exists:categories,id',
                 'level_id' => 'required|exists:levels,id',
                 'test_type_id' => 'required|exists:test_types,id',
@@ -81,9 +82,15 @@ class IeltsImportController extends Controller
                 return $this->handleSpeakingImport($request, $text, $testName);
             }
 
+            $answerKey = [];
+            if ($request->hasFile('answer_file')) {
+                $ansText = $this->extractText($request->file('answer_file'));
+                $answerKey = $this->parser->parseAnswers($ansText);
+            }
+
             // HANDLE LISTENING CATEGORY
             if ($activeCategory->slug === 'listening') {
-                return $this->handleListeningImport($request, $text, $testName);
+                return $this->handleListeningImport($request, $text, $testName, $answerKey);
             }
 
             // HANDLE READING
@@ -106,6 +113,10 @@ class IeltsImportController extends Controller
                 }
                 if ($totalQuestions === 0) continue;
 
+                $header = $segmentData['sub_segments'][0]['header'] ?? '';
+                $instructions = $segmentData['sub_segments'][0]['instructions'] ?? '';
+                $fullInstructions = trim($header . "\n\n" . $instructions);
+
                 $group = QuestionGroup::create([
                     'test_id' => $test->id,
                     'category_id' => $request->category_id,
@@ -113,8 +124,44 @@ class IeltsImportController extends Controller
                     'test_type_id' => $request->test_type_id,
                     'title' => $segmentData['title'],
                     'passage' => $segmentData['content'],
-                    'instruction' => $segmentData['sub_segments'][0]['header'] ?? null,
+                    'instruction' => $fullInstructions,
                 ]);
+
+                foreach ($segmentData['sub_segments'] as $subSegment) {
+                    foreach ($subSegment['questions'] as $qData) {
+                        $correctAns = $qData['correct_answer'] ?? '';
+                        
+                        // Handle Range Questions (e.g., 1-10 or 14-15)
+                        if (strpos($qData['number'], '-') !== false) {
+                            list($start, $end) = explode('-', $qData['number']);
+                            $rangeAnswers = [];
+                            for ($n = (int)$start; $n <= (int)$end; $n++) {
+                                if (isset($answerKey[$n])) {
+                                    $rangeAnswers[] = $answerKey[$n];
+                                }
+                            }
+                            if (!empty($rangeAnswers)) {
+                                $correctAns = implode(', ', $rangeAnswers);
+                            }
+                        } elseif (isset($answerKey[$qData['number']])) {
+                            // Standard single question mapping
+                            $correctAns = $answerKey[$qData['number']];
+                        }
+
+                        Question::create([
+                            'question_group_id' => $group->id,
+                            'category_id' => $request->category_id,
+                            'level_id' => $request->level_id,
+                            'test_type_id' => $request->test_type_id,
+                            'question_number' => $qData['number'],
+                            'question_type' => $qData['type'],
+                            'content' => $qData['body'],
+                            'options' => $qData['options'] ?? [],
+                            'correct_answer' => $correctAns,
+                            'marks' => $qData['marks'] ?? 1,
+                        ]);
+                    }
+                }
                 $segmentsCreated++;
             }
 
@@ -124,7 +171,7 @@ class IeltsImportController extends Controller
             }
 
             return redirect()->route('admin.tests.index', ['category' => $activeCategory->slug])
-                ->with('success', 'Test imported successfully!');
+                ->with('success', "Test '{$testName}' imported successfully!" . (empty($answerKey) ? "" : " Answer key also mapped."));
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
@@ -188,7 +235,7 @@ class IeltsImportController extends Controller
             ->with('success', "Speaking Test '{$testName}' imported successfully into new dedicated tables!");
     }
 
-    protected function handleListeningImport($request, $text, $testName)
+    protected function handleListeningImport($request, $text, $testName, $answerKey = [])
     {
         $parsedData = $this->parser->parseText($text);
         
@@ -208,23 +255,47 @@ class IeltsImportController extends Controller
             }
             if ($totalQuestions === 0) continue;
 
+            $header = $segmentData['sub_segments'][0]['header'] ?? '';
+            $instructions = $segmentData['sub_segments'][0]['instructions'] ?? '';
+            $fullInstructions = trim($header . "\n\n" . $instructions);
+
             $part = ListeningPart::create([
                 'listening_test_id' => $listeningTest->id,
                 'part_number' => $partsCreated + 1,
                 'title' => $segmentData['title'],
-                'instruction' => $segmentData['sub_segments'][0]['header'] ?? null,
+                'instruction' => $fullInstructions,
                 'passage' => $segmentData['content'], // This stores the transcript if provided
             ]);
 
             foreach ($segmentData['sub_segments'] as $subSegment) {
                 foreach ($subSegment['questions'] as $qData) {
+                    $correctAns = $qData['correct_answer'] ?? '';
+                    
+                    // Handle Range Questions (e.g., 1-10 or 14-15)
+                    if (strpos($qData['number'], '-') !== false) {
+                        list($start, $end) = explode('-', $qData['number']);
+                        $rangeAnswers = [];
+                        for ($n = (int)$start; $n <= (int)$end; $n++) {
+                            if (isset($answerKey[$n])) {
+                                $rangeAnswers[] = $answerKey[$n];
+                            }
+                        }
+                        if (!empty($rangeAnswers)) {
+                            $correctAns = implode(', ', $rangeAnswers);
+                        }
+                    } elseif (isset($answerKey[$qData['number']])) {
+                        // Standard single question mapping
+                        $correctAns = $answerKey[$qData['number']];
+                    }
+
                     ListeningQuestion::create([
                         'listening_part_id' => $part->id,
                         'question_number' => $qData['number'],
                         'question_type' => $qData['type'],
                         'title' => $qData['body'],
                         'options' => $qData['options'],
-                        'marks' => 1,
+                        'correct_answer' => $correctAns,
+                        'marks' => $qData['marks'] ?? 1,
                     ]);
                 }
             }
@@ -237,7 +308,7 @@ class IeltsImportController extends Controller
         }
 
         return redirect()->route('admin.listening-tests.edit', $listeningTest->id)
-            ->with('success', "Listening Test '{$testName}' imported successfully! You can now upload audio and images.");
+            ->with('success', "Listening Test '{$testName}' imported successfully! " . (empty($answerKey) ? "You can now upload audio." : "Answer key mapped. You can now upload audio."));
     }
 
     protected function extractText($file)
