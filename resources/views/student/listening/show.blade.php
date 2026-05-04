@@ -243,6 +243,79 @@
     </main>
 
     <!-- Test Footer -->
+    <footer class="test-footer bg-white border-top px-4 d-flex align-items-center justify-content-between">
+        <div class="footer-left d-flex align-items-center gap-4 overflow-hidden" id="footer-nav-container">
+            @foreach ($test->parts as $p_index => $part)
+                <div class="nav-part d-flex align-items-center gap-2 {{ $p_index === 0 ? 'active' : '' }}" id="nav-part-{{ $part->id }}" onclick="activatePart('{{ $part->id }}')">
+                    <span class="part-label fw-bold text-nowrap">Part {{ $p_index + 1 }}</span>
+                    
+                    @php
+                        $allQuestionNums = [];
+                        foreach($part->questions as $q) {
+                            if (str_contains($q->question_number, '-')) {
+                                list($start, $end) = explode('-', $q->question_number);
+                                if (is_numeric($start) && is_numeric($end)) {
+                                    for ($i = (int)$start; $i <= (int)$end; $i++) {
+                                        $allQuestionNums[] = $i;
+                                    }
+                                } else {
+                                    $allQuestionNums[] = $q->question_number;
+                                }
+                            } else {
+                                $allQuestionNums[] = $q->question_number;
+                            }
+                        }
+                        $uniqueNums = array_unique($allQuestionNums);
+                        $totalInPart = count($uniqueNums);
+                    @endphp
+                    <div class="part-summary text-muted small text-nowrap mx-2">
+                        <span class="answered-count">0</span> of {{ $totalInPart }}
+                    </div>
+
+                    <div class="part-questions d-flex gap-2 {{ $p_index === 0 ? '' : 'd-none' }}">
+                        @php
+                            $displayedNums = [];
+                        @endphp
+                        @foreach ($part->questions as $q_index => $q)
+                            @php
+                                $nums = [];
+                                if (str_contains($q->question_number, '-')) {
+                                    list($start, $end) = explode('-', $q->question_number);
+                                    if (is_numeric($start) && is_numeric($end)) {
+                                        for ($i = (int)$start; $i <= (int)$end; $i++) {
+                                            $nums[] = $i;
+                                        }
+                                    } else {
+                                        $nums[] = $q->question_number;
+                                    }
+                                } else {
+                                    $nums[] = $q->question_number;
+                                }
+                            @endphp
+                            
+                            @foreach ($nums as $displayNum)
+                                @if(!in_array($displayNum, $displayedNums))
+                                    @php $displayedNums[] = $displayNum; @endphp
+                                    <a href="javascript:void(0)" 
+                                       class="question-nav-link q-nav-{{ $q->id }} text-decoration-none text-muted fw-semibold" 
+                                       onclick="event.stopPropagation(); scrollToQuestion('q-{{ $q->id }}')">
+                                        {{ $displayNum }}
+                                    </a>
+                                @endif
+                            @endforeach
+                        @endforeach
+                    </div>
+                </div>
+                @if(!$loop->last)
+                    <div class="vr mx-1 opacity-25"></div>
+                @endif
+            @endforeach
+        </div>
+        <div class="footer-right flex-shrink-0 ms-3">
+            <button class="btn btn-dark px-4 rounded-pill" onclick="submitTest()">
+                <i class="fas fa-check-circle me-1"></i> Finish Test
+            </button>
+        </div>
     </footer>
 
     <!-- Submission Success Popup -->
@@ -264,13 +337,46 @@
 <style>
     :root {
         --header-height: 70px;
-        --footer-height: 60px;
+        --footer-height: 70px;
         --primary-gold: #ce9d3c;
+        --main-dark: #0d1624;
     }
-    body { overflow: hidden; background: #f8fafc; }
+    body { overflow: hidden; background: #f8fafc; font-family: 'Inter', sans-serif; }
     .test-container { display: flex; flex-direction: column; height: 100vh; }
-    .test-header { height: var(--header-height); background: #fff; border-bottom: 3px solid var(--primary-gold); z-index: 100; }
+    .test-header { height: var(--header-height); background: #fff; border-bottom: 3px solid var(--primary-gold); z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .timer-wrapper { background: #f1f5f9; padding: 8px 24px; border-radius: 50px; }
+
+    .test-footer { height: var(--footer-height); z-index: 100; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
+    
+    .nav-part {
+        padding: 8px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        background: #f8fafc;
+    }
+    .nav-part:hover { background: #f1f5f9; }
+    .nav-part.active { background: #fff; border-color: #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .nav-part.active .part-label { color: var(--primary-gold); }
+
+    .question-nav-link {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        font-size: 0.85rem;
+        background: #fff;
+        transition: all 0.2s;
+    }
+    .question-nav-link:hover { background: #f1f5f9; color: var(--primary-gold); border-color: var(--primary-gold); }
+    .question-nav-link.answered { background: #f1f5f9; border-color: #cbd5e1; }
+    .question-nav-link.current { background: var(--main-dark) !important; color: #fff !important; border-color: var(--main-dark) !important; }
+
+    .vr { width: 1px; height: 24px; background-color: #e2e8f0; }
     
     /* --- Success Popup --- */
     #submission-popup {
@@ -352,23 +458,38 @@
     }
     setInterval(updateTimer, 1000);
 
-    function scrollToQuestion(id) {
-        const el = document.getElementById(id);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            document.querySelectorAll('.question-nav-link').forEach(l => l.classList.remove('active'));
-            document.querySelector(`.q-nav-${id.split('-')[1]}`).classList.add('active');
+    function activatePart(partId) {
+        // Toggle Passage Visibility
+        document.querySelectorAll('.passage-group').forEach(p => p.classList.toggle('d-none', p.id != `passage-group-${partId}`));
+        
+        // Toggle Question Group Visibility
+        document.querySelectorAll('.question-group').forEach(q => q.classList.toggle('d-none', q.dataset.groupId != partId));
+
+        // Update Footer Nav
+        document.querySelectorAll('.nav-part').forEach(p => p.classList.remove('active'));
+        const activeNav = document.getElementById(`nav-part-${partId}`);
+        if (activeNav) {
+            activeNav.classList.add('active');
+            document.querySelectorAll('.part-questions').forEach(pq => pq.classList.add('d-none'));
+            const partQuestions = activeNav.querySelector('.part-questions');
+            if (partQuestions) partQuestions.classList.remove('d-none');
         }
     }
 
-    function activatePart(groupId) {
-        document.querySelectorAll('.nav-part').forEach(p => {
-            const isTarget = p.id === `nav-part-${groupId}`;
-            p.classList.toggle('active', isTarget);
-            p.querySelector('.part-questions').classList.toggle('d-none', !isTarget);
-        });
-        document.querySelectorAll('.passage-group').forEach(p => p.classList.toggle('d-none', p.id !== `passage-group-${groupId}`));
-        document.querySelectorAll('.question-group').forEach(q => q.classList.toggle('d-none', q.dataset.groupId != groupId));
+    function scrollToQuestion(qId) {
+        const el = document.getElementById(qId);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Highlight the question temporarily
+            el.style.backgroundColor = '#fffbeb';
+            setTimeout(() => { el.style.backgroundColor = ''; }, 2000);
+
+            // Update nav active state
+            document.querySelectorAll('.question-nav-link').forEach(l => l.classList.remove('current'));
+            const navLink = document.querySelector(`.q-nav-${qId.replace('q-', '')}`);
+            if (navLink) navLink.classList.add('current');
+        }
     }
 
     // Main Audio Player Logic
