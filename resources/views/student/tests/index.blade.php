@@ -31,12 +31,15 @@
                             <tbody>
                                 @php
                                     $allTests = $tests->map(function($t) { 
-                                        $t->view_category = 'reading_listening'; 
+                                        $t->view_category = 'reading'; 
                                         return $t; 
                                     })->concat($writingTests->map(function($t) { 
                                         $t->view_category = 'writing'; 
                                         return $t; 
-                                    }))->concat(isset($speakingTests) ? $speakingTests->map(function($t) { 
+                                    }))->concat(isset($listeningTests) ? $listeningTests->map(function($t) { 
+                                        $t->view_category = 'listening'; 
+                                        return $t; 
+                                    }) : collect())->concat(isset($speakingTests) ? $speakingTests->map(function($t) { 
                                         $t->view_category = 'speaking'; 
                                         return $t; 
                                     }) : collect());
@@ -49,18 +52,21 @@
                                             <div class="fw-bold text-dark">{{ $test->name }}</div>
                                         </td>
                                         <td class="py-4">
-                                            <span class="badge bg-{{ in_array($test->view_category, ['writing', 'speaking']) ? 'info' : 'primary' }}-subtle text-{{ in_array($test->view_category, ['writing', 'speaking']) ? 'info' : 'primary' }} px-3 py-2 rounded-pill">
-                                                {{ ucfirst($test->view_category === 'reading_listening' ? ($test->category->name ?? 'N/A') : $test->view_category) }}
+                                            <span class="badge bg-{{ in_array($test->view_category, ['writing', 'speaking', 'listening']) ? 'info' : 'primary' }}-subtle text-{{ in_array($test->view_category, ['writing', 'speaking', 'listening']) ? 'info' : 'primary' }} px-3 py-2 rounded-pill">
+                                                {{ ucfirst($test->view_category) }}
                                             </span>
                                         </td>
                                         <td class="py-4 text-muted small">
                                             {{ $test->moduleSet->name ?? ($test->level->name ?? 'N/A') }}
                                         </td>
                                         <td class="py-4 fw-bold">
-                                            @if($attempt && $attempt->status === 'completed' || ($attempt->status ?? '') === 'graded')
+                                            @if($attempt && ($attempt->status === 'completed' || ($attempt->status ?? '') === 'graded'))
                                                 @if(in_array($test->view_category, ['writing', 'speaking']))
                                                     <span class="text-primary">{{ $attempt->score ?? 'Pending' }}</span>
                                                     @if($attempt->score) <small class="text-muted">/ 9.0</small> @endif
+                                                @elseif($test->view_category === 'listening')
+                                                    <span class="text-primary">{{ $attempt->score ?? 0 }}</span>
+                                                    <small class="text-muted">/ 40</small>
                                                 @else
                                                     <span class="text-primary">{{ $attempt->score ?? 0 }}</span>
                                                     @php $totalMarks = $test->questionGroups->sum(fn($g) => $g->questions->sum('marks')); @endphp
@@ -86,19 +92,23 @@
                                             @endif
                                         </td>
                                         <td class="py-4 text-center">
+                                            @php
+                                                $categoryParam = in_array($test->view_category, ['writing', 'speaking', 'listening']) ? '?category=' . $test->view_category : '';
+                                            @endphp
                                             @if(!$attempt)
-                                                <a href="{{ route('student.tests.show', $test->id) }}{{ in_array($test->view_category, ['writing', 'speaking']) ? '?category=' . $test->view_category : '' }}" class="btn btn-sm btn-primary rounded-pill px-4">Take Test</a>
+                                                <a href="{{ route('student.tests.show', $test->id) }}{{ $categoryParam }}" class="btn btn-sm btn-primary rounded-pill px-4">Take Test</a>
                                             @elseif($attempt->status === 'pending')
                                                 <div class="d-flex gap-2 justify-content-center">
-                                                    <a href="{{ route('student.tests.show', $test->id) }}{{ in_array($test->view_category, ['writing', 'speaking']) ? '?category=' . $test->view_category : '' }}" class="btn btn-sm btn-info text-white rounded-pill px-3">Resume</a>
-                                                    @if(!in_array($test->view_category, ['writing', 'speaking']))
-                                                        <a href="{{ route('student.tests.restart', $test) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
-                                                    @endif
+                                                    <a href="{{ route('student.tests.show', $test->id) }}{{ $categoryParam }}" class="btn btn-sm btn-info text-white rounded-pill px-3">Resume</a>
+                                                    <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => $test->view_category]) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
                                                 </div>
                                             @elseif(in_array($test->view_category, ['writing', 'speaking']) && $attempt->score === null)
                                                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" disabled>Awaiting Grade</button>
                                             @else
-                                                <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => $test->view_category]) }}" class="btn btn-sm btn-outline-success rounded-pill px-4">Review Result</a>
+                                                <div class="d-flex gap-2 justify-content-center">
+                                                    <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => $test->view_category]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3">Review Result</a>
+                                                    <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => $test->view_category]) }}" onclick="return confirm('Retrying will delete your current score. Are you sure?')" class="btn btn-sm btn-outline-warning rounded-pill px-3">Retry</a>
+                                                </div>
                                             @endif
                                         </td>
                                     </tr>

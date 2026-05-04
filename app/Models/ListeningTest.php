@@ -28,4 +28,9 @@ class ListeningTest extends Model
     {
         return $this->hasMany(ListeningPart::class)->orderBy('part_number');
     }
+
+    public function attempts()
+    {
+        return $this->hasMany(ListeningAttempt::class);
+    }
 }

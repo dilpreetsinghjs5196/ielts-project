@@ -29,7 +29,7 @@
                                 $end = \Carbon\Carbon::parse($attempt->completed_at);
                                 $diff = $start->diffInMinutes($end);
                             @endphp
-                            {{ $diff }}
+                            {{ round($diff) }}
                         </span>
                         <small class="text-muted">mins</small>
                     </div>
@@ -41,7 +41,14 @@
                     <a href="{{ url('/') }}" class="btn btn-primary btn-lg rounded-pill shadow-sm py-3 fw-bold transition-all hover-lift flex-grow-1">
                         <i class="fas fa-home me-2"></i> Homepage
                     </a>
-                    <a href="{{ route('student.tests.review', $test) }}" class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold transition-all hover-lift flex-grow-1">
+                    @php
+                        $isListening = isset($attempt->listening_test_id);
+                        $reviewRoute = route('student.tests.review', [
+                            'id' => $test->id, 
+                            'category' => $isListening ? 'listening' : 'reading'
+                        ]);
+                    @endphp
+                    <a href="{{ $reviewRoute }}" class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold transition-all hover-lift flex-grow-1">
                         <i class="fas fa-search me-2"></i> Review Answers
                     </a>
                 </div>

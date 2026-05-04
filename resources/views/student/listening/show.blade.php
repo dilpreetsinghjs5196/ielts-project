@@ -50,10 +50,36 @@
             </div>
         </div>
         
-        <div class="header-center timer-wrapper">
-            <div class="timer d-flex align-items-center gap-2">
-                <i class="far fa-clock"></i>
-                <span id="test-timer" class="fw-bold fs-4">40:00</span>
+        <div class="header-center d-flex align-items-center gap-4">
+            @if($test->audio_file)
+                <div class="main-audio-player d-flex align-items-center bg-dark rounded-pill px-4 py-2 shadow-sm" style="min-width: 380px;">
+                    <div class="audio-controls d-flex align-items-center gap-2">
+                        <div class="p-2 cursor-pointer skip-btn" onclick="window.skipAudio(-10)" title="Back 10s">
+                            <i class="fas fa-undo text-light opacity-75" style="pointer-events: none;"></i>
+                        </div>
+                        <i class="fas fa-play-circle text-warning fs-3 cursor-pointer" onclick="toggleMainAudio()" id="main-audio-icon"></i>
+                        <div class="p-2 cursor-pointer skip-btn" onclick="window.skipAudio(10)" title="Forward 10s">
+                            <i class="fas fa-redo text-light opacity-75" style="pointer-events: none;"></i>
+                        </div>
+                    </div>
+                    
+                    <audio id="main-test-audio" class="d-none">
+                        <source src="{{ asset('storage/' . $test->audio_file) }}" type="audio/mpeg">
+                    </audio>
+                    
+                    <div class="audio-progress-container flex-grow-1 mx-3" style="height: 6px; background: #334155; border-radius: 3px; cursor: pointer;" onclick="seekAudio(event)">
+                        <div id="audio-progress-bar" style="width: 0%; height: 100%; background: #ce9d3c; border-radius: 3px; transition: width 0.1s linear;"></div>
+                    </div>
+                    
+                    <span id="audio-time" class="text-white small fw-bold mono" style="min-width: 45px;">0:00</span>
+                </div>
+            @endif
+
+            <div class="timer-wrapper">
+                <div class="timer d-flex align-items-center gap-2">
+                    <i class="far fa-clock"></i>
+                    <span id="test-timer" class="fw-bold fs-4">40:00</span>
+                </div>
             </div>
         </div>
 
@@ -217,25 +243,22 @@
     </main>
 
     <!-- Test Footer -->
-    <footer class="test-footer bg-white border-top px-4 d-flex align-items-center justify-content-between">
-        <div class="footer-left d-flex align-items-center gap-4">
-            @foreach ($test->parts as $p_index => $part)
-                <div class="nav-part d-flex align-items-center gap-2 {{ $p_index === 0 ? 'active' : '' }}" id="nav-part-{{ $part->id }}" onclick="activatePart('{{ $part->id }}')">
-                    <span class="part-label fw-bold">Part {{ $p_index + 1 }}</span>
-                    <div class="part-questions d-flex gap-2 {{ $p_index === 0 ? '' : 'd-none' }}">
-                        @foreach ($part->questions as $q)
-                            <a href="javascript:void(0)" class="question-nav-link q-nav-{{ $q->id }} text-decoration-none text-muted" onclick="scrollToQuestion('q-{{ $q->id }}')">
-                                {{ $q->question_number }}
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            @endforeach
-        </div>
-        <div class="footer-right">
-            <button class="btn btn-dark px-4 rounded-pill" onclick="submitTest()">Submit Test</button>
-        </div>
     </footer>
+
+    <!-- Submission Success Popup -->
+    <div id="submission-popup">
+        <div class="popup-content">
+            <div class="popup-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 style="margin-bottom: 12px; font-weight: 800; color: #111;">Test Submitted!</h2>
+            <p style="color: #666; font-size: 1.1rem; line-height: 1.6;">Your listening test has been submitted successfully. What would you like to do next?</p>
+            <div class="btn-group">
+                <a href="{{ route('student.dashboard') }}" class="popup-btn btn-home">Dashboard</a>
+                <a href="{{ route('student.tests.thank-you', $test->id) }}?category=listening" class="popup-btn btn-admin">View Results</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -248,6 +271,59 @@
     .test-container { display: flex; flex-direction: column; height: 100vh; }
     .test-header { height: var(--header-height); background: #fff; border-bottom: 3px solid var(--primary-gold); z-index: 100; }
     .timer-wrapper { background: #f1f5f9; padding: 8px 24px; border-radius: 50px; }
+    
+    /* --- Success Popup --- */
+    #submission-popup {
+        display: none; 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.85); 
+        z-index: 10000; 
+        align-items: center; 
+        justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+    .popup-content {
+        background: white; 
+        padding: 40px; 
+        border-radius: 16px; 
+        text-align: center; 
+        max-width: 450px; 
+        width: 90%; 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        animation: slideUp 0.4s ease-out;
+    }
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .popup-icon {
+        color: #10b981; 
+        font-size: 60px; 
+        margin-bottom: 20px;
+    }
+    .btn-group {
+        display: flex; 
+        gap: 15px; 
+        margin-top: 30px;
+    }
+    .popup-btn {
+        flex: 1; 
+        padding: 14px; 
+        border-radius: 8px; 
+        font-weight: 700; 
+        text-decoration: none;
+        transition: transform 0.2s;
+    }
+    .popup-btn:hover {
+        transform: translateY(-2px);
+    }
+    .btn-home { background: #0d1624; color: white; }
+    .btn-admin { background: #ce9d3c; color: white; }
+    
     .test-main { flex: 1; overflow: hidden; }
     .test-passage { width: 50%; overflow-y: auto; background: #f1f5f9; }
     .test-questions { width: 50%; overflow-y: auto; background: #fff; }
@@ -295,6 +371,67 @@
         document.querySelectorAll('.question-group').forEach(q => q.classList.toggle('d-none', q.dataset.groupId != groupId));
     }
 
+    // Main Audio Player Logic
+    const mainAudio = document.getElementById('main-test-audio');
+    const audioIcon = document.getElementById('main-audio-icon');
+    const progressBar = document.getElementById('audio-progress-bar');
+    const timeDisplay = document.getElementById('audio-time');
+
+    function toggleMainAudio() {
+        if (!mainAudio) return;
+        if (mainAudio.paused) {
+            mainAudio.play();
+            audioIcon.classList.replace('fa-play-circle', 'fa-pause-circle');
+        } else {
+            mainAudio.pause();
+            audioIcon.classList.replace('fa-pause-circle', 'fa-play-circle');
+        }
+    }
+
+    if (mainAudio) {
+        mainAudio.ontimeupdate = function() {
+            const pct = (mainAudio.currentTime / mainAudio.duration) * 100;
+            progressBar.style.width = pct + '%';
+            
+            const mins = Math.floor(mainAudio.currentTime / 60);
+            const secs = Math.floor(mainAudio.currentTime % 60);
+            timeDisplay.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+        };
+    }
+
+    window.seekAudio = function(e) {
+        const audio = document.getElementById('main-test-audio');
+        if (!audio || isNaN(audio.duration)) return;
+        const container = e.currentTarget;
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const pct = x / rect.width;
+        audio.currentTime = pct * audio.duration;
+    };
+
+    window.skipAudio = function(seconds) {
+        const audio = document.getElementById('main-test-audio');
+        if (!audio || isNaN(audio.duration)) return;
+        try {
+            const wasPlaying = !audio.paused;
+            audio.pause(); // Pause briefly to ensure seek works on all servers
+            
+            let newTime = audio.currentTime + seconds;
+            if (newTime < 0) newTime = 0;
+            if (newTime > audio.duration) newTime = audio.duration;
+            
+            audio.currentTime = newTime;
+            
+            if (wasPlaying) {
+                audio.play().catch(e => console.log("Auto-play blocked after seek"));
+            }
+            console.log("Skipped to: " + audio.currentTime);
+        } catch (e) {
+            console.error("Skip failed: ", e);
+        }
+    };
+
+    // Submit Logic
     function submitTest() {
         if(!confirm('Are you sure you want to finish the test?')) return;
         const answers = {};
@@ -327,7 +464,7 @@
             body: JSON.stringify({ answers })
         }).then(r => r.json()).then(data => {
             if(data.success) {
-                window.location.href = "{{ route('student.tests.thank-you', $test->id) }}?category=listening";
+                document.getElementById('submission-popup').style.display = 'flex';
             }
         });
     }

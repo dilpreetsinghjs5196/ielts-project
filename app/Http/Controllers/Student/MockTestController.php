@@ -41,8 +41,16 @@ class MockTestController extends Controller
             ->with(['attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
+
+        // Listening Tests
+        $listeningTests = \App\Models\ListeningTest::whereHas('attempts', function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            })
+            ->with(['level', 'attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])->get();
             
-        return view('student.tests.index', compact('tests', 'writingTests'));
+        return view('student.tests.index', compact('tests', 'writingTests', 'listeningTests'));
     }
 
     public function show(Request $request, $id)

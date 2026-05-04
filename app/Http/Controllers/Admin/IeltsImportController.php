@@ -48,9 +48,9 @@ class IeltsImportController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
                 'test_file' => 'required|file',
                 'answer_file' => 'nullable|file',
+                'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:20480',
                 'category_id' => 'required|exists:categories,id',
                 'level_id' => 'required|exists:levels,id',
                 'test_type_id' => 'required|exists:test_types,id',
@@ -90,7 +90,11 @@ class IeltsImportController extends Controller
 
             // HANDLE LISTENING CATEGORY
             if ($activeCategory->slug === 'listening') {
-                return $this->handleListeningImport($request, $text, $testName, $answerKey);
+                $audioPath = null;
+                if ($request->hasFile('audio_file')) {
+                    $audioPath = $this->handleFileUpload($request->file('audio_file'), 'listening/audio');
+                }
+                return $this->handleListeningImport($request, $text, $testName, $answerKey, $audioPath);
             }
 
             // HANDLE READING
@@ -235,7 +239,7 @@ class IeltsImportController extends Controller
             ->with('success', "Speaking Test '{$testName}' imported successfully into new dedicated tables!");
     }
 
-    protected function handleListeningImport($request, $text, $testName, $answerKey = [])
+    protected function handleListeningImport($request, $text, $testName, $answerKey = [], $audioPath = null)
     {
         $parsedData = $this->parser->parseText($text);
         
@@ -243,6 +247,7 @@ class IeltsImportController extends Controller
             'name' => $testName,
             'test_type_id' => $request->test_type_id,
             'level_id' => $request->level_id,
+            'audio_file' => $audioPath,
             'status' => 'inactive',
         ]);
 
@@ -364,4 +369,22 @@ class IeltsImportController extends Controller
 
         return $text;
     }
+
+    protected function handleFileUpload($file, $subDir)
+    {
+        $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+        
+        // Detect environment (Local public vs Live public_html)
+        $targetDir = is_dir(base_path('../public_html')) 
+            ? base_path('../public_html/storage/' . $subDir) 
+            : public_path('storage/' . $subDir);
+
+        if (!file_exists($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $file->move($targetDir, $filename);
+        return $subDir . '/' . $filename;
+    }
+}
 }

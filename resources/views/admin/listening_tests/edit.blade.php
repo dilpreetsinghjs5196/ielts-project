@@ -14,6 +14,22 @@
     </div>
 </div>
 
+@if($errors->any())
+    <div class="alert alert-danger border-0 shadow-sm mb-4" style="border-radius: 10px;">
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li><i class="fas fa-exclamation-circle me-2"></i> {{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+@if(session('success'))
+    <div class="alert alert-success border-0 shadow-sm mb-4" style="border-radius: 10px;">
+        <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+    </div>
+@endif
+
 <div class="row">
     <div class="col-md-4">
         <!-- General Settings -->

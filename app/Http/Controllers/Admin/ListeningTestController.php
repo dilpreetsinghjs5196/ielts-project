@@ -115,16 +115,13 @@ class ListeningTestController extends Controller
             'level_id' => 'required|exists:levels,id',
             'test_type_id' => 'required|exists:test_types,id',
             'status' => 'required|in:active,inactive',
-            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:20480',
+            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:102400', // Increased to 100MB
         ]);
 
         $data = $request->only(['name', 'level_id', 'test_type_id', 'status']);
 
         if ($request->hasFile('audio_file')) {
-            if ($listeningTest->audio_file) {
-                Storage::disk('public')->delete($listeningTest->audio_file);
-            }
-            $data['audio_file'] = $request->file('audio_file')->store('listening/audio', 'public');
+            $data['audio_file'] = $this->handleFileUpload($request->file('audio_file'), 'listening/audio');
         }
 
         $listeningTest->update($data);
@@ -149,10 +146,7 @@ class ListeningTestController extends Controller
         $data = $request->only(['title', 'instruction', 'passage']);
 
         if ($request->hasFile('audio_file')) {
-            if ($part->audio_file) {
-                Storage::disk('public')->delete($part->audio_file);
-            }
-            $data['audio_file'] = $request->file('audio_file')->store('listening/parts/audio', 'public');
+            $data['audio_file'] = $this->handleFileUpload($request->file('audio_file'), 'listening/parts/audio');
         }
 
         if ($request->hasFile('image')) {
@@ -185,7 +179,7 @@ class ListeningTestController extends Controller
         $data = $request->only(['question_number', 'question_type', 'title', 'content', 'correct_answer', 'marks']);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $this->handleImageUpload($request->file('image'), 'listening_questions');
+            $data['image'] = $this->handleFileUpload($request->file('image'), 'listening_questions');
         }
 
         if ($request->has('options')) {
@@ -197,10 +191,11 @@ class ListeningTestController extends Controller
         return redirect()->back()->with('success', 'Question updated successfully.');
     }
 
-    protected function handleImageUpload($file, $subDir)
+    protected function handleFileUpload($file, $subDir)
     {
-        $filename = time() . '_' . $file->getClientOriginalName();
+        $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
         
+        // Detect environment (Local public vs Live public_html)
         $targetDir = is_dir(base_path('../public_html')) 
             ? base_path('../public_html/storage/' . $subDir) 
             : public_path('storage/' . $subDir);

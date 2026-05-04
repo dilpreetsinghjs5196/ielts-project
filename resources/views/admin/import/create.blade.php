@@ -67,6 +67,15 @@
                         </div>
                     </div>
 
+                    <div class="col-md-6 mt-5" id="audio_upload_zone" style="display: none;">
+                        <div class="upload-zone p-4 text-center bg-light" style="border: 2px dashed #3b82f6; border-radius: 15px;">
+                            <i class="fas fa-volume-up fa-3x text-muted mb-2"></i>
+                            <h5>Main Audio File (Listening Only)</h5>
+                            <p class="text-muted small">Upload the audio file for this test.</p>
+                            <input type="file" name="audio_file" id="audio_file" class="form-control mt-2" accept="audio/*">
+                        </div>
+                    </div>
+
                     <div class="col-md-6 mt-5">
                         <div class="upload-zone p-4 text-center bg-light" style="border: 2px dashed #64748b; border-radius: 15px;">
                             <i class="fas fa-key fa-3x text-muted mb-2"></i>
@@ -106,4 +115,17 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    document.getElementById('category_id').addEventListener('change', function() {
+        const selectedText = this.options[this.selectedIndex].text.toLowerCase();
+        const audioZone = document.getElementById('audio_upload_zone');
+        if (selectedText.includes('listening')) {
+            audioZone.style.display = 'block';
+        } else {
+            audioZone.style.display = 'none';
+        }
+    });
+</script>
+@endpush
 @endsection
