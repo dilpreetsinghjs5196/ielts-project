@@ -270,7 +270,7 @@
     body { overflow: hidden; background: #f8fafc; }
     .test-container { display: flex; flex-direction: column; height: 100vh; }
     .test-header { height: var(--header-height); background: #fff; border-bottom: 3px solid var(--primary-gold); z-index: 100; }
-    .timer-wrapper { background: #f1f5f9; padding: 8px 24px; border-radius: 50px; }
+    .timer-wrapper { background: #f1f5f9; padding: 8px 24px; border-radius: 50px; min-width: 150px; }
     
     /* --- Success Popup --- */
     #submission-popup {

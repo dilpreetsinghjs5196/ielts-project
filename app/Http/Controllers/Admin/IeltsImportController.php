@@ -48,6 +48,7 @@ class IeltsImportController extends Controller
     public function store(Request $request)
     {
         try {
+            $request->validate([
                 'test_file' => 'required|file',
                 'answer_file' => 'nullable|file',
                 'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:20480',
@@ -386,5 +387,4 @@ class IeltsImportController extends Controller
         $file->move($targetDir, $filename);
         return $subDir . '/' . $filename;
     }
-}
 }
