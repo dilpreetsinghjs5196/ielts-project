@@ -404,6 +404,7 @@
         padding: 8px 24px;
         border-radius: 50px;
         color: var(--main-dark);
+        min-width: 150px;
     }
 
     .test-main {

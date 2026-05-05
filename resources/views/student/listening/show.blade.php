@@ -344,7 +344,7 @@
     body { overflow: hidden; background: #f8fafc; font-family: 'Inter', sans-serif; }
     .test-container { display: flex; flex-direction: column; height: 100vh; }
     .test-header { height: var(--header-height); background: #fff; border-bottom: 3px solid var(--primary-gold); z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .timer-wrapper { background: #f1f5f9; padding: 8px 24px; border-radius: 50px; }
+    .timer-wrapper { background: #f1f5f9; padding: 8px 24px; border-radius: 50px; min-width: 150px; }
 
     .test-footer { height: var(--footer-height); z-index: 100; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
     
