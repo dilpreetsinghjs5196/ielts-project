@@ -74,8 +74,42 @@
                                             $correct = trim(strtolower($question->correct_answer));
                                             if($studentAns !== null) {
                                                 $ans = trim(strtolower(is_array($studentAns) ? implode(', ', $studentAns) : (string)$studentAns));
-                                                if($correct === $ans) $isCorrect = true;
-                                                elseif(!empty($ans) && strpos($correct, $ans) !== false) $isCorrect = 'partial';
+                                                
+                                                if ($question->question_type === 'mcq_multi') {
+                                                    $correctArray = preg_split('/[,]| and |;/', $correct);
+                                                    $correctArray = array_map('trim', $correctArray);
+                                                    $studentArray = is_array($studentAns) ? $studentAns : explode(',', $studentAns);
+                                                    $studentArray = array_map('trim', array_map('strtolower', $studentArray));
+                                                    sort($correctArray);
+                                                    sort($studentArray);
+                                                    if ($correctArray == $studentArray) {
+                                                        $isCorrect = true;
+                                                    }
+                                                } else {
+                                                    $alternatives = preg_split('/\s*(?:\/|\||\bor\b)\s*/i', $correct);
+                                                    
+                                                    // Exact match against alternative singular/plural options
+                                                    foreach ($alternatives as $alt) {
+                                                        $alt = trim($alt);
+                                                        $singular = preg_replace('/\s*\(.*?\)\s*/', '', $alt);
+                                                        $plural = str_replace(['(', ')'], '', $alt);
+                                                        if ($ans === $singular || $ans === $plural) {
+                                                            $isCorrect = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    
+                                                    // Partial match fallback for admin insights
+                                                    if (!$isCorrect && !empty($ans)) {
+                                                        foreach ($alternatives as $alt) {
+                                                            $alt = trim($alt);
+                                                            if (strpos($alt, $ans) !== false) {
+                                                                $isCorrect = 'partial';
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         @endphp
                                         <tr>

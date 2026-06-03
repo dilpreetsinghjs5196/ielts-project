@@ -64,7 +64,23 @@
                                         $isCorrect = ($correctArray == $studentArray && $hasAnswered);
                                     } else {
                                         $hasAnswered = !empty($studentAnswer) && trim((string)$studentAnswer) !== '';
-                                        $isCorrect = ($hasAnswered && $correctAnswer === trim(strtolower((string)$studentAnswer)));
+                                        if ($hasAnswered) {
+                                            $alternatives = preg_split('/\s*(?:\/|\||\bor\b)\s*/i', $correctAnswer);
+                                            $studentNormalized = trim(strtolower((string)$studentAnswer));
+                                            
+                                            $isCorrect = false;
+                                            foreach ($alternatives as $alt) {
+                                                $alt = trim($alt);
+                                                $singular = preg_replace('/\s*\(.*?\)\s*/', '', $alt);
+                                                $plural = str_replace(['(', ')'], '', $alt);
+                                                if ($studentNormalized === $singular || $studentNormalized === $plural) {
+                                                    $isCorrect = true;
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            $isCorrect = false;
+                                        }
                                     }
                                 @endphp
 
@@ -97,7 +113,25 @@
                                                                 $embeddedQIds[] = $targetQ->id;
                                                                 $ans = $attempt->answers[$targetQ->id] ?? '';
                                                                 $correct = trim(strtolower($targetQ->correct_answer));
-                                                                $isCorrect = (!empty($ans) && $correct === trim(strtolower((string)$ans)));
+                                                                
+                                                                $hasAns = !empty($ans) && trim((string)$ans) !== '';
+                                                                if ($hasAns) {
+                                                                    $alternatives = preg_split('/\s*(?:\/|\||\bor\b)\s*/i', $correct);
+                                                                    $studentNormalized = trim(strtolower((string)$ans));
+                                                                    
+                                                                    $isCorrect = false;
+                                                                    foreach ($alternatives as $alt) {
+                                                                        $alt = trim($alt);
+                                                                        $singular = preg_replace('/\s*\(.*?\)\s*/', '', $alt);
+                                                                        $plural = str_replace(['(', ')'], '', $alt);
+                                                                        if ($studentNormalized === $singular || $studentNormalized === $plural) {
+                                                                            $isCorrect = true;
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                } else {
+                                                                    $isCorrect = false;
+                                                                }
                                                                 
                                                                 $color = $isCorrect ? '#10b981' : (!empty($ans) ? '#ef4444' : '#cbd5e1');
                                                                 $icon = $isCorrect ? '<i class="fas fa-check-circle ms-1"></i>' : (!empty($ans) ? '<i class="fas fa-times-circle ms-1"></i>' : '');

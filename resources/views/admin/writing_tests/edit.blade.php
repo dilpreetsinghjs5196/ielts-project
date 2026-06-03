@@ -121,7 +121,11 @@
 
                 @if($writingTest->tasks->count() < 2)
                     <div class="text-center py-4 border border-dashed rounded">
-                        <button class="btn btn-outline-primary"><i class="fas fa-plus me-2"></i> Add Missing Task</button>
+                        <form action="{{ route('admin.writing-tasks.store') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="writing_test_id" value="{{ $writingTest->id }}">
+                            <button type="submit" class="btn btn-outline-primary"><i class="fas fa-plus me-2"></i> Add Missing Task</button>
+                        </form>
                     </div>
                 @endif
             </div>

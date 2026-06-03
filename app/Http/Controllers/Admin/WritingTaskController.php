@@ -8,6 +8,37 @@ use Illuminate\Http\Request;
 
 class WritingTaskController extends Controller
 {
+    public function store(Request $request)
+    {
+        $request->validate([
+            'writing_test_id' => 'required|exists:writing_tests,id'
+        ]);
+
+        $testId = $request->writing_test_id;
+        $existingTasks = WritingTask::where('writing_test_id', $testId)->pluck('task_number')->toArray();
+
+        if (count($existingTasks) >= 2) {
+            return redirect()->back()->with('error', 'A writing test can have at most 2 tasks.');
+        }
+
+        // Determine missing task number (1 or 2)
+        $taskNumber = 1;
+        if (in_array(1, $existingTasks)) {
+            $taskNumber = 2;
+        }
+
+        WritingTask::create([
+            'writing_test_id' => $testId,
+            'task_number' => $taskNumber,
+            'title' => "Writing Task {$taskNumber}",
+            'instruction' => "You should spend about " . ($taskNumber == 1 ? "20" : "40") . " minutes on this task.",
+            'question_text' => "Enter Task {$taskNumber} prompt here...",
+            'marks' => ($taskNumber == 1 ? 3 : 6)
+        ]);
+
+        return redirect()->back()->with('success', 'Task added successfully.');
+    }
+
     public function edit(WritingTask $writingTask)
     {
         return view('admin.writing_tasks.edit', compact('writingTask'));

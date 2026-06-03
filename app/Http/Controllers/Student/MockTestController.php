@@ -250,15 +250,16 @@ class MockTestController extends Controller
         }
         
         if ($question->question_type === 'mcq_multi') {
-            // Student answer is array e.g. ['A', 'B']
-            if (!is_array($studentAnswer)) return 0;
+            // Student answer can be array or comma-separated string
+            $studentArray = is_array($studentAnswer) ? $studentAnswer : explode(',', $studentAnswer);
+            $studentArray = array_map('trim', array_map('strtolower', $studentArray));
+            $studentArray = array_filter($studentArray);
+            
+            if (empty($studentArray)) return 0;
             
             // Normalize correct answer (e.g. "A, B" or "A and B")
             $correctArray = preg_split('/[,]| and |;/', $correct);
             $correctArray = array_map('trim', $correctArray);
-            
-            // Normalize student answer
-            $studentArray = array_map('trim', array_map('strtolower', $studentAnswer));
             
             $score = 0;
             foreach ($studentArray as $ans) {
@@ -269,8 +270,23 @@ class MockTestController extends Controller
             return $score;
         }
         
-        // Single answer comparison (case-insensitive)
-        return ($correct === trim(strtolower((string)$studentAnswer))) ? ($question->marks ?: 1) : 0;
+        // Single answer comparison with alternative options and singular/plural parenthesis options (e.g. "item / items", "item(s)")
+        $alternatives = preg_split('/\s*(?:\/|\||\bor\b)\s*/i', $correct);
+        $studentNormalized = trim(strtolower((string)$studentAnswer));
+        
+        foreach ($alternatives as $alt) {
+            $alt = trim($alt);
+            // Singular form (remove parentheses contents e.g. "item(s)" -> "item")
+            $singular = preg_replace('/\s*\(.*?\)\s*/', '', $alt);
+            // Plural form (strip parentheses characters e.g. "item(s)" -> "items")
+            $plural = str_replace(['(', ')'], '', $alt);
+            
+            if ($studentNormalized === $singular || $studentNormalized === $plural) {
+                return $question->marks ?: 1;
+            }
+        }
+        
+        return 0;
     }
 
     public function saveProgress(Request $request, $id)

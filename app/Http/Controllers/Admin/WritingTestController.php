@@ -48,12 +48,8 @@ class WritingTestController extends Controller
 
         $writingTest = WritingTest::create($request->all());
 
-        $writingCategory = Category::where('slug', 'writing')->first();
-        return redirect()->route('admin.tests.index', [
-            'category' => $writingCategory ? $writingCategory->slug : 'writing',
-            'test_type_id' => $writingTest->test_type_id,
-            'level_id' => $writingTest->level_id
-        ])->with('success', 'Writing Mock Test created successfully.');
+        return redirect()->route('admin.writing-tests.edit', $writingTest->id)
+            ->with('success', 'Writing Mock Test created successfully. You can now add tasks.');
     }
 
     public function edit(WritingTest $writingTest)
