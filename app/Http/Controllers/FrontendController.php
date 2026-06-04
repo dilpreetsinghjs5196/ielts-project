@@ -77,11 +77,14 @@ class FrontendController extends Controller
             if ($levelId) $query->where('level_id', $levelId);
             if ($testType) $query->where('test_type_id', $testType->id);
             
-            $tests = $query->get()->map(function($test) use ($studentId) {
+            $tests = $query->with(['attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])->get()->map(function($test) {
+                $attempt = $test->attempts->first();
                 return [
                     'id' => $test->id,
                     'name' => $test->name,
-                    'status' => 'not_started',
+                    'status' => $attempt ? $attempt->status : 'not_started',
                     'category' => 'writing'
                 ];
             });
@@ -94,7 +97,7 @@ class FrontendController extends Controller
             if ($levelId) $query->where('level_id', $levelId);
             if ($testType) $query->where('test_type_id', $testType->id);
             
-            $tests = $query->get()->map(function($test) use ($studentId) {
+            $tests = $query->get()->map(function($test) {
                 return [
                     'id' => $test->id,
                     'name' => $test->name,
@@ -111,11 +114,14 @@ class FrontendController extends Controller
             if ($levelId) $query->where('level_id', $levelId);
             if ($testType) $query->where('test_type_id', $testType->id);
             
-            $tests = $query->get()->map(function($test) use ($studentId) {
+            $tests = $query->with(['attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])->get()->map(function($test) {
+                $attempt = $test->attempts->first();
                 return [
                     'id' => $test->id,
                     'name' => $test->name,
-                    'status' => 'not_started', // We can improve this with attempt check later
+                    'status' => $attempt ? $attempt->status : 'not_started',
                     'category' => 'listening'
                 ];
             });
@@ -137,13 +143,13 @@ class FrontendController extends Controller
         }
 
         $tests = $query->get()
-            ->map(function($test) {
+            ->map(function($test) use ($category) {
                 $attempt = $test->attempts->first();
                 return [
                     'id' => $test->id,
                     'name' => $test->name,
                     'status' => $attempt ? $attempt->status : 'not_started',
-                    'category' => 'standard'
+                    'category' => $category ? $category->slug : 'reading'
                 ];
             });
 

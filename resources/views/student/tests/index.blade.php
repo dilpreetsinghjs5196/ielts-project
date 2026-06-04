@@ -46,7 +46,7 @@
                                 @endphp
 
                                 @foreach($allTests as $test)
-                                    @php $attempt = $test->attempts->first(); @endphp
+                                    @php $attempt = method_exists($test, 'attempts') ? $test->attempts->first() : null; @endphp
                                     <tr>
                                         <td class="px-4 py-4">
                                             <div class="fw-bold text-dark">{{ $test->name }}</div>

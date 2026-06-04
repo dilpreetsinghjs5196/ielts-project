@@ -26,31 +26,29 @@ class MockTestController extends Controller
     {
         $studentId = auth('student')->id();
         
-        // Regular Tests (Listening/Reading/Speaking)
-        $tests = Test::whereHas('attempts', function($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            })
+        // Regular Tests (Reading)
+        $tests = Test::where('status', 'active')
             ->with(['moduleSet', 'category', 'questionGroups.questions', 'attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
 
         // Writing Tests
-        $writingTests = \App\Models\WritingTest::whereHas('attempts', function($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            })
+        $writingTests = \App\Models\WritingTest::where('status', 'active')
             ->with(['attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
 
         // Listening Tests
-        $listeningTests = \App\Models\ListeningTest::whereHas('attempts', function($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            })
+        $listeningTests = \App\Models\ListeningTest::where('status', 'active')
             ->with(['level', 'attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
             
-        return view('student.tests.index', compact('tests', 'writingTests', 'listeningTests'));
+        // Speaking Tests
+        $speakingTests = \App\Models\SpeakingTest::where('status', 'active')
+            ->with(['level'])->get();
+            
+        return view('student.tests.index', compact('tests', 'writingTests', 'listeningTests', 'speakingTests'));
     }
 
     public function show(Request $request, $id)

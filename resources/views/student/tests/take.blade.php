@@ -161,6 +161,44 @@
         loadSets();
     }
 
+    function getTestCardHtml(test, isStep4 = false) {
+        let badgeClass = 'success-subtle text-success';
+        let badgeText = 'Available';
+        let buttonText = 'Take Mock Test';
+
+        if (test.status === 'pending') {
+            badgeClass = 'warning-subtle text-warning';
+            badgeText = 'In Progress';
+            buttonText = 'Resume / Restart';
+        } else if (test.status === 'completed') {
+            badgeClass = 'secondary-subtle text-secondary';
+            badgeText = 'Completed';
+            buttonText = 'Finished';
+        }
+
+        const categorySlug = test.category || selection.categorySlug;
+        const colClass = isStep4 ? 'col-md-4' : 'col-md-3';
+
+        return `
+            <div class="${colClass}">
+                <div class="card test-card shadow-sm border-0 h-100 hover-lift">
+                    <div class="card-body p-4 text-center d-flex flex-column justify-content-between" style="min-height: 190px;">
+                        <div>
+                            <div class="mb-3">
+                                <span class="badge bg-${badgeClass} px-3 py-2 rounded-pill">${badgeText}</span>
+                            </div>
+                            <h6 class="fw-bold mb-1 text-dark" style="font-size: 1.05rem;">${test.name}</h6>
+                            <p class="text-muted small mb-3">Standard IELTS Format</p>
+                        </div>
+                        <button onclick="handleStart('${test.id}', '${test.status}', '${categorySlug || ''}')" class="btn btn-primary w-100 rounded-pill py-2" ${test.status === 'completed' ? 'disabled' : ''}>
+                            ${buttonText} <i class="fas ${test.status === 'pending' ? 'fa-redo' : 'fa-play'} ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     function loadSets() {
         const setsContainer = document.getElementById('sets-container');
         setsContainer.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
@@ -189,7 +227,21 @@
                             const grid = document.getElementById(`level-${level.id}-sets`);
                             grid.innerHTML = '';
                             if (sets.length === 0) {
-                                grid.innerHTML = '<div class="col-12"><p class="text-muted small ms-3">No portfolios available for this level yet.</p></div>';
+                                // Fallback: load tests directly for this level
+                                fetch(`{{ route('frontend.tests') }}?category=${selection.categorySlug}&test_type=${selection.typeName}&level_id=${level.id}`)
+                                    .then(res => res.json())
+                                    .then(tests => {
+                                        if (tests.length === 0) {
+                                            grid.innerHTML = '<div class="col-12"><p class="text-muted small ms-3">No mock tests available for this level yet.</p></div>';
+                                        } else {
+                                            tests.forEach(test => {
+                                                grid.innerHTML += getTestCardHtml(test, false);
+                                            });
+                                        }
+                                    })
+                                    .catch(err => {
+                                        grid.innerHTML = '<div class="col-12"><p class="text-danger small ms-3">Failed to load mock tests.</p></div>';
+                                    });
                             } else {
                                 sets.forEach(set => {
                                     grid.innerHTML += `
@@ -208,6 +260,10 @@
                                     `;
                                 });
                             }
+                        })
+                        .catch(err => {
+                            const grid = document.getElementById(`level-${level.id}-sets`);
+                            grid.innerHTML = '<div class="col-12"><p class="text-danger small ms-3">Failed to load portfolios.</p></div>';
                         });
                 });
                 goToStep(3);
@@ -234,38 +290,7 @@
                     testsContainer.innerHTML = '<div class="col-12 text-center text-muted py-5"><h5>No tests available in this set.</h5></div>';
                 } else {
                     tests.forEach(test => {
-                        const showRoute = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id);
-                        
-                        let badgeClass = 'success-subtle';
-                        let badgeText = 'Available';
-                        let buttonText = 'Take Mock Test';
-
-                        if (test.status === 'pending') {
-                            badgeClass = 'warning-subtle text-warning';
-                            badgeText = 'In Progress';
-                            buttonText = 'Resume / Restart';
-                        } else if (test.status === 'completed') {
-                            badgeClass = 'secondary-subtle text-secondary';
-                            badgeText = 'Completed';
-                            buttonText = 'Finished';
-                        }
-
-                        testsContainer.innerHTML += `
-                            <div class="col-md-4">
-                                <div class="card test-card shadow-sm border-0 h-100">
-                                    <div class="card-body p-4 text-center">
-                                        <div class="mb-3">
-                                            <span class="badge bg-${badgeClass} px-3 py-2 rounded-pill">${badgeText}</span>
-                                        </div>
-                                        <h5 class="fw-bold mb-1">${test.name}</h5>
-                                        <p class="text-muted small mb-3">Standard IELTS Format</p>
-                                        <button onclick="handleStart('${test.id}', '${test.status}', '${test.category || ''}')" class="btn btn-primary w-100 rounded-pill py-2" ${test.status === 'completed' ? 'disabled' : ''}>
-                                            ${buttonText} <i class="fas ${test.status === 'pending' ? 'fa-redo' : 'fa-play'} ms-2"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                        testsContainer.innerHTML += getTestCardHtml(test, true);
                     });
                 }
                 goToStep(4);
@@ -276,7 +301,7 @@
         let showRoute = "{{ route('student.tests.show', ':id') }}".replace(':id', testId);
         let restartRoute = "{{ route('student.tests.restart', ':id') }}".replace(':id', testId);
 
-        if (categorySlug) {
+        if (categorySlug && categorySlug !== 'reading') {
             showRoute += `?category=${categorySlug}`;
             restartRoute += `?category=${categorySlug}`;
         }

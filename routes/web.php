@@ -88,28 +88,33 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
     Route::get('/dashboard', function () {
         $studentId = auth('student')->id();
         
-        $tests = \App\Models\Test::whereHas('attempts', function($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            })
+        $tests = \App\Models\Test::where('status', 'active')
             ->with(['moduleSet', 'questionGroups.questions', 'attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
             
-        $writingTests = \App\Models\WritingTest::whereHas('attempts', function($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            })
+        $writingTests = \App\Models\WritingTest::where('status', 'active')
             ->with(['attempts' => function($q) use ($studentId) {
                 $q->where('student_id', $studentId);
             }])->get();
+
+        $listeningTests = \App\Models\ListeningTest::where('status', 'active')
+            ->with(['level', 'attempts' => function($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])->get();
+
+        $speakingTests = \App\Models\SpeakingTest::where('status', 'active')
+            ->with(['level'])->get();
             
         $stats = [
-            'assigned' => $tests->count() + $writingTests->count(),
+            'assigned' => $tests->count() + $writingTests->count() + $listeningTests->count() + $speakingTests->count(),
             'completed' => $tests->filter(fn($t) => $t->attempts->where('status', 'completed')->count() > 0)->count() + 
-                         $writingTests->filter(fn($t) => $t->attempts->where('status', 'completed')->count() > 0)->count(),
+                         $writingTests->filter(fn($t) => $t->attempts->where('status', 'completed')->count() > 0)->count() +
+                         $listeningTests->filter(fn($t) => $t->attempts->where('status', 'completed')->count() > 0)->count(),
             'average' => $tests->flatMap(fn($t) => $t->attempts->where('status', 'completed'))->avg('score') ?? 0
         ];
         
-        return view('student.dashboard', compact('tests', 'writingTests', 'stats'));
+        return view('student.dashboard', compact('tests', 'writingTests', 'listeningTests', 'speakingTests', 'stats'));
     })->name('dashboard');
 
     Route::get('/profile', function () {
