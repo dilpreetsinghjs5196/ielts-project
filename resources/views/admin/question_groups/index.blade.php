@@ -160,8 +160,36 @@
             @forelse ($tests as $test_item)
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm hover-lift h-100" style="border-radius: 15px;">
-                        <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between">
+                        <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
                              <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-collapse small">Mock Test</span>
+                             <div class="dropdown">
+                                <button class="btn btn-link text-secondary p-0 outline-none shadow-none" type="button" data-bs-toggle="dropdown">
+                                    <i class="fa fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 10px;">
+                                    @if($isWriting)
+                                        <li><a class="dropdown-item py-2" href="{{ route('admin.writing-tests.edit', $test_item) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Test</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ route('admin.writing-tests.destroy', $test_item) }}" method="POST" onsubmit="return confirm('Delete this entire test and all its tasks/questions?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item py-2 text-danger"><i class="fas fa-trash-alt me-2"></i> Delete Test</button>
+                                            </form>
+                                        </li>
+                                    @else
+                                        <li><a class="dropdown-item py-2" href="{{ route('admin.tests.edit', $test_item) }}"><i class="fas fa-edit me-2 text-primary"></i> Edit Test</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ route('admin.tests.destroy', $test_item) }}" method="POST" onsubmit="return confirm('Delete this entire test and all its segments/questions?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item py-2 text-danger"><i class="fas fa-trash-alt me-2"></i> Delete Test</button>
+                                            </form>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </div>
                         </div>
                         <div class="card-body p-4 text-center">
                             <h5 class="fw-bold text-dark mb-1">{{ $test_item->name }}</h5>

@@ -7,7 +7,18 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb" style="background: transparent; padding: 0;">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.questions.index') }}">Question Bank</a></li>
+                    @php
+                        $bankUrl = route('admin.questions.index');
+                        if (isset($selectedGroup)) {
+                            $bankUrl = route('admin.questions.index', ['category' => $selectedGroup->category->slug]);
+                        } elseif (request()->has('category_id')) {
+                            $cat = $categories->find(request()->category_id);
+                            if ($cat) {
+                                $bankUrl = route('admin.questions.index', ['category' => $cat->slug]);
+                            }
+                        }
+                    @endphp
+                    <li class="breadcrumb-item"><a href="{{ $bankUrl }}">Question Bank</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Add Question</li>
                 </ol>
             </nav>

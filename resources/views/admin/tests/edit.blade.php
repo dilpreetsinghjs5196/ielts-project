@@ -3,10 +3,26 @@
 @section('content')
 <div class="row mb-4">
     <div class="col-12">
+        @php
+            $cancelUrl = route('admin.tests.index', [
+                'category' => $test->category->slug,
+                'test_type_id' => $test->test_type_id,
+                'level_id' => $test->level_id,
+                'module_set_id' => $test->module_set_id
+            ]);
+            if (in_array($test->category->slug, ['reading', 'writing'])) {
+                $cancelUrl = route('admin.question-groups.index', [
+                    'category' => $test->category->slug,
+                    'test_type' => $test->test_type_id,
+                    'level' => $test->level_id,
+                    'module_set' => $test->module_set_id
+                ]);
+            }
+        @endphp
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb" style="background: transparent; padding: 0;">
                 <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.tests.index') }}">Tests</a></li>
+                <li class="breadcrumb-item"><a href="{{ $cancelUrl }}">Tests</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edit Test</li>
             </ol>
         </nav>
@@ -105,7 +121,7 @@
                     </div>
 
                     <div class="mt-5 d-flex justify-content-end gap-2 text-center text-md-end">
-                        <a href="{{ route('admin.tests.index') }}" class="btn btn-light px-5 shadow-sm" style="border-radius: 10px; font-weight: 600;">Cancel</a>
+                        <a href="{{ $cancelUrl }}" class="btn btn-light px-5 shadow-sm" style="border-radius: 10px; font-weight: 600;">Cancel</a>
                         <button type="submit" class="btn btn-primary px-5 shadow-sm" style="border-radius: 10px; font-weight: 600;">Update Mock Test</button>
                     </div>
                 </form>

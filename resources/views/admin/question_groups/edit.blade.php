@@ -7,7 +7,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb" style="background: transparent; padding: 0;">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.question-groups.index') }}">Question Bank</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.question-groups.index', ['category' => $questionGroup->category->slug, 'test_type' => $questionGroup->test_type_id, 'level' => $questionGroup->level_id, 'test' => $questionGroup->test_id]) }}">Question Bank</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Edit Segment</li>
                 </ol>
             </nav>
@@ -122,7 +122,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 mb-2 mt-3">Update Segment</button>
-                        <a href="{{ route('admin.question-groups.index') }}" class="btn btn-light w-100">Cancel</a>
+                        <a href="{{ route('admin.question-groups.index', ['category' => $questionGroup->category->slug, 'test_type' => $questionGroup->test_type_id, 'level' => $questionGroup->level_id, 'test' => $questionGroup->test_id]) }}" class="btn btn-light w-100">Cancel</a>
                     </div>
                 </div>
             </div>

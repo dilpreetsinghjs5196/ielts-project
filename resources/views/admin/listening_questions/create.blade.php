@@ -42,7 +42,7 @@
                             <div class="col-md-8">
                                 <div class="form-group mb-4">
                                     <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Heading / Title</label>
-                                    <input type="text" name="title_placeholder" class="form-control form-control-lg border-2" placeholder="Brief descriptive title..." style="border-radius: 12px;">
+                                    <input type="text" name="content" class="form-control form-control-lg border-2" placeholder="Brief descriptive title..." style="border-radius: 12px;">
                                 </div>
                             </div>
                         </div>

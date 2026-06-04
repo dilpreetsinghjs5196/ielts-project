@@ -46,6 +46,7 @@
                         </div>
 
                         <div class="questions-list">
+                            @php $lastTitle = null; @endphp
                             @foreach ($part->questions as $question)
                                 @php
                                     if (in_array($question->id, $embeddedQIds)) continue;
@@ -84,6 +85,13 @@
                                     }
                                 @endphp
 
+                                @if(!empty($question->content) && !empty($question->title) && $question->title !== $lastTitle)
+                                    <div class="question-set-header mt-4 mb-3 p-3 rounded" style="background: rgba(59, 130, 246, 0.05); border-left: 5px solid #3b82f6;">
+                                        <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.5;">{{ $question->title }}</h5>
+                                    </div>
+                                    @php $lastTitle = $question->title; @endphp
+                                @endif
+
                                 <div class="question-item card border-0 shadow-sm mb-4" 
                                      id="q-{{ $question->id }}"
                                      style="border-left: 5px solid {{ $isCorrect ? '#10b981' : ($hasAnswered ? '#ef4444' : '#e2e8f0') }} !important;">
@@ -104,7 +112,7 @@
 
                                                 <div class="q-text fs-5 fw-bold text-dark mb-3">
                                                     @php
-                                                        $qBody = $question->title;
+                                                        $qBody = $question->content ?: $question->title;
                                                         $pattern = '/(?:\[q(\d+)\]|(\d+)_{2,})/';
                                                         $renderedBody = preg_replace_callback($pattern, function($matches) use ($allQuestions, &$embeddedQIds, $attempt) {
                                                             $num = $matches[1] ?: $matches[2];
@@ -183,7 +191,8 @@
                                                         @endforeach
                                                     </div>
                                                 @elseif($question->question_type === 'fill_blanks' || $question->question_type === 'short_answer')
-                                                    @if(strpos($question->title, '[q') === false && strpos($question->title, '___') === false)
+                                                    @php $checkText = $question->content ?: $question->title; @endphp
+                                                    @if(strpos($checkText, '[q') === false && strpos($checkText, '___') === false)
                                                         <div class="mt-2 p-3 bg-light rounded-3 border">
                                                             <div class="small text-muted mb-1">Your Answer:</div>
                                                             <span class="fw-bold {{ $isCorrect ? 'text-success' : ($hasAnswered ? 'text-danger' : 'text-muted italic') }}">

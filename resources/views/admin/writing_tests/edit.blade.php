@@ -3,10 +3,17 @@
 @section('content')
 <div class="row mb-4">
     <div class="col-12">
+        @php
+            $cancelUrl = route('admin.question-groups.index', [
+                'category' => 'writing',
+                'test_type' => $writingTest->test_type_id,
+                'level' => $writingTest->level_id
+            ]);
+        @endphp
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb" style="background: transparent; padding: 0;">
                 <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.tests.index', ['category' => 'writing']) }}">Writing Tests</a></li>
+                <li class="breadcrumb-item"><a href="{{ $cancelUrl }}">Writing Tests</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edit Writing Test</li>
             </ol>
         </nav>
@@ -56,8 +63,9 @@
                         </select>
                     </div>
 
-                    <div class="mt-4 pt-2">
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" style="border-radius: 10px;">Save General Settings</button>
+                    <div class="mt-4 pt-2 d-flex gap-2">
+                        <a href="{{ $cancelUrl }}" class="btn btn-light w-50 py-2 fw-bold" style="border-radius: 10px;">Cancel</a>
+                        <button type="submit" class="btn btn-primary w-50 py-2 fw-bold" style="border-radius: 10px;">Save Settings</button>
                     </div>
                 </form>
             </div>

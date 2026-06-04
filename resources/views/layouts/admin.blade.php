@@ -361,22 +361,42 @@
                             <span class="badge bg-info bg-opacity-10 text-info ms-auto" style="font-size: 0.65rem;">Exam Batch</span>
                         </a>
                     </li>
-                    <li class="{{ request()->is('admin/tests*') ? 'active' : '' }}">
+                    @php
+                        $isQuestionBankActive = request()->is('admin/question-groups*') || 
+                                               request()->is('admin/listening-tests*') || 
+                                               request()->is('admin/listening-parts*') || 
+                                               request()->is('admin/listening-questions*') || 
+                                               request()->is('admin/speaking-tests*') || 
+                                               (request()->is('admin/tests*') && request()->query('category') === 'speaking');
+                        
+                        $isListeningActive = request()->is('admin/listening-tests*') || 
+                                             request()->is('admin/listening-parts*') || 
+                                             request()->is('admin/listening-questions*') || 
+                                             (request()->is('admin/question-groups*') && request()->query('category') === 'listening');
+                        
+                        $isReadingActive = request()->is('admin/question-groups*') && request()->query('category') === 'reading';
+                        $isWritingActive = request()->is('admin/question-groups*') && request()->query('category') === 'writing';
+                        
+                        $isSpeakingActive = request()->is('admin/speaking-tests*') || 
+                                            (request()->is('admin/tests*') && request()->query('category') === 'speaking') || 
+                                            (request()->is('admin/question-groups*') && request()->query('category') === 'speaking');
+                    @endphp
+                    <li class="{{ request()->is('admin/tests*') && request()->query('category') !== 'speaking' ? 'active' : '' }}">
                         <a href="{{ route('admin.tests.index') }}"><i class="fas fa-vial"></i> Mock Tests</a>
                     </li>
                     <li class="{{ request()->is('admin/import*') ? 'active' : '' }}">
                         <a href="{{ route('admin.import.create') }}"><i class="fas fa-file-import"></i> Import Test (Auto)</a>
                     </li>
                     
-                    <li class="{{ request()->is('admin/question-groups*') ? 'active' : '' }}">
-                        <a href="#questionSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->is('admin/question-groups*') ? 'true' : 'false' }}" class="dropdown-toggle">
+                    <li class="{{ $isQuestionBankActive ? 'active' : '' }}">
+                        <a href="#questionSubmenu" data-bs-toggle="collapse" aria-expanded="{{ $isQuestionBankActive ? 'true' : 'false' }}" class="dropdown-toggle">
                             <i class="fas fa-question-circle"></i> Question Bank
                         </a>
-                        <ul class="collapse list-unstyled ps-4 {{ request()->is('admin/question-groups*') ? 'show' : '' }}" id="questionSubmenu">
-                            <li><a href="{{ route('admin.question-groups.index', ['category' => 'listening']) }}"><i class="fas fa-headphones me-2"></i> Listening</a></li>
-                            <li><a href="{{ route('admin.question-groups.index', ['category' => 'reading']) }}"><i class="fas fa-book-open me-2"></i> Reading</a></li>
-                            <li><a href="{{ route('admin.question-groups.index', ['category' => 'writing']) }}"><i class="fas fa-pen-nib me-2"></i> Writing</a></li>
-                            <li><a href="{{ route('admin.question-groups.index', ['category' => 'speaking']) }}"><i class="fas fa-comment-dots me-2"></i> Speaking</a></li>
+                        <ul class="collapse list-unstyled ps-4 {{ $isQuestionBankActive ? 'show' : '' }}" id="questionSubmenu">
+                            <li class="{{ $isListeningActive ? 'active' : '' }}"><a href="{{ route('admin.question-groups.index', ['category' => 'listening']) }}"><i class="fas fa-headphones me-2"></i> Listening</a></li>
+                            <li class="{{ $isReadingActive ? 'active' : '' }}"><a href="{{ route('admin.question-groups.index', ['category' => 'reading']) }}"><i class="fas fa-book-open me-2"></i> Reading</a></li>
+                            <li class="{{ $isWritingActive ? 'active' : '' }}"><a href="{{ route('admin.question-groups.index', ['category' => 'writing']) }}"><i class="fas fa-pen-nib me-2"></i> Writing</a></li>
+                            <li class="{{ $isSpeakingActive ? 'active' : '' }}"><a href="{{ route('admin.question-groups.index', ['category' => 'speaking']) }}"><i class="fas fa-comment-dots me-2"></i> Speaking</a></li>
                         </ul>
                     </li>
 

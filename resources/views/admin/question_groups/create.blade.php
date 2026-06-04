@@ -7,7 +7,18 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb" style="background: transparent; padding: 0;">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.question-groups.index') }}">Question Bank</a></li>
+                    @php
+                        $cancelRoute = route('admin.question-groups.index', ['category' => $activeCategory->slug ?? 'listening']);
+                        if (request()->has('test_type_id') || request()->has('level_id') || request()->has('test_id')) {
+                            $cancelRoute = route('admin.question-groups.index', [
+                                'category' => $activeCategory->slug ?? 'listening',
+                                'test_type' => request()->test_type_id,
+                                'level' => request()->level_id,
+                                'test' => request()->test_id
+                            ]);
+                        }
+                    @endphp
+                    <li class="breadcrumb-item"><a href="{{ $cancelRoute }}">Question Bank</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Create Segment</li>
                 </ol>
             </nav>
@@ -116,7 +127,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 mb-2 mt-3">Create Segment</button>
-                        <a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug ?? 'listening']) }}" class="btn btn-light w-100">Cancel</a>
+                        <a href="{{ $cancelRoute }}" class="btn btn-light w-100">Cancel</a>
                     </div>
                 </div>
             </div>

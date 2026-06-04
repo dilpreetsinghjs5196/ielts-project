@@ -92,6 +92,7 @@ class ListeningTestController extends Controller
             'question_number' => 'required|string',
             'question_type' => 'required|string',
             'title' => 'required|string',
+            'content' => 'nullable|string',
             'marks' => 'required|integer',
         ]);
 

@@ -3,10 +3,35 @@
 @section('content')
 <div class="row mb-4">
     <div class="col-12">
+        @php
+            $categorySlug = null;
+            if (isset($preselectedCategoryId)) {
+                $cat = $categories->find($preselectedCategoryId);
+                if ($cat) {
+                    $categorySlug = $cat->slug;
+                }
+            }
+            
+            $cancelUrl = route('admin.tests.index', [
+                'category' => $categorySlug,
+                'test_type_id' => $preselectedTestTypeId,
+                'level_id' => $preselectedLevelId,
+                'module_set_id' => $preselectedModuleSetId
+            ]);
+
+            if ($categorySlug && in_array($categorySlug, ['reading', 'writing'])) {
+                $cancelUrl = route('admin.question-groups.index', [
+                    'category' => $categorySlug,
+                    'test_type' => $preselectedTestTypeId,
+                    'level' => $preselectedLevelId,
+                    'module_set' => $preselectedModuleSetId
+                ]);
+            }
+        @endphp
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb" style="background: transparent; padding: 0;">
                 <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.tests.index') }}">Tests</a></li>
+                <li class="breadcrumb-item"><a href="{{ $cancelUrl }}">Tests</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Create Test</li>
             </ol>
         </nav>
@@ -104,7 +129,7 @@
                     </div>
 
                     <div class="mt-4 d-flex justify-content-end gap-2">
-                        <a href="{{ route('admin.tests.index') }}" class="btn btn-light px-4" style="border-radius: 10px;">Cancel</a>
+                        <a href="{{ $cancelUrl }}" class="btn btn-light px-4" style="border-radius: 10px;">Cancel</a>
                         <button type="submit" class="btn btn-primary px-4" style="border-radius: 10px;">Create Test</button>
                     </div>
                 </form>

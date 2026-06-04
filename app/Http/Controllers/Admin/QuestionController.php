@@ -209,7 +209,21 @@ class QuestionController extends Controller
      */
     public function destroy(Question $question)
     {
+        $groupId = $question->question_group_id;
+        $categorySlug = $question->category?->slug;
+
         $question->delete();
+
+        if ($groupId) {
+            return redirect()->route('admin.question-groups.show', $groupId)
+                ->with('success', 'Question deleted successfully.');
+        }
+
+        if ($categorySlug) {
+            return redirect()->route('admin.questions.index', ['category' => $categorySlug])
+                ->with('success', 'Question deleted successfully.');
+        }
+
         return redirect()->route('admin.questions.index')->with('success', 'Question deleted successfully.');
     }
 }

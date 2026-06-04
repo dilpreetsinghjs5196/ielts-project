@@ -7,7 +7,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb" style="background: transparent; padding: 0;">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.questions.index') }}">Question Bank</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.questions.index', ['category' => $question->category->slug]) }}">Question Bank</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Edit Question</li>
                 </ol>
             </nav>

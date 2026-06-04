@@ -150,7 +150,8 @@
                         
                         // Process Title tags in all questions of this part
                         foreach ($part->questions as $q) {
-                            if (preg_match_all($pattern, $q->title, $matches)) {
+                            $qContentForEmbedding = $q->content ?: $q->title;
+                            if (preg_match_all($pattern, $qContentForEmbedding, $matches)) {
                                 foreach ($matches[1] as $num) {
                                     $targetQ = $part->questions->filter(fn($pq) => $pq->question_number == $num)->first();
                                     if ($targetQ && $targetQ->id != $q->id) {
@@ -169,9 +170,10 @@
                     </div>
 
                     <div class="questions-list">
+                        @php $lastTitle = null; @endphp
                         @foreach ($part->questions as $question)
                             @php
-                                $qContent = $question->title;
+                                $qContent = $question->content ?: $question->title;
                                 $isEmbeddedInBody = preg_match($pattern, $qContent);
                                 
                                 if ($isEmbeddedInBody) {
@@ -184,6 +186,13 @@
                                 // Logic to hide cards that are embedded elsewhere
                                 $isHidden = in_array($question->id, $embeddedQIds);
                             @endphp
+
+                            @if(!empty($question->content) && !empty($question->title) && $question->title !== $lastTitle)
+                                <div class="question-set-header mt-4 mb-3 p-3 rounded" style="background: rgba(59, 130, 246, 0.05); border-left: 5px solid #3b82f6;">
+                                    <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.5;">{{ $question->title }}</h5>
+                                </div>
+                                @php $lastTitle = $question->title; @endphp
+                            @endif
 
                             <div class="question-item mb-4 pb-4 border-bottom {{ $isHidden ? 'd-none' : '' }}" 
                                  id="q-{{ $question->id }}" 

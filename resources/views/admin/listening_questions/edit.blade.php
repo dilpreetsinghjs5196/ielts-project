@@ -40,14 +40,14 @@
                             <div class="col-md-8">
                                 <div class="form-group mb-4">
                                     <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Heading / Title</label>
-                                    <input type="text" name="title_placeholder" class="form-control form-control-lg border-2" value="{{ $question->title_placeholder ?? '' }}" placeholder="Brief descriptive title..." style="border-radius: 12px;">
+                                    <input type="text" name="content" class="form-control form-control-lg border-2" value="{{ old('content', $question->content) }}" placeholder="Brief descriptive title..." style="border-radius: 12px;">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group mb-4">
                             <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Content / Text</label>
-                            <textarea name="title" class="form-control border-2" rows="6" style="border-radius: 15px; font-size: 1.1rem; line-height: 1.6;" required>{{ $question->title }}</textarea>
+                            <textarea name="title" class="form-control border-2" rows="6" style="border-radius: 15px; font-size: 1.1rem; line-height: 1.6;" required>{{ old('title', $question->title) }}</textarea>
                             <div class="form-text mt-2 text-muted">
                                 <i class="fas fa-keyboard me-1"></i> Use <code>____</code> (four underscores) to create a blank space for students to type.
                             </div>
