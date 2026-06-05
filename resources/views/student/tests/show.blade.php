@@ -400,6 +400,7 @@
     }
 
     .timer-wrapper {
+        display: none !important; /* Temporarily hidden as requested */
         background: #f1f5f9;
         padding: 8px 24px;
         border-radius: 50px;

@@ -353,7 +353,9 @@
     body { overflow: hidden; background: #f8fafc; font-family: 'Inter', sans-serif; }
     .test-container { display: flex; flex-direction: column; height: 100vh; }
     .test-header { height: var(--header-height); background: #fff; border-bottom: 3px solid var(--primary-gold); z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .timer-wrapper { background: #f1f5f9; padding: 8px 24px; border-radius: 50px; min-width: 150px; }
+    .timer-wrapper { display: none !important; /* Temporarily hidden as requested */ background: #f1f5f9; padding: 8px 24px; border-radius: 50px; min-width: 150px; }
+    .skip-btn { display: none !important; }
+    .audio-progress-container { pointer-events: none; cursor: default !important; }
 
     .test-footer { height: var(--footer-height); z-index: 100; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
     
@@ -507,11 +509,54 @@
     const progressBar = document.getElementById('audio-progress-bar');
     const timeDisplay = document.getElementById('audio-time');
 
+    const attemptId = "{{ $attempt->id }}";
+    const finishedKey = `audio_finished_${attemptId}`;
+    const startedKey = `audio_started_${attemptId}`;
+    const timeKey = `audio_time_${attemptId}`;
+
+    let isAudioFinished = localStorage.getItem(finishedKey) === 'true';
+    let isAudioStarted = localStorage.getItem(startedKey) === 'true';
+
+    // Initialize player state on page load
+    if (mainAudio) {
+        if (isAudioFinished) {
+            disableAudioUI();
+        } else if (isAudioStarted) {
+            const savedTime = parseFloat(localStorage.getItem(timeKey) || '0');
+            if (savedTime > 0) {
+                mainAudio.currentTime = savedTime;
+            }
+        }
+    }
+
+    function disableAudioUI() {
+        if (audioIcon) {
+            audioIcon.classList.remove('fa-play-circle', 'fa-pause-circle');
+            audioIcon.classList.add('fa-ban');
+            audioIcon.style.opacity = '0.5';
+            audioIcon.style.cursor = 'not-allowed';
+            audioIcon.style.pointerEvents = 'none';
+        }
+        document.querySelectorAll('.skip-btn').forEach(btn => btn.style.display = 'none');
+        const progressContainer = document.querySelector('.audio-progress-container');
+        if (progressContainer) progressContainer.style.pointerEvents = 'none';
+    }
+
     function toggleMainAudio() {
         if (!mainAudio) return;
+        
+        if (localStorage.getItem(finishedKey) === 'true') {
+            alert('This audio has already been played once and cannot be replayed.');
+            return;
+        }
+
         if (mainAudio.paused) {
-            mainAudio.play();
-            audioIcon.classList.replace('fa-play-circle', 'fa-pause-circle');
+            mainAudio.play().then(() => {
+                localStorage.setItem(startedKey, 'true');
+                audioIcon.classList.replace('fa-play-circle', 'fa-pause-circle');
+            }).catch(e => {
+                console.error("Audio playback failed:", e);
+            });
         } else {
             mainAudio.pause();
             audioIcon.classList.replace('fa-pause-circle', 'fa-play-circle');
@@ -520,46 +565,99 @@
 
     if (mainAudio) {
         mainAudio.ontimeupdate = function() {
+            if (localStorage.getItem(finishedKey) === 'true') {
+                mainAudio.pause();
+                return;
+            }
+            
             const pct = (mainAudio.currentTime / mainAudio.duration) * 100;
             progressBar.style.width = pct + '%';
             
             const mins = Math.floor(mainAudio.currentTime / 60);
             const secs = Math.floor(mainAudio.currentTime % 60);
             timeDisplay.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+            
+            localStorage.setItem(timeKey, mainAudio.currentTime);
+        };
+
+        mainAudio.onended = function() {
+            localStorage.setItem(finishedKey, 'true');
+            disableAudioUI();
+        };
+
+        // Prevent seeking via keyboard or custom player controls
+        mainAudio.onseeking = function() {
+            const savedTime = parseFloat(localStorage.getItem(timeKey) || '0');
+            if (Math.abs(mainAudio.currentTime - savedTime) > 1.5) {
+                mainAudio.currentTime = savedTime;
+            }
         };
     }
 
+    // Disable skip & seek click functions completely
     window.seekAudio = function(e) {
-        const audio = document.getElementById('main-test-audio');
-        if (!audio || isNaN(audio.duration)) return;
-        const container = e.currentTarget;
-        const rect = container.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const pct = x / rect.width;
-        audio.currentTime = pct * audio.duration;
+        console.log("Seeking is disabled for this test.");
     };
 
     window.skipAudio = function(seconds) {
-        const audio = document.getElementById('main-test-audio');
-        if (!audio || isNaN(audio.duration)) return;
-        try {
-            const wasPlaying = !audio.paused;
-            audio.pause(); // Pause briefly to ensure seek works on all servers
-            
-            let newTime = audio.currentTime + seconds;
-            if (newTime < 0) newTime = 0;
-            if (newTime > audio.duration) newTime = audio.duration;
-            
-            audio.currentTime = newTime;
-            
-            if (wasPlaying) {
-                audio.play().catch(e => console.log("Auto-play blocked after seek"));
-            }
-            console.log("Skipped to: " + audio.currentTime);
-        } catch (e) {
-            console.error("Skip failed: ", e);
-        }
+        console.log("Skipping is disabled for this test.");
     };
+
+    // Part Audios Logic (for tests with individual part audios instead of a main audio)
+    document.querySelectorAll('audio').forEach(audio => {
+        if (audio.id === 'main-test-audio') return; // Handled by main audio logic
+
+        const audioId = audio.id || `part-audio-${Math.random().toString(36).substr(2, 9)}`;
+        const pFinishedKey = `audio_finished_${attemptId}_${audioId}`;
+        const pStartedKey = `audio_started_${attemptId}_${audioId}`;
+        const pTimeKey = `audio_time_${attemptId}_${audioId}`;
+
+        let isFinished = localStorage.getItem(pFinishedKey) === 'true';
+        let isStarted = localStorage.getItem(pStartedKey) === 'true';
+
+        if (isFinished) {
+            audio.style.display = 'none';
+            const container = audio.closest('.audio-player');
+            if (container) {
+                container.innerHTML = '<div class="text-danger fw-bold"><i class="fas fa-info-circle me-1"></i> Audio played once and is now locked.</div>';
+            }
+        } else {
+            if (isStarted) {
+                const savedTime = parseFloat(localStorage.getItem(pTimeKey) || '0');
+                if (savedTime > 0) {
+                    audio.currentTime = savedTime;
+                }
+            }
+
+            let lastTime = audio.currentTime;
+            audio.addEventListener('timeupdate', () => {
+                if (!audio.seeking) {
+                    lastTime = audio.currentTime;
+                    localStorage.setItem(pTimeKey, lastTime);
+                }
+            });
+
+            audio.addEventListener('seeking', () => {
+                const delta = audio.currentTime - lastTime;
+                if (Math.abs(delta) > 0.01) {
+                    audio.currentTime = lastTime;
+                }
+            });
+
+            audio.addEventListener('play', () => {
+                localStorage.setItem(pStartedKey, 'true');
+            });
+
+            audio.addEventListener('ended', () => {
+                localStorage.setItem(pFinishedKey, 'true');
+                audio.style.display = 'none';
+                const container = audio.closest('.audio-player');
+                if (container) {
+                    container.innerHTML = '<div class="text-danger fw-bold"><i class="fas fa-info-circle me-1"></i> Audio played once and is now locked.</div>';
+                }
+            });
+        }
+    });
 
     // Submit Logic
     function submitTest() {
