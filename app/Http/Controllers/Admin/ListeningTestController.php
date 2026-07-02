@@ -93,12 +93,66 @@ class ListeningTestController extends Controller
             'question_type' => 'required|string',
             'title' => 'required|string',
             'content' => 'nullable|string',
+            'correct_answer' => 'nullable|string',
+            'image' => 'nullable|image|max:5120',
             'marks' => 'required|integer',
         ]);
 
-        $question = ListeningQuestion::create($request->all());
+        $data = $request->only(['listening_part_id', 'question_number', 'question_type', 'title', 'content', 'correct_answer', 'marks']);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $this->handleFileUpload($request->file('image'), 'listening_questions');
+        }
+
+        if ($request->has('options')) {
+            $data['options'] = array_filter($request->options);
+        }
+
+        $question = ListeningQuestion::create($data);
 
         return redirect()->route('admin.listening-parts.show', $request->listening_part_id)->with('success', 'Question added successfully.');
+    }
+
+    public function create(Request $request)
+    {
+        $levels = Level::all();
+        $categories = Category::all();
+        $testTypes = TestType::all();
+        
+        $preselectedCategoryId = $request->get('category_id');
+        $preselectedLevelId = $request->get('level_id');
+        $preselectedTestTypeId = $request->get('test_type_id');
+
+        return view('admin.listening_tests.create', compact(
+            'levels', 
+            'categories', 
+            'testTypes', 
+            'preselectedCategoryId',
+            'preselectedLevelId',
+            'preselectedTestTypeId'
+        ));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'level_id' => 'required|exists:levels,id',
+            'test_type_id' => 'required|exists:test_types,id',
+            'status' => 'required|in:active,inactive',
+            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:102400',
+        ]);
+
+        $data = $request->except('audio_file');
+        
+        if ($request->hasFile('audio_file')) {
+            $data['audio_file'] = $this->handleFileUpload($request->file('audio_file'), 'listening/audio');
+        }
+
+        $listeningTest = ListeningTest::create($data);
+
+        return redirect()->route('admin.listening-tests.edit', $listeningTest->id)
+            ->with('success', 'Listening Mock Test created successfully. You can now add parts.');
     }
 
     public function edit(ListeningTest $listeningTest)

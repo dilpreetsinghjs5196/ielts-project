@@ -39,6 +39,19 @@
             justify-content: space-between;
         }
 
+        .timer-wrapper {
+            display: none !important;
+            background: #f1f5f9;
+            padding: 4px 18px;
+            border-radius: 50px;
+            color: #222;
+            min-width: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #d1d1d1;
+        }
+
         .test-info {
             display: flex;
             align-items: center;
@@ -223,16 +236,20 @@
         /* --- Success Popup --- */
         #submission-popup {
             display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.85); 
-            z-index: 10000; 
-            align-items: center; 
-            justify-content: center;
-            backdrop-filter: blur(5px);
+            position: fixed !important; 
+            top: 0 !important; 
+            left: 0 !important; 
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important; 
+            height: 100% !important; 
+            background: rgba(0,0,0,0.85) !important; 
+            z-index: 999999 !important; 
+            align-items: center !important; 
+            justify-content: center !important;
+            backdrop-filter: blur(5px) !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         .popup-content {
             background: white; 
@@ -271,18 +288,120 @@
         }
         .btn-home { background: #0d1624; color: white; }
         .btn-admin { background: #e31837; color: white; }
+
+        /* --- Resume Overlay styling --- */
+        #resume-confirm-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(13, 22, 36, 0.95) !important;
+            backdrop-filter: blur(10px) !important;
+            z-index: 999999 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .resume-card {
+            background: #fff;
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+
+        .resume-card h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #111;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .resume-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .resume-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .resume-btn {
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            font-size: 1rem;
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        .resume-btn-primary {
+            background: #ce9d3c;
+            color: #fff;
+            border: none;
+            width: 100%;
+        }
+
+        .resume-btn-primary:hover {
+            background: #b8882f;
+            transform: translateY(-2px);
+        }
+
+        .resume-btn-secondary {
+            background: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .resume-btn-secondary:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .resume-btn-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .resume-btn-link:hover {
+            color: #666;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-@if($attempt && ($attempt->status === 'completed' || $attempt->id))
-<div id="resume-confirm-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 9999; background: rgba(13, 22, 36, 0.95); backdrop-filter: blur(10px);">
-    <div class="card border-0 shadow-lg text-center p-5" style="max-width: 500px; border-radius: 24px; font-family: 'Inter', sans-serif; background: #fff;">
-        <div class="mb-4">
-            <div class="rounded-circle bg-warning-subtle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; background: rgba(206, 157, 60, 0.1); border-radius: 50%;">
-                <i class="fas fa-history text-warning fs-1" style="color: #ce9d3c; font-size: 2.5rem;"></i>
+@if($attempt && ($attempt->status === 'completed' || !$attempt->wasRecentlyCreated))
+<div id="resume-confirm-overlay">
+    <div class="resume-card">
+        <div style="margin-bottom: 20px;">
+            <div style="width: 80px; height: 80px; background: rgba(206, 157, 60, 0.1); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                <i class="fas fa-history" style="color: #ce9d3c; font-size: 2.5rem;"></i>
             </div>
-            <h2 class="fw-bold mb-3" style="font-weight: 700; color: #111;">{{ $attempt->status === 'completed' ? 'Test Already Given' : 'Resume Test?' }}</h2>
-            <p class="text-muted" style="color: #666;">
+            <h2>{{ $attempt->status === 'completed' ? 'Test Already Given' : 'Resume Test?' }}</h2>
+            <p>
                 @if($attempt->status === 'completed')
                     You have already submitted an attempt for this Writing test. What would you like to do?
                 @else
@@ -290,23 +409,23 @@
                 @endif
             </p>
         </div>
-        <div class="d-grid gap-3" style="display: grid; gap: 15px;">
+        <div class="resume-btn-group">
             @if($attempt->status === 'completed')
-                <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => 'writing']) }}" class="btn-home" style="padding: 15px; border-radius: 50px; font-weight: 700; text-decoration: none; border: 1px solid #ddd; color: #333; background: #fff; display: block; text-align: center;">
+                <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => 'writing']) }}" class="resume-btn resume-btn-secondary">
                     <i class="fas fa-eye me-2"></i> Review Old Test
                 </a>
-                <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'writing']) }}" class="btn-admin" style="padding: 15px; border-radius: 50px; font-weight: 700; text-decoration: none; background: #ce9d3c; color: #fff; display: block; text-align: center;" onclick="return confirm('Are you sure you want to retry? This will delete your previous attempt.')">
+                <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'writing']) }}" class="resume-btn resume-btn-primary" onclick="return confirm('Are you sure you want to retry? This will delete your previous attempt.')">
                     <i class="fas fa-redo me-2"></i> Retry Test Again
                 </a>
             @else
-                <button class="btn-admin" style="padding: 15px; border-radius: 50px; font-weight: 700; border: none; background: #ce9d3c; color: #fff; cursor: pointer; width: 100%;" onclick="document.getElementById('resume-confirm-overlay').remove()">
+                <button class="resume-btn resume-btn-primary" onclick="document.getElementById('resume-confirm-overlay').remove(); startTimer();">
                     <i class="fas fa-play me-2"></i> Resume Old One Test
                 </button>
-                <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'writing']) }}" class="btn-home" style="padding: 15px; border-radius: 50px; font-weight: 700; text-decoration: none; border: 1px solid #ddd; color: #333; background: #fff; display: block; text-align: center;" onclick="return confirm('Starting fresh will permanently delete your current progress. Are you sure?')">
+                <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'writing']) }}" class="resume-btn resume-btn-secondary" onclick="return confirm('Starting fresh will permanently delete your current progress. Are you sure?')">
                     <i class="fas fa-redo me-2"></i> Restart from Beginning
                 </a>
             @endif
-            <a href="{{ route('student.dashboard') }}" class="btn btn-link text-muted text-decoration-none" style="color: #888; text-decoration: none; font-size: 0.9rem; text-align: center;">Back to Dashboard</a>
+            <a href="{{ route('student.dashboard') }}" class="resume-btn-link">Back to Dashboard</a>
         </div>
     </div>
 </div>
@@ -316,6 +435,12 @@
         <div class="ielts-logo">IELTS</div>
         <div class="test-info">
             Candidate Name: {{ auth('student')->user()->name ?? 'Guest User' }}
+        </div>
+        <div class="header-center timer-wrapper">
+            <div class="timer" style="display: flex; align-items: center; gap: 8px;">
+                <i class="far fa-clock"></i>
+                <span id="test-timer" style="font-weight: 700; font-size: 1.1rem;">60:00</span>
+            </div>
         </div>
         <div class="header-icons">
             <i class="fas fa-wifi"></i>
@@ -356,6 +481,7 @@
                         class="writing-area" 
                         placeholder="Type your answer here..."
                         oninput="updateWordCount({{ $index + 1 }})"
+                        onchange="saveProgress()"
                     ></textarea>
                     
                     <div class="word-counter">
@@ -377,7 +503,7 @@
 
         <div class="submit-container">
             <span class="small text-muted" id="progress-text">1 of {{ $test->tasks->count() }}</span>
-            <button class="nav-btn"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn" onclick="prevTask()"><i class="fas fa-chevron-left"></i></button>
             <button class="nav-btn black" onclick="nextTask()"><i class="fas fa-chevron-right"></i></button>
             <button class="btn-check" onclick="submitTest()"><i class="fas fa-check"></i></button>
         </div>
@@ -392,8 +518,8 @@
             <h2 style="margin-bottom: 12px; font-weight: 800; color: #111;">Test Submitted!</h2>
             <p style="color: #666; font-size: 1.1rem; line-height: 1.6;">Your writing test has been submitted successfully. What would you like to do next?</p>
             <div class="btn-group">
-                <a href="/" class="popup-btn btn-home">Home Page</a>
-                <a href="{{ route('login') }}" class="popup-btn btn-admin">Admin Panel</a>
+                <a href="{{ route('student.dashboard') }}" class="popup-btn btn-home">Dashboard</a>
+                <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => 'writing']) }}" class="popup-btn btn-admin">View Answers</a>
             </div>
         </div>
     </div>
@@ -401,6 +527,7 @@
     <script>
         let currentTask = 1;
         const totalTasks = {{ $test->tasks->count() }};
+        let timeInSeconds = {{ $attempt->time_left ?? $examDurationInSeconds }};
 
         function switchTask(taskNum) {
             currentTask = taskNum;
@@ -414,6 +541,12 @@
             document.getElementById(`tab-btn-${taskNum}`).classList.add('active');
 
             document.getElementById('progress-text').innerText = `${taskNum} of ${totalTasks}`;
+        }
+
+        function prevTask() {
+            if (currentTask > 1) {
+                switchTask(currentTask - 1);
+            }
         }
 
         function nextTask() {
@@ -432,21 +565,91 @@
             document.getElementById(`word-count-${taskNum}`).innerText = count;
         }
 
-        function submitTest() {
-            if (!confirm("Are you sure you want to submit your writing test?")) return;
-
-            // Collecting answers
+        function collectAnswers() {
             const answers = {};
             for(let i=1; i<=totalTasks; i++) {
                 answers[i] = document.getElementById(`writing-textarea-${i}`).value;
             }
+            return answers;
+        }
+
+        function saveProgress() {
+            const answers = collectAnswers();
+            fetch("{{ route('student.tests.save-progress', $test->id) }}?category=writing", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ answers: answers, time_left: timeInSeconds })
+            });
+        }
+
+        function restoreAnswers() {
+            const existingAnswers = @json($attempt->answers ?? []);
+            if (!existingAnswers || Object.keys(existingAnswers).length === 0) return;
+
+            Object.entries(existingAnswers).forEach(([partNum, value]) => {
+                const textarea = document.getElementById(`writing-textarea-${partNum}`);
+                if (textarea) {
+                    textarea.value = value;
+                    updateWordCount(partNum);
+                }
+            });
+        }
+
+        const timerEl = document.getElementById('test-timer');
+        let timerInterval;
+
+        function updateTimer() {
+            const mins = Math.floor(timeInSeconds / 60);
+            const secs = timeInSeconds % 60;
+            if (timerEl) {
+                timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            if (timeInSeconds > 0) {
+                timeInSeconds--;
+                if (timeInSeconds % 30 === 0) {
+                    saveProgress();
+                }
+            } else {
+                if (timerInterval) clearInterval(timerInterval);
+                alert("Time's up!");
+                submitTest(true);
+            }
+        }
+
+        function startTimer() {
+            if (!timerInterval && timeInSeconds > 0) {
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+        }
+
+        const isOverlayShowing = {{ ($attempt && ($attempt->status === 'completed' || !$attempt->wasRecentlyCreated)) ? 'true' : 'false' }};
+
+        window.addEventListener('DOMContentLoaded', () => {
+            restoreAnswers();
+            if (!isOverlayShowing) {
+                startTimer();
+            }
+        });
+
+        function submitTest(isAuto = false) {
+            if (!isAuto && !confirm("Are you sure you want to submit your writing test?")) return;
+
+            // Collecting answers
+            const answers = collectAnswers();
 
             // CSRF Token
             const csrfToken = '{{ csrf_token() }}';
 
             // Show loading state
-            document.querySelector('.btn-check').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            document.querySelector('.btn-check').disabled = true;
+            const submitBtn = document.querySelector('.btn-check');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                submitBtn.disabled = true;
+            }
 
             fetch("{{ route('student.writing-tests.submit', $test->id) }}", {
                 method: 'POST',
@@ -471,8 +674,10 @@
                 alert("An error occurred during submission.");
             })
             .finally(() => {
-                document.querySelector('.btn-check').innerHTML = '<i class="fas fa-check"></i>';
-                document.querySelector('.btn-check').disabled = false;
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    submitBtn.disabled = false;
+                }
             });
         }
     </script>

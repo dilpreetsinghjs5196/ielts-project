@@ -56,6 +56,10 @@ class MockTestController extends Controller
         $student = auth('student')->user();
         $categorySlug = $request->get('category');
 
+        // Fetch configured timing (fallback to 60 minutes)
+        $timing = \App\Models\ExamTiming::first();
+        $examDurationInSeconds = ($timing ? $timing->exam_time : 60) * 60;
+
         // IF CATEGORY IS WRITING, LOAD FROM WRITING_TESTS
         if ($categorySlug === 'writing') {
             $test = WritingTest::with('tasks')->findOrFail($id);
@@ -66,7 +70,18 @@ class MockTestController extends Controller
                 ->latest()
                 ->first();
 
-            return view('student.writing.show', compact('test', 'attempt'));
+            // If no attempt exists, create a new pending one
+            if (!$attempt) {
+                $attempt = \App\Models\WritingAttempt::create([
+                    'student_id' => $student->id,
+                    'writing_test_id' => $test->id,
+                    'status' => 'pending',
+                    'started_at' => now(),
+                    'time_left' => $examDurationInSeconds
+                ]);
+            }
+
+            return view('student.writing.show', compact('test', 'attempt', 'examDurationInSeconds'));
         }
 
         // IF CATEGORY IS SPEAKING, LOAD FROM SPEAKING_TESTS
@@ -91,11 +106,11 @@ class MockTestController extends Controller
                     'listening_test_id' => $test->id,
                     'status' => 'pending',
                     'started_at' => now(),
-                    'time_left' => 2400
+                    'time_left' => $examDurationInSeconds
                 ]);
             }
             
-            return view('student.listening.show', compact('test', 'attempt'));
+            return view('student.listening.show', compact('test', 'attempt', 'examDurationInSeconds'));
         }
 
         // REGULAR TEST HANDLING
@@ -114,13 +129,13 @@ class MockTestController extends Controller
                 'test_id' => $test->id,
                 'status' => 'pending',
                 'started_at' => now(),
-                'time_left' => 3600
+                'time_left' => $examDurationInSeconds
             ]);
         }
 
         $test->load(['moduleSet', 'questionGroups.questions', 'questionGroups.category']);
         
-        return view('student.tests.show', compact('test', 'attempt'));
+        return view('student.tests.show', compact('test', 'attempt', 'examDurationInSeconds'));
     }
 
     public function submit(Request $request, $id)
@@ -207,13 +222,26 @@ class MockTestController extends Controller
         
         $answers = $request->answers; // JSON/Array of part_number => text
 
-        $attempt = \App\Models\WritingAttempt::create([
-            'student_id' => $student->id,
-            'writing_test_id' => $test->id,
-            'answers' => $answers,
-            'status' => 'completed',
-            'completed_at' => now()
-        ]);
+        $attempt = \App\Models\WritingAttempt::where('student_id', $student->id)
+            ->where('writing_test_id', $test->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($attempt) {
+            $attempt->update([
+                'answers' => $answers,
+                'status' => 'completed',
+                'completed_at' => now()
+            ]);
+        } else {
+            $attempt = \App\Models\WritingAttempt::create([
+                'student_id' => $student->id,
+                'writing_test_id' => $test->id,
+                'answers' => $answers,
+                'status' => 'completed',
+                'completed_at' => now()
+            ]);
+        }
 
         return response()->json([
             'success' => true, 
@@ -295,6 +323,11 @@ class MockTestController extends Controller
         if ($category === 'listening') {
             $attempt = ListeningAttempt::where('student_id', $student->id)
                 ->where('listening_test_id', $id)
+                ->where('status', 'pending')
+                ->first();
+        } elseif ($category === 'writing') {
+            $attempt = \App\Models\WritingAttempt::where('student_id', $student->id)
+                ->where('writing_test_id', $id)
                 ->where('status', 'pending')
                 ->first();
         } else {

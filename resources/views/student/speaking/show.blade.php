@@ -327,8 +327,8 @@
             <h2 style="margin-bottom: 12px; font-weight: 800; color: #111;">Test Completed!</h2>
             <p style="color: #666; font-size: 1.1rem; line-height: 1.6;">You have successfully completed this interactive speaking practice. What would you like to do next?</p>
             <div class="btn-group">
-                <a href="/" class="popup-btn btn-home">Home Page</a>
-                <a href="{{ route('login') }}" class="popup-btn btn-admin">Admin Panel</a>
+                <a href="{{ route('student.dashboard') }}" class="popup-btn btn-home">Dashboard</a>
+                <a href="{{ route('student.dashboard') }}" class="popup-btn btn-admin">Back to Dashboard</a>
             </div>
         </div>
     </div>

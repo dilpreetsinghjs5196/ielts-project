@@ -387,6 +387,9 @@
                     <li class="{{ request()->is('admin/import*') ? 'active' : '' }}">
                         <a href="{{ route('admin.import.create') }}"><i class="fas fa-file-import"></i> Import Test (Auto)</a>
                     </li>
+                    <li class="{{ request()->is('admin/exam-timing*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.exam-timing.edit') }}"><i class="fas fa-clock"></i> Exam Timing</a>
+                    </li>
                     
                     <li class="{{ $isQuestionBankActive ? 'active' : '' }}">
                         <a href="#questionSubmenu" data-bs-toggle="collapse" aria-expanded="{{ $isQuestionBankActive ? 'true' : 'false' }}" class="dropdown-toggle">

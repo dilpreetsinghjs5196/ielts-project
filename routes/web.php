@@ -79,6 +79,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
+    // Exam Timing Settings
+    Route::get('/exam-timing', [App\Http\Controllers\Admin\ExamTimingController::class, 'edit'])->name('exam-timing.edit');
+    Route::put('/exam-timing', [App\Http\Controllers\Admin\ExamTimingController::class, 'update'])->name('exam-timing.update');
+
     // Writing Grading
     Route::post('writing-attempts/{id}/grade', [ResultController::class, 'gradeWriting'])->name('writing-attempts.grade');
 });

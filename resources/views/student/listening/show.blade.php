@@ -27,7 +27,7 @@
                     <i class="fas fa-redo me-2"></i> Retry Test Again
                 </a>
             @else
-                <button class="btn btn-warning py-3 rounded-pill fw-bold shadow-sm" onclick="document.getElementById('resume-confirm-overlay').remove()">
+                <button class="btn btn-warning py-3 rounded-pill fw-bold shadow-sm" onclick="document.getElementById('resume-confirm-overlay').remove(); startTimer();">
                     <i class="fas fa-play me-2"></i> Resume Test
                 </button>
                 <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => 'listening']) }}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold" onclick="return confirm('Starting fresh will permanently delete your current progress. Are you sure?')">
@@ -353,7 +353,7 @@
     body { overflow: hidden; background: #f8fafc; font-family: 'Inter', sans-serif; }
     .test-container { display: flex; flex-direction: column; height: 100vh; }
     .test-header { height: var(--header-height); background: #fff; border-bottom: 3px solid var(--primary-gold); z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .timer-wrapper { display: none !important; /* Temporarily hidden as requested */ background: #f1f5f9; padding: 8px 24px; border-radius: 50px; min-width: 150px; }
+    .timer-wrapper { display: none !important; background: #f1f5f9; padding: 8px 24px; border-radius: 50px; min-width: 150px; }
     .skip-btn { display: none !important; }
     .audio-progress-container { pointer-events: none; cursor: default !important; }
 
@@ -457,17 +457,33 @@
 </style>
 
 <script>
-    let timeInSeconds = {{ $attempt->time_left ?? 2400 }};
+    let timeInSeconds = {{ $attempt->time_left ?? $examDurationInSeconds }};
     const timerEl = document.getElementById('test-timer');
+    let timerInterval;
     
     function updateTimer() {
         const mins = Math.floor(timeInSeconds / 60);
         const secs = timeInSeconds % 60;
-        timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        if (timeInSeconds > 0) timeInSeconds--;
-        else submitTest();
+        if (timerEl) {
+            timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        if (timeInSeconds > 0) {
+            timeInSeconds--;
+            if (timeInSeconds % 30 === 0) {
+                saveProgress();
+            }
+        } else {
+            if (timerInterval) clearInterval(timerInterval);
+            alert("Time's up!");
+            submitTest(true);
+        }
     }
-    setInterval(updateTimer, 1000);
+
+    function startTimer() {
+        if (!timerInterval && timeInSeconds > 0) {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+    }
 
     function activatePart(partId) {
         // Toggle Passage Visibility
@@ -660,8 +676,22 @@
     });
 
     // Submit Logic
-    function submitTest() {
-        if(!confirm('Are you sure you want to finish the test?')) return;
+    function submitTest(isAuto = false) {
+        if(!isAuto && !confirm('Are you sure you want to finish the test?')) return;
+        const answers = collectAnswers();
+
+        fetch("{{ route('student.tests.submit', $test->id) }}?category=listening", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ answers })
+        }).then(r => r.json()).then(data => {
+            if(data.success) {
+                document.getElementById('submission-popup').style.display = 'flex';
+            }
+        });
+    }
+
+    function collectAnswers() {
         const answers = {};
         document.querySelectorAll('.question-item').forEach(q => {
             const id = q.dataset.qId;
@@ -685,17 +715,66 @@
                 }
             }
         });
+        return answers;
+    }
 
-        fetch("{{ route('student.tests.submit', $test->id) }}?category=listening", {
+    function saveProgress() {
+        const answers = collectAnswers();
+        fetch("{{ route('student.tests.save-progress', $test->id) }}?category=listening", {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-            body: JSON.stringify({ answers })
-        }).then(r => r.json()).then(data => {
-            if(data.success) {
-                document.getElementById('submission-popup').style.display = 'flex';
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ answers: answers, time_left: timeInSeconds })
+        });
+    }
+
+    function restoreAnswers() {
+        const existingAnswers = @json($attempt->answers ?? []);
+        if (!existingAnswers || Object.keys(existingAnswers).length === 0) return;
+
+        Object.entries(existingAnswers).forEach(([qId, value]) => {
+            const qEl = document.querySelector(`.question-item[data-q-id="${qId}"]`);
+            if (!qEl) return;
+
+            const type = qEl.dataset.qType;
+            if (type === 'mcq') {
+                const input = qEl.querySelector(`input[value="${value}"]`);
+                if (input) input.checked = true;
+            } else if (type === 'mcq_multi' && typeof value === 'string') {
+                const vals = value.split(',').map(s => s.trim());
+                vals.forEach(v => {
+                    const input = qEl.querySelector(`input[value="${v}"]`);
+                    if (input) input.checked = true;
+                });
+            } else {
+                const input = qEl.querySelector('input[type="text"]');
+                if (input) {
+                    const allInputs = qEl.querySelectorAll('.smart-q-input');
+                    if (allInputs.length > 1 && typeof value === 'string') {
+                        const vals = value.split(',').map(s => s.trim());
+                        allInputs.forEach((si, idx) => {
+                            if (vals[idx]) si.value = vals[idx];
+                        });
+                    } else {
+                        input.value = value;
+                    }
+                }
             }
         });
     }
+    const isOverlayShowing = {{ ($attempt && ($attempt->status === 'completed' || !$attempt->wasRecentlyCreated)) ? 'true' : 'false' }};
+
+    window.addEventListener('DOMContentLoaded', () => {
+        restoreAnswers();
+        if (!isOverlayShowing) {
+            startTimer();
+        }
+    });
+
+    // Save answers instantly when changed
+    document.addEventListener('change', saveProgress);
 
     // Basic Resizer
     const divider = document.getElementById('test-divider');

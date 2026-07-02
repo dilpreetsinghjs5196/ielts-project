@@ -27,7 +27,7 @@
                     <i class="fas fa-redo me-2"></i> Retry Test Again
                 </a>
             @else
-                <button class="btn btn-warning py-3 rounded-pill fw-bold shadow-sm" onclick="document.getElementById('resume-confirm-overlay').remove()">
+                <button class="btn btn-warning py-3 rounded-pill fw-bold shadow-sm" onclick="document.getElementById('resume-confirm-overlay').remove(); startTimer();">
                     <i class="fas fa-play me-2"></i> Resume Old One Test
                 </button>
                 <a href="{{ route('student.tests.restart', $test) }}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold" onclick="return confirm('Starting fresh will permanently delete your current progress. Are you sure?')">
@@ -361,8 +361,8 @@
             <h2 style="margin-bottom: 12px; font-weight: 800; color: #111;">Test Submitted!</h2>
             <p style="color: #666; font-size: 1.1rem; line-height: 1.6;">Your test has been submitted successfully. What would you like to do next?</p>
             <div class="btn-group">
-                <a href="/" class="popup-btn btn-home">Home Page</a>
-                <a href="{{ route('login') }}" class="popup-btn btn-admin">Admin Panel</a>
+                <a href="{{ route('student.dashboard') }}" class="popup-btn btn-home">Dashboard</a>
+                <a href="{{ route('student.tests.thank-you', $test->id) }}" class="popup-btn btn-admin">View Results</a>
             </div>
         </div>
     </div>
@@ -400,7 +400,7 @@
     }
 
     .timer-wrapper {
-        display: none !important; /* Temporarily hidden as requested */
+        display: none !important;
         background: #f1f5f9;
         padding: 8px 24px;
         border-radius: 50px;
@@ -620,13 +620,16 @@
 
 <script>
     // Timer Logic
-    let timeInSeconds = {{ $attempt->time_left ?? 3600 }};
+    let timeInSeconds = {{ $attempt->time_left ?? $examDurationInSeconds }};
     const timerEl = document.getElementById('test-timer');
+    let timerInterval;
 
     function updateTimer() {
         const mins = Math.floor(timeInSeconds / 60);
         const secs = timeInSeconds % 60;
-        timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        if (timerEl) {
+            timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
         
         if (timeInSeconds > 0) {
             timeInSeconds--;
@@ -636,12 +639,17 @@
                 saveProgress();
             }
         } else {
-            clearInterval(timerInterval);
+            if (timerInterval) clearInterval(timerInterval);
             alert("Time's up!");
-            submitTest();
+            submitTest(true);
         }
     }
-    const timerInterval = setInterval(updateTimer, 1000);
+
+    function startTimer() {
+        if (!timerInterval && timeInSeconds > 0) {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+    }
 
     // Load existing answers
     function restoreAnswers() {
@@ -735,7 +743,14 @@
     }
 
     // Call restoration on load
-    window.addEventListener('DOMContentLoaded', restoreAnswers);
+    const isOverlayShowing = {{ ($attempt->status === 'completed' || !$attempt->wasRecentlyCreated) ? 'true' : 'false' }};
+
+    window.addEventListener('DOMContentLoaded', () => {
+        restoreAnswers();
+        if (!isOverlayShowing) {
+            startTimer();
+        }
+    });
 
     // Navigation and Scrolling
     function scrollToQuestion(id) {
@@ -829,8 +844,11 @@
         });
     }
 
-    // Listen for changes to update progress
-    document.addEventListener('change', updateProgress);
+    // Listen for changes to update progress and save answers
+    document.addEventListener('change', () => {
+        updateProgress();
+        saveProgress();
+    });
     document.addEventListener('input', updateProgress);
 
     // Initial progress check
@@ -882,12 +900,14 @@
         zone.innerHTML = `<span class="text-muted small">Drag a heading here</span>`;
     }
 
-    function submitTest() {
-        if (confirm("Are you sure you want to finish and submit your answers?")) {
+    function submitTest(isAuto = false) {
+        if (isAuto || confirm("Are you sure you want to finish and submit your answers?")) {
             const btn = document.querySelector('button[onclick="submitTest()"]');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
+            const originalText = btn ? btn.innerHTML : 'Submit';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
+            }
 
             // Use the consolidated collectAnswers() defined above
             const answers = collectAnswers();

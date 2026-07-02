@@ -112,6 +112,9 @@
         <div class="row gx-4 gy-4">
             <div class="col-12 mb-2 d-flex justify-content-between align-items-center">
                 <h5 class="text-secondary mb-0"><a href="{{ route('admin.listening-tests.index', ['test_type' => $testTypeId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> Step 3: Select Test</h5>
+                <a href="{{ route('admin.listening-tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary d-flex align-items-center shadow-sm" style="border-radius: 10px;">
+                    <i class="fas fa-plus me-2"></i> Add Test
+                </a>
             </div>
             @forelse ($tests as $test_item)
                 <div class="col-md-3">
@@ -147,8 +150,13 @@
                     </div>
                 </div>
             @empty
-                <div class="col-12 py-5 text-center text-muted">
-                    <p>No tests found for this selection.</p>
+                <div class="col-12 py-5 text-center">
+                    <div class="p-5 bg-white shadow-sm rounded-4 border-0">
+                        <i class="fas fa-flask fa-3x text-light mb-4 opacity-50"></i>
+                        <h5 class="text-muted font-weight-bold">No Tests Found</h5>
+                        <p class="text-secondary mb-4 small">Add mock tests to this level to begin adding questions.</p>
+                        <a href="{{ route('admin.listening-tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary px-4 py-2" style="border-radius: 10px;">+ Create First Test</a>
+                    </div>
                 </div>
             @endforelse
         </div>

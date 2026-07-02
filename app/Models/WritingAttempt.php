@@ -13,11 +13,14 @@ class WritingAttempt extends Model
         'feedback',
         'score',
         'status',
+        'time_left',
+        'started_at',
         'completed_at'
     ];
 
     protected $casts = [
         'answers' => 'array',
+        'started_at' => 'datetime',
         'completed_at' => 'datetime'
     ];
 
