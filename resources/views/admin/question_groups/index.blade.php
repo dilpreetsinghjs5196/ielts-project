@@ -88,7 +88,7 @@
         <!-- Step 2: Level Selection -->
         <div class="row gx-4 gy-4">
             <div class="col-12 mb-2">
-                <h5 class="text-secondary"><a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> Step 2: Select Level</h5>
+                <h5 class="text-secondary"><a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i> Step 2: Select Level</a></h5>
             </div>
             @foreach ($levels as $level)
                 <div class="col-md-4">
@@ -107,7 +107,7 @@
         <!-- Step 3: Module Set Selection -->
         <div class="row gx-4 gy-4">
             <div class="col-12 mb-2 d-flex justify-content-between align-items-center">
-                <h5 class="text-secondary mb-0"><a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> Step 3: Select Module Set</h5>
+                <h5 class="text-secondary mb-0"><a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i> Step 3: Select Module Set</a></h5>
                 <a href="{{ route('admin.module-sets.create', ['category_id' => $activeCategory->id, 'test_type_id' => $testTypeId, 'level_id' => $levelId]) }}" class="btn btn-primary d-flex align-items-center shadow-sm" style="border-radius: 10px;">
                     <i class="fas fa-plus me-2"></i> Add Module Set
                 </a>
@@ -152,7 +152,11 @@
         <!-- Step 4: Test Selection -->
         <div class="row gx-4 gy-4">
             <div class="col-12 mb-2 d-flex justify-content-between align-items-center">
-                <h5 class="text-secondary mb-0"><a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId, 'level' => $levelId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> {{ $isDirectLevel ? 'Step 3' : 'Step 4' }}: Select Test</h5>
+                <h5 class="text-secondary mb-0">
+                    <a href="{{ $isDirectLevel ? route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId]) : route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId, 'level' => $levelId]) }}" class="text-decoration-none text-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> {{ $isDirectLevel ? 'Step 3' : 'Step 4' }}: Select Test
+                    </a>
+                </h5>
                 <a href="{{ route($isWriting ? 'admin.writing-tests.create' : 'admin.tests.create', ['category_id' => $activeCategory->id, 'level_id' => $levelId, 'module_set_id' => $moduleSetId, 'test_type_id' => $testTypeId]) }}" class="btn btn-primary d-flex align-items-center shadow-sm" style="border-radius: 10px;">
                     <i class="fas fa-plus me-2"></i> Add Test
                 </a>
@@ -231,8 +235,7 @@
                     <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0 font-weight-bold">
-                                <a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId, 'level' => $levelId, 'module_set' => $moduleSetId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i></a> 
-                                Mock Segments
+                                <a href="{{ route('admin.question-groups.index', ['category' => $activeCategory->slug, 'test_type' => $testTypeId, 'level' => $levelId, 'module_set' => $moduleSetId]) }}" class="text-decoration-none text-secondary"><i class="fas fa-arrow-left me-2"></i> Mock Segments</a> 
                             </h5>
                             <a href="{{ route('admin.question-groups.create', ['category_id' => $activeCategory->id, 'test_type_id' => $testTypeId, 'level_id' => $levelId, 'test_id' => $testId]) }}" class="btn btn-primary shadow-sm" style="border-radius: 10px;">
                                 <i class="fas fa-plus me-2"></i> Create New Segment

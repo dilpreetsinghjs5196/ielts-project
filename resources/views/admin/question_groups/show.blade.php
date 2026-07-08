@@ -15,7 +15,7 @@
                         </div>
                         <div class="d-flex">
                             <a href="{{ route('admin.question-groups.edit', $questionGroup) }}" class="btn btn-light btn-sm me-2" style="border-radius: 8px;">Edit Segment</a>
-                            <a href="{{ route('admin.question-groups.index', ['category' => $questionGroup->category->slug]) }}" class="btn btn-outline-light btn-sm" style="border-radius: 8px;">Back</a>
+                            <a href="javascript:history.back()" class="btn btn-outline-light btn-sm" style="border-radius: 8px;">Back</a>
                         </div>
                     </div>
                 </div>
