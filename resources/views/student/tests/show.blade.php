@@ -189,9 +189,12 @@
                                         @php 
                                             $title = $question->title;
                                             $badgeText = '';
-                                            if (preg_match('/^(Questions?\s\d+[-–]\d+)/i', $title, $matches)) {
-                                                $badgeText = $matches[1];
-                                                $title = trim(substr($title, strlen($badgeText)));
+                                            if (preg_match('/^\s*(Questions?\s*\d+\s*(?:[-–—_−‒―]|to|and|,)+\s*\d+)/iu', $title, $matches)) {
+                                                $badgeText = trim($matches[1]);
+                                                $title = trim(substr($title, strlen($matches[0])));
+                                            } elseif (preg_match('/^\s*(Questions?\s*\d+)/iu', $title, $matches)) {
+                                                $badgeText = trim($matches[1]);
+                                                $title = trim(substr($title, strlen($matches[0])));
                                             }
                                         @endphp
                                         

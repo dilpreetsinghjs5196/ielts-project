@@ -99,7 +99,7 @@
                 <div class="passage-group {{ $p_index === 0 ? '' : 'd-none' }}" id="passage-group-{{ $part->id }}">
                     <div class="passage-content bg-white p-4 shadow-sm rounded-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="fw-bold mb-0 text-primary">Part {{ $p_index + 1 }}</h4>
+                            <h4 class="fw-bold mb-0 text-primary">Part {{ $part->part_number ?? ($p_index + 1) }}</h4>
                             @if($part->audio_file)
                                 <span class="badge bg-danger pulse-badge"><i class="fas fa-volume-up me-1"></i> Audio Playing</span>
                             @endif
@@ -189,7 +189,27 @@
 
                             @if(!empty($question->content) && !empty($question->title) && $question->title !== $lastTitle)
                                 <div class="question-set-header mt-4 mb-3 p-3 rounded" style="background: rgba(59, 130, 246, 0.05); border-left: 5px solid #3b82f6;">
-                                    <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.5;">{{ $question->title }}</h5>
+                                    <div class="d-flex flex-column gap-2">
+                                        @php 
+                                            $title = $question->title;
+                                            $badgeText = '';
+                                            if (preg_match('/^\s*(Questions?\s*\d+\s*(?:[-–—_−‒―]|to|and|,)+\s*\d+)/iu', $title, $matches)) {
+                                                $badgeText = trim($matches[1]);
+                                                $title = trim(substr($title, strlen($matches[0])));
+                                            } elseif (preg_match('/^\s*(Questions?\s*\d+)/iu', $title, $matches)) {
+                                                $badgeText = trim($matches[1]);
+                                                $title = trim(substr($title, strlen($matches[0])));
+                                            }
+                                        @endphp
+                                        
+                                        @if($badgeText)
+                                            <div><span class="badge bg-primary px-3 py-2 rounded-2" style="font-size: 0.9rem;">{{ $badgeText }}</span></div>
+                                        @endif
+                                        
+                                        @if($title)
+                                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.5;">{{ $title }}</h5>
+                                        @endif
+                                    </div>
                                 </div>
                                 @php $lastTitle = $question->title; @endphp
                             @endif
@@ -256,7 +276,7 @@
         <div class="footer-left d-flex align-items-center gap-4 overflow-hidden" id="footer-nav-container">
             @foreach ($test->parts as $p_index => $part)
                 <div class="nav-part d-flex align-items-center gap-2 {{ $p_index === 0 ? 'active' : '' }}" id="nav-part-{{ $part->id }}" onclick="activatePart('{{ $part->id }}')">
-                    <span class="part-label fw-bold text-nowrap">Part {{ $p_index + 1 }}</span>
+                    <span class="part-label fw-bold text-nowrap">Part {{ $part->part_number ?? ($p_index + 1) }}</span>
                     
                     @php
                         $allQuestionNums = [];

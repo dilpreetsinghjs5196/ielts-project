@@ -71,6 +71,7 @@
             @foreach ($test->questionGroups as $g_index => $group)
                 <div class="question-group {{ $g_index === 0 ? '' : 'd-none' }}" data-group-id="{{ $group->id }}">
                     <div class="questions-list">
+                        @php $lastTitle = null; @endphp
                         @foreach ($group->questions as $question)
                             @php
                                 if (in_array($question->id, $embeddedQIds)) continue;
@@ -108,6 +109,39 @@
                                     }
                                 }
                             @endphp
+
+                            @if(!empty($question->title) && $question->title !== $lastTitle)
+                                <div class="question-set-header mt-5 mb-4 p-4 rounded-4" style="background: rgba(59, 130, 246, 0.05); border-left: 5px solid #3b82f6;">
+                                    <div class="d-flex flex-column gap-2">
+                                        @php 
+                                            $title = $question->title;
+                                            $badgeText = '';
+                                            if (preg_match('/^\s*(Questions?\s*\d+\s*(?:[-–—_−‒―]|to|and|,)+\s*\d+)/iu', $title, $matches)) {
+                                                $badgeText = trim($matches[1]);
+                                                $title = trim(substr($title, strlen($matches[0])));
+                                            } elseif (preg_match('/^\s*(Questions?\s*\d+)/iu', $title, $matches)) {
+                                                $badgeText = trim($matches[1]);
+                                                $title = trim(substr($title, strlen($matches[0])));
+                                            }
+                                        @endphp
+                                        
+                                        @if($badgeText)
+                                            <div><span class="badge bg-primary px-3 py-2 rounded-2" style="font-size: 0.9rem;">{{ $badgeText }}</span></div>
+                                        @endif
+                                        
+                                        @if($title)
+                                            <h5 class="fw-bold mb-0 text-dark" style="line-height: 1.5;">{{ $title }}</h5>
+                                        @endif
+
+                                        @if(!empty($question->settings['instruction']))
+                                            <div class="mt-2 text-muted small" style="line-height: 1.8;">
+                                                {!! nl2br(preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $question->settings['instruction'])) !!}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                @php $lastTitle = $question->title; @endphp
+                            @endif
 
                             <div class="question-item card border-0 shadow-sm mb-4" 
                                  id="q-{{ $question->id }}"
