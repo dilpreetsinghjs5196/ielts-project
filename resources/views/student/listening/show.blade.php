@@ -209,6 +209,12 @@
                                         @if($title)
                                             <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.5;">{{ $title }}</h5>
                                         @endif
+
+                                        @if($question->common_heading)
+                                            <div class="mt-3 text-dark" style="line-height: 1.6; font-size: 0.95rem;">
+                                                {!! nl2br(e($question->common_heading)) !!}
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                                 @php $lastTitle = $question->title; @endphp

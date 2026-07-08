@@ -12,11 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('question_groups', function (Blueprint $table) {
-            $table->string('image')->after('instruction')->nullable();
+            if (!Schema::hasColumn('question_groups', 'image')) {
+                $table->string('image')->after('instruction')->nullable();
+            }
         });
 
         Schema::table('questions', function (Blueprint $table) {
-            $table->string('image')->after('content')->nullable();
+            if (!Schema::hasColumn('questions', 'image')) {
+                $table->string('image')->after('content')->nullable();
+            }
         });
     }
 

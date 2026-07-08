@@ -61,6 +61,15 @@
                                 <input type="text" name="title" id="title" class="form-control @error('title') is-invalid @enderror" placeholder="e.g. Section 1 - Note Completion" value="{{ old('title') }}">
                             </div>
                         </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="common_heading" class="form-label font-weight-bold">Common Heading (Shows below Title badge)</label>
+                                <textarea name="common_heading" id="common_heading" rows="2" class="form-control @error('common_heading') is-invalid @enderror" placeholder="e.g. Use the information in the text to match the people (listed A-E) with the opinions...">{{ old('common_heading') }}</textarea>
+                                @error('common_heading')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
 
                     @if (!isset($selectedGroup))

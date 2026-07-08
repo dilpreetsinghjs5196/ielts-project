@@ -206,6 +206,12 @@
                                             <h5 class="fw-bold mb-0 text-dark" style="line-height: 1.5;">{{ $title }}</h5>
                                         @endif
 
+                                        @if($question->common_heading)
+                                            <div class="mt-3 text-dark" style="line-height: 1.6; font-size: 0.95rem;">
+                                                {!! nl2br(e($question->common_heading)) !!}
+                                            </div>
+                                        @endif
+
                                         @if(!empty($question->settings['instruction']))
                                             <div class="mt-2 text-muted small" style="line-height: 1.8;">
                                                 {!! nl2br(preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $question->settings['instruction'])) !!}

@@ -17,6 +17,7 @@ class Question extends Model
         'attachment',
         'question_number',
         'title',
+        'common_heading',
         'content',
         'options',
         'settings',
