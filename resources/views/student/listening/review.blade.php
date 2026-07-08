@@ -166,7 +166,7 @@
                                                                 $displayVal = !empty($ans) ? $ans : '...';
                                                                 
                                                                 $correctHtml = '';
-                                                                if (!$isCorrect) {
+                                                                if (!$isCorrect && request()->is('admin/*')) {
                                                                     $correctHtml = '<span class="ms-2 badge bg-success-subtle text-success border border-success-subtle">'.$targetQ->correct_answer.'</span>';
                                                                 }
                                                                 
@@ -195,7 +195,7 @@
                                                                 $bgClass = '';
                                                                 if ($isSelected) {
                                                                     $bgClass = $isOptionCorrect ? 'bg-success-subtle border-success' : 'bg-danger-subtle border-danger';
-                                                                } elseif ($isOptionCorrect) {
+                                                                } elseif ($isOptionCorrect && request()->is('admin/*')) {
                                                                     $bgClass = 'bg-success-subtle border-success opacity-75';
                                                                 }
                                                             @endphp
@@ -204,7 +204,7 @@
                                                                 <span>{{ $opt_val }}</span>
                                                                 @if($isSelected)
                                                                     <i class="fas fa-{{ $isOptionCorrect ? 'check' : 'times' }}-circle ms-auto text-{{ $isOptionCorrect ? 'success' : 'danger' }}"></i>
-                                                                @elseif($isOptionCorrect)
+                                                                @elseif($isOptionCorrect && request()->is('admin/*'))
                                                                     <i class="fas fa-check-circle ms-auto text-success"></i>
                                                                 @endif
                                                             </div>
@@ -218,7 +218,7 @@
                                                             <span class="fw-bold {{ $isCorrect ? 'text-success' : ($hasAnswered ? 'text-danger' : 'text-muted italic') }}">
                                                                 {{ $hasAnswered ? $studentAnswer : 'Not answered' }}
                                                             </span>
-                                                            @if(!$isCorrect)
+                                                            @if(!$isCorrect && request()->is('admin/*'))
                                                                 <div class="mt-2 pt-2 border-top">
                                                                     <small class="text-success fw-bold d-block">Correct Answer:</small>
                                                                     <span class="text-dark">{{ $question->correct_answer }}</span>

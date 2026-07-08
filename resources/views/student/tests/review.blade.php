@@ -202,7 +202,7 @@
                                                             $textColor = !empty($ans) ? 'inherit' : '#94a3b8';
                                                             
                                                             $correctHtml = '';
-                                                            if (!$isCorrect) {
+                                                            if (!$isCorrect && request()->is('admin/*')) {
                                                                 $correctHtml = '<span class="ms-2 badge bg-success-subtle text-success border border-success-subtle" title="Correct Answer">'.$targetQ->correct_answer.'</span>';
                                                             }
                                                             
@@ -242,7 +242,7 @@
                                                                     $bgClass = 'bg-danger-subtle';
                                                                     $borderClass = 'border-danger';
                                                                 }
-                                                            } elseif ($isOptionCorrect) {
+                                                            } elseif ($isOptionCorrect && request()->is('admin/*')) {
                                                                 $bgClass = 'bg-success-subtle border-success opacity-75';
                                                             }
                                                         @endphp
@@ -252,13 +252,13 @@
                                                             <span class="option-text">{{ $val }}</span>
                                                             @if($isSelected)
                                                                 <i class="fas fa-{{ $isOptionCorrect ? 'check' : 'times' }}-circle ms-auto text-{{ $isOptionCorrect ? 'success' : 'danger' }}"></i>
-                                                            @elseif($isOptionCorrect)
+                                                            @elseif($isOptionCorrect && request()->is('admin/*'))
                                                                 <i class="fas fa-check-circle ms-auto text-success"></i>
                                                             @endif
                                                         </label>
                                                     @endforeach
                                                 </div>
-                                                @if(!$isCorrect)
+                                                @if(!$isCorrect && request()->is('admin/*'))
                                                     <div class="mt-2 p-2 bg-success-subtle rounded-3 border-start border-success border-4">
                                                         <small class="text-success fw-bold d-block mb-1"><i class="fas fa-check-circle me-1"></i> Correct Answer:</small>
                                                         <span class="text-dark fw-bold text-uppercase">{{ $question->correct_answer }}</span>
@@ -276,7 +276,7 @@
                                                             $bgClass = '';
                                                             if ($isSelected) {
                                                                 $bgClass = $isOptionCorrect ? 'bg-success-subtle border-success' : 'bg-danger-subtle border-danger';
-                                                            } elseif ($isOptionCorrect) {
+                                                            } elseif ($isOptionCorrect && request()->is('admin/*')) {
                                                                 $bgClass = 'bg-success-subtle border-success opacity-75';
                                                             }
                                                         @endphp
@@ -287,7 +287,7 @@
                                                         </label>
                                                     @endforeach
                                                 </div>
-                                                @if(!$isCorrect)
+                                                @if(!$isCorrect && request()->is('admin/*'))
                                                     <div class="mt-2 p-2 bg-success-subtle rounded-3 border-start border-success border-4">
                                                         <small class="text-success fw-bold d-block mb-1"><i class="fas fa-check-circle me-1"></i> Correct Answers:</small>
                                                         <span class="text-dark fw-bold text-uppercase">{{ $question->correct_answer }}</span>
@@ -302,7 +302,7 @@
                                                                style="height: 50px; border-radius: 12px; border: 2px solid {{ $isCorrect ? '#10b981' : ($hasAnswered ? '#ef4444' : '#cbd5e1') }};" 
                                                                value="{{ $hasAnswered ? $studentAnswer : 'Answer not given' }}">
                                                         
-                                                        @if(!$isCorrect)
+                                                        @if(!$isCorrect && request()->is('admin/*'))
                                                             <div class="mt-2 p-2 bg-success-subtle rounded-3 border-start border-success border-4">
                                                                 <small class="text-success fw-bold d-block mb-1"><i class="fas fa-check-circle me-1"></i> Correct Answer:</small>
                                                                 <span class="text-dark fw-bold">{{ $question->correct_answer }}</span>
@@ -319,7 +319,7 @@
                                                             {{ $hasAnswered ? (is_array($studentAnswer) ? implode(', ', $studentAnswer) : $studentAnswer) : 'Answer not given' }}
                                                         </span>
                                                     </div>
-                                                    @if(!$isCorrect)
+                                                    @if(!$isCorrect && request()->is('admin/*'))
                                                         <div class="pt-2 border-top">
                                                             <small class="text-success fw-bold d-block mb-1">Correct Answer:</small>
                                                             <span class="fw-bold text-success">{{ $question->correct_answer }}</span>
