@@ -15,7 +15,18 @@
                         </div>
                         <div class="d-flex">
                             <a href="{{ route('admin.question-groups.edit', $questionGroup) }}" class="btn btn-light btn-sm me-2" style="border-radius: 8px;">Edit Segment</a>
-                            <a href="javascript:history.back()" class="btn btn-outline-light btn-sm" style="border-radius: 8px;">Back</a>
+                            @php
+                                $backParams = [
+                                    'category' => $questionGroup->category->slug,
+                                    'test_type' => $questionGroup->test_type_id,
+                                    'level' => $questionGroup->level_id,
+                                    'test' => $questionGroup->test_id
+                                ];
+                                if ($questionGroup->test && $questionGroup->test->module_set_id) {
+                                    $backParams['module_set'] = $questionGroup->test->module_set_id;
+                                }
+                            @endphp
+                            <a href="{{ route('admin.question-groups.index', $backParams) }}" class="btn btn-outline-light btn-sm" style="border-radius: 8px;">Back</a>
                         </div>
                     </div>
                 </div>
