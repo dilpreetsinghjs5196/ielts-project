@@ -29,7 +29,7 @@ class ListeningTestController extends Controller
         $levels = $testTypeId ? Level::all() : collect();
         
         $tests = ($testTypeId && $levelId) 
-            ? ListeningTest::where('test_type_id', $testTypeId)->where('level_id', $levelId)->get()
+            ? ListeningTest::where('test_type_id', $testTypeId)->where('level_id', $levelId)->get()->sortBy('name', SORT_NATURAL)->values()
             : collect();
 
         $parts = $testId ? ListeningPart::where('listening_test_id', $testId)->withCount('questions')->get() : collect();

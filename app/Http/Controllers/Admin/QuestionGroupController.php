@@ -62,17 +62,24 @@ class QuestionGroupController extends Controller
             if ($levelId && $testTypeId) {
                 $tests = WritingTest::where('level_id', $levelId)
                     ->where('test_type_id', $testTypeId)
-                    ->get();
+                    ->get()
+                    ->sortBy('name', SORT_NATURAL)
+                    ->values();
             }
         } else {
             if ($moduleSetId) {
-                $tests = Test::where('module_set_id', $moduleSetId)->get();
+                $tests = Test::where('module_set_id', $moduleSetId)
+                    ->get()
+                    ->sortBy('name', SORT_NATURAL)
+                    ->values();
             } elseif ($levelId && $testTypeId) {
                 // Fetch directly by level, category and type for levels without module system
                 $tests = Test::where('level_id', $levelId)
                     ->where('category_id', $activeCategory->id)
                     ->where('test_type_id', $testTypeId)
-                    ->get();
+                    ->get()
+                    ->sortBy('name', SORT_NATURAL)
+                    ->values();
             }
         }
 

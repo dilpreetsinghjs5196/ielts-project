@@ -97,14 +97,16 @@ class TestController extends Controller
                 $writingTests = WritingTest::where('level_id', $selectedLevel->id)
                     ->where('test_type_id', $effectiveTestTypeId)
                     ->withCount('tasks')
-                    ->latest()
-                    ->get();
+                    ->get()
+                    ->sortBy('name', SORT_NATURAL)
+                    ->values();
             } elseif ($selectedModuleSet) {
                 // If writing tests ever use module sets
                 $writingTests = WritingTest::where('test_type_id', $selectedModuleSet->test_type_id)
                     ->withCount('tasks')
-                    ->latest()
-                    ->get();
+                    ->get()
+                    ->sortBy('name', SORT_NATURAL)
+                    ->values();
             }
         }
 
@@ -116,8 +118,9 @@ class TestController extends Controller
                 $speakingTests = SpeakingTest::where('level_id', $selectedLevel->id)
                     ->where('test_type_id', $effectiveTestTypeId)
                     ->withCount('parts')
-                    ->latest()
-                    ->get();
+                    ->get()
+                    ->sortBy('name', SORT_NATURAL)
+                    ->values();
             }
         }
         
@@ -128,8 +131,9 @@ class TestController extends Controller
                 $listeningTests = ListeningTest::where('level_id', $selectedLevel->id)
                     ->where('test_type_id', $effectiveTestTypeId)
                     ->withCount('parts')
-                    ->latest()
-                    ->get();
+                    ->get()
+                    ->sortBy('name', SORT_NATURAL)
+                    ->values();
             }
         }
         
