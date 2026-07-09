@@ -45,6 +45,12 @@
                                 <div class="mb-3 p-3 bg-light rounded border">
                                     <p class="small text-muted mb-1">Current Audio:</p>
                                     <audio controls class="w-100"><source src="{{ asset('storage/' . $questionGroup->audio_file) }}"></audio>
+                                    <div class="form-check mt-2 text-start">
+                                        <input class="form-check-input" type="checkbox" name="remove_audio" id="remove_audio" value="1">
+                                        <label class="form-check-label text-danger" for="remove_audio">
+                                            Remove Current Audio
+                                        </label>
+                                    </div>
                                 </div>
                             @endif
                             <input type="file" name="audio_file" id="audio_file" class="form-control" accept="audio/*">
@@ -56,6 +62,12 @@
                                 <div class="mb-3 p-2 bg-light rounded border text-center">
                                     <p class="small text-muted mb-2 text-start">Current Image:</p>
                                     <img src="{{ asset('storage/' . $questionGroup->attachment) }}" class="img-fluid rounded shadow-sm" style="max-height: 300px;">
+                                    <div class="form-check mt-2 text-start">
+                                        <input class="form-check-input" type="checkbox" name="remove_attachment" id="remove_attachment" value="1">
+                                        <label class="form-check-label text-danger" for="remove_attachment">
+                                            Remove Current Image
+                                        </label>
+                                    </div>
                                 </div>
                             @endif
                             <input type="file" name="attachment" id="attachment" class="form-control" accept="image/*">
@@ -67,6 +79,12 @@
                                 <div class="mb-3 p-2 bg-light rounded border text-center">
                                     <p class="small text-muted mb-2 text-start">Current Optional Image:</p>
                                     <img src="{{ asset('storage/' . $questionGroup->image) }}" class="img-fluid rounded shadow-sm" style="max-height: 300px;">
+                                    <div class="form-check mt-2 text-start">
+                                        <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image" value="1">
+                                        <label class="form-check-label text-danger" for="remove_image">
+                                            Remove Current Image
+                                        </label>
+                                    </div>
                                 </div>
                             @endif
                             <input type="file" name="image" id="image" class="form-control" accept="image/*">

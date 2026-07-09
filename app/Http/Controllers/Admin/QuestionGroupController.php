@@ -187,19 +187,42 @@ class QuestionGroupController extends Controller
             'test_type_id' => 'required|exists:test_types,id',
             'level_id' => 'required|exists:levels,id',
             'test_id' => 'nullable|exists:tests,id',
+            'remove_audio' => 'nullable|boolean',
+            'remove_attachment' => 'nullable|boolean',
+            'remove_image' => 'nullable|boolean',
         ]);
 
-        $data = $request->except(['audio_file', 'attachment']);
+        $data = $request->except(['audio_file', 'attachment', 'image', 'remove_audio', 'remove_attachment', 'remove_image']);
 
-        if ($request->hasFile('audio_file')) {
+        if ($request->has('remove_audio')) {
+            if ($questionGroup->audio_file && \Storage::disk('public')->exists($questionGroup->audio_file)) {
+                \Storage::disk('public')->delete($questionGroup->audio_file);
+            }
+            $data['audio_file'] = null;
+        } elseif ($request->hasFile('audio_file')) {
             $data['audio_file'] = $request->file('audio_file')->store('groups/audio', 'public');
         }
 
-        if ($request->hasFile('attachment')) {
+        if ($request->has('remove_attachment')) {
+            if ($questionGroup->attachment && \Storage::disk('public')->exists($questionGroup->attachment)) {
+                \Storage::disk('public')->delete($questionGroup->attachment);
+            }
+            $data['attachment'] = null;
+        } elseif ($request->hasFile('attachment')) {
             $data['attachment'] = $request->file('attachment')->store('groups/attachments', 'public');
         }
 
-        if ($request->hasFile('image')) {
+        if ($request->has('remove_image')) {
+            if ($questionGroup->image) {
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage') 
+                    : public_path('storage');
+                if (file_exists($targetDir . '/' . $questionGroup->image)) {
+                    unlink($targetDir . '/' . $questionGroup->image);
+                }
+            }
+            $data['image'] = null;
+        } elseif ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
             

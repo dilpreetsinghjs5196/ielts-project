@@ -81,6 +81,12 @@
                                 <audio controls class="w-100">
                                     <source src="{{ asset('storage/' . $listeningTest->audio_file) }}" type="audio/mpeg">
                                 </audio>
+                                <div class="form-check mt-2 text-start">
+                                    <input class="form-check-input" type="checkbox" name="remove_audio" id="remove_audio_test" value="1">
+                                    <label class="form-check-label text-danger" for="remove_audio_test">
+                                        Remove Current Audio
+                                    </label>
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -132,6 +138,12 @@
                                         <audio controls class="w-100 mt-2">
                                             <source src="{{ asset('storage/' . $part->audio_file) }}" type="audio/mpeg">
                                         </audio>
+                                        <div class="form-check mt-2 text-start">
+                                            <input class="form-check-input" type="checkbox" name="remove_audio" id="remove_audio_part_{{ $part->id }}" value="1">
+                                            <label class="form-check-label text-danger" for="remove_audio_part_{{ $part->id }}">
+                                                Remove Current Audio
+                                            </label>
+                                        </div>
                                     @endif
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -140,6 +152,12 @@
                                     @if($part->image)
                                         <div class="mt-2">
                                             <img src="{{ asset('storage/' . $part->image) }}" class="img-thumbnail" style="max-height: 100px;">
+                                            <div class="form-check mt-2 text-start">
+                                                <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image_part_{{ $part->id }}" value="1">
+                                                <label class="form-check-label text-danger" for="remove_image_part_{{ $part->id }}">
+                                                    Remove Current Image
+                                                </label>
+                                            </div>
                                         </div>
                                     @endif
                                 </div>
@@ -226,6 +244,12 @@
                                                                 @if($question->image)
                                                                     <div class="mt-2">
                                                                         <img src="{{ asset('storage/' . $question->image) }}" class="img-thumbnail" style="max-height: 120px;">
+                                                                        <div class="form-check mt-2 text-start">
+                                                                            <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image_question_{{ $question->id }}" value="1">
+                                                                            <label class="form-check-label text-danger" for="remove_image_question_{{ $question->id }}">
+                                                                                Remove Current Image
+                                                                            </label>
+                                                                        </div>
                                                                     </div>
                                                                 @endif
                                                             </div>

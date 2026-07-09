@@ -105,6 +105,12 @@
                             @if($task->image)
                                 <div class="mb-2">
                                     <img src="{{ asset('storage/' . $task->image) }}" class="img-thumbnail" style="max-height: 150px;">
+                                    <div class="form-check mt-2 text-start">
+                                        <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image_task_{{ $task->id }}" value="1">
+                                        <label class="form-check-label text-danger" for="remove_image_task_{{ $task->id }}">
+                                            Remove Current Image
+                                        </label>
+                                    </div>
                                 </div>
                             @endif
                             <input type="file" name="image" class="form-control form-control-sm">

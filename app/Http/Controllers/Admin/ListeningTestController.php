@@ -171,11 +171,22 @@ class ListeningTestController extends Controller
             'test_type_id' => 'required|exists:test_types,id',
             'status' => 'required|in:active,inactive',
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:102400', // Increased to 100MB
+            'remove_audio' => 'nullable|boolean',
         ]);
 
         $data = $request->only(['name', 'level_id', 'test_type_id', 'status']);
 
-        if ($request->hasFile('audio_file')) {
+        if ($request->has('remove_audio')) {
+            if ($listeningTest->audio_file) {
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage') 
+                    : public_path('storage');
+                if (file_exists($targetDir . '/' . $listeningTest->audio_file)) {
+                    unlink($targetDir . '/' . $listeningTest->audio_file);
+                }
+            }
+            $data['audio_file'] = null;
+        } elseif ($request->hasFile('audio_file')) {
             $data['audio_file'] = $this->handleFileUpload($request->file('audio_file'), 'listening/audio');
         }
 
@@ -196,15 +207,37 @@ class ListeningTestController extends Controller
             'passage' => 'nullable|string',
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:20480',
             'image' => 'nullable|image|max:5120',
+            'remove_audio' => 'nullable|boolean',
+            'remove_image' => 'nullable|boolean',
         ]);
 
         $data = $request->only(['title', 'instruction', 'passage']);
 
-        if ($request->hasFile('audio_file')) {
+        if ($request->has('remove_audio')) {
+            if ($part->audio_file) {
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage') 
+                    : public_path('storage');
+                if (file_exists($targetDir . '/' . $part->audio_file)) {
+                    unlink($targetDir . '/' . $part->audio_file);
+                }
+            }
+            $data['audio_file'] = null;
+        } elseif ($request->hasFile('audio_file')) {
             $data['audio_file'] = $this->handleFileUpload($request->file('audio_file'), 'listening/parts/audio');
         }
 
-        if ($request->hasFile('image')) {
+        if ($request->has('remove_image')) {
+            if ($part->image) {
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage') 
+                    : public_path('storage');
+                if (file_exists($targetDir . '/' . $part->image)) {
+                    unlink($targetDir . '/' . $part->image);
+                }
+            }
+            $data['image'] = null;
+        } elseif ($request->hasFile('image')) {
             $data['image'] = $this->handleImageUpload($request->file('image'), 'listening_parts');
         }
 
@@ -229,11 +262,22 @@ class ListeningTestController extends Controller
             'correct_answer' => 'nullable|string',
             'image' => 'nullable|image|max:5120',
             'marks' => 'required|integer',
+            'remove_image' => 'nullable|boolean',
         ]);
 
         $data = $request->only(['question_number', 'question_type', 'title', 'content', 'correct_answer', 'marks']);
 
-        if ($request->hasFile('image')) {
+        if ($request->has('remove_image')) {
+            if ($question->image) {
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage') 
+                    : public_path('storage');
+                if (file_exists($targetDir . '/' . $question->image)) {
+                    unlink($targetDir . '/' . $question->image);
+                }
+            }
+            $data['image'] = null;
+        } elseif ($request->hasFile('image')) {
             $data['image'] = $this->handleFileUpload($request->file('image'), 'listening_questions');
         }
 

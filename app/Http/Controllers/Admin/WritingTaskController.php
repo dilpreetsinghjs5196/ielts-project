@@ -59,7 +59,17 @@ class WritingTaskController extends Controller
             $writingTask->marks = $request->marks ?: ($writingTask->task_number == 1 ? 3 : 6);
 
             // 2. FORCE IMAGE SAVE
-            if ($request->hasFile('image')) {
+            if ($request->has('remove_image')) {
+                if ($writingTask->image) {
+                    $targetDir = is_dir(base_path('../public_html')) 
+                        ? base_path('../public_html/storage') 
+                        : public_path('storage');
+                    if (file_exists($targetDir . '/' . $writingTask->image)) {
+                        unlink($targetDir . '/' . $writingTask->image);
+                    }
+                }
+                $writingTask->image = null;
+            } elseif ($request->hasFile('image')) {
                 $file = $request->file('image');
                 $filename = time() . '_' . $file->getClientOriginalName();
                 

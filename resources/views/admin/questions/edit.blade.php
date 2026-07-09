@@ -70,6 +70,12 @@
                                     Your browser does not support the audio element.
                                 </audio>
                             </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="remove_audio" id="remove_audio" value="1">
+                                <label class="form-check-label text-danger" for="remove_audio">
+                                    Remove Current Audio
+                                </label>
+                            </div>
                         @endif
                         <input type="file" name="audio_file" id="audio_file" class="form-control @error('audio_file') is-invalid @enderror" accept="audio/*">
                         <small class="text-muted">Upload new MP3 or WAV file to replace existing (Max 10MB)</small>
@@ -85,6 +91,12 @@
                             <div class="mb-2">
                                 <img src="{{ asset('storage/' . $question->attachment) }}" alt="Attachment" class="img-fluid rounded" style="max-height: 200px;">
                             </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="remove_attachment" id="remove_attachment" value="1">
+                                <label class="form-check-label text-danger" for="remove_attachment">
+                                    Remove Current Attachment
+                                </label>
+                            </div>
                         @endif
                         <input type="file" name="attachment" id="attachment" class="form-control @error('attachment') is-invalid @enderror" accept="image/*">
                         <small class="text-muted">Upload new image to replace (For Task 1 charts/graphs).</small>
@@ -98,6 +110,12 @@
                         @if ($question->image)
                             <div class="mb-2">
                                 <img src="{{ asset('storage/' . $question->image) }}" alt="Question Image" class="img-fluid rounded border" style="max-height: 200px;">
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image" value="1">
+                                <label class="form-check-label text-danger" for="remove_image">
+                                    Remove Current Image
+                                </label>
                             </div>
                         @endif
                         <input type="file" name="image" id="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">

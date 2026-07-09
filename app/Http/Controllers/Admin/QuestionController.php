@@ -160,22 +160,45 @@ class QuestionController extends Controller
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:10240',
             'attachment' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'passage' => 'nullable|string',
+            'remove_audio' => 'nullable|boolean',
+            'remove_attachment' => 'nullable|boolean',
+            'remove_image' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
         
         // Handle Audio Upload
-        if ($request->hasFile('audio_file')) {
+        if ($request->has('remove_audio')) {
+            if ($question->audio_file && \Storage::disk('public')->exists($question->audio_file)) {
+                \Storage::disk('public')->delete($question->audio_file);
+            }
+            $data['audio_file'] = null;
+        } elseif ($request->hasFile('audio_file')) {
             $data['audio_file'] = $request->file('audio_file')->store('questions/audio', 'public');
         }
 
         // Handle Image Attachment
-        if ($request->hasFile('attachment')) {
+        if ($request->has('remove_attachment')) {
+            if ($question->attachment && \Storage::disk('public')->exists($question->attachment)) {
+                \Storage::disk('public')->delete($question->attachment);
+            }
+            $data['attachment'] = null;
+        } elseif ($request->hasFile('attachment')) {
             $data['attachment'] = $request->file('attachment')->store('questions/attachments', 'public');
         }
 
         // Handle Dynamic Path Image
-        if ($request->hasFile('image')) {
+        if ($request->has('remove_image')) {
+            if ($question->image) {
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage') 
+                    : public_path('storage');
+                if (file_exists($targetDir . '/' . $question->image)) {
+                    unlink($targetDir . '/' . $question->image);
+                }
+            }
+            $data['image'] = null;
+        } elseif ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
             

@@ -106,6 +106,14 @@
                                 <div class="mt-3 p-3 bg-light rounded border text-center">
                                     <p class="small text-muted mb-2">Current Image Preview:</p>
                                     <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded border shadow-sm" style="max-height: 200px;">
+                                    <div class="form-check mt-3 text-start d-flex justify-content-center">
+                                        <div>
+                                            <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image" value="1">
+                                            <label class="form-check-label text-danger fw-bold" for="remove_image">
+                                                Remove Current Image
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
                         </div>
