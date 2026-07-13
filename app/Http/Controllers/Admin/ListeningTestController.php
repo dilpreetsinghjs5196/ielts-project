@@ -92,13 +92,14 @@ class ListeningTestController extends Controller
             'question_number' => 'required|string',
             'question_type' => 'required|string',
             'title' => 'required|string',
+            'common_heading' => 'nullable|string',
             'content' => 'nullable|string',
             'correct_answer' => 'nullable|string',
             'image' => 'nullable|image|max:5120',
             'marks' => 'required|integer',
         ]);
 
-        $data = $request->only(['listening_part_id', 'question_number', 'question_type', 'title', 'content', 'correct_answer', 'marks']);
+        $data = $request->only(['listening_part_id', 'question_number', 'question_type', 'title', 'common_heading', 'content', 'correct_answer', 'marks']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $this->handleFileUpload($request->file('image'), 'listening_questions');
@@ -258,6 +259,7 @@ class ListeningTestController extends Controller
             'question_number' => 'required|string',
             'question_type' => 'required|string',
             'title' => 'nullable|string',
+            'common_heading' => 'nullable|string',
             'content' => 'nullable|string',
             'correct_answer' => 'nullable|string',
             'image' => 'nullable|image|max:5120',
@@ -265,7 +267,7 @@ class ListeningTestController extends Controller
             'remove_image' => 'nullable|boolean',
         ]);
 
-        $data = $request->only(['question_number', 'question_type', 'title', 'content', 'correct_answer', 'marks']);
+        $data = $request->only(['question_number', 'question_type', 'title', 'common_heading', 'content', 'correct_answer', 'marks']);
 
         if ($request->has('remove_image')) {
             if ($question->image) {

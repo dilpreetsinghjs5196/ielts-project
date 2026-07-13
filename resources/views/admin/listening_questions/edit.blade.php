@@ -46,6 +46,11 @@
                         </div>
 
                         <div class="form-group mb-4">
+                            <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Common Heading (Shows below Title badge)</label>
+                            <textarea name="common_heading" class="form-control border-2" rows="2" placeholder="e.g. Use the information in the text to match the people (listed A-E) with the opinions..." style="border-radius: 12px;">{{ old('common_heading', $question->common_heading) }}</textarea>
+                        </div>
+
+                        <div class="form-group mb-4">
                             <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Content / Text</label>
                             <textarea name="title" class="form-control border-2" rows="6" style="border-radius: 15px; font-size: 1.1rem; line-height: 1.6;" required>{{ old('title', $question->title) }}</textarea>
                             <div class="form-text mt-2 text-muted">

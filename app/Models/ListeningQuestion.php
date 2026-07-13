@@ -11,6 +11,7 @@ class ListeningQuestion extends Model
         'question_number',
         'question_type',
         'title',
+        'common_heading',
         'content',
         'options',
         'correct_answer',
