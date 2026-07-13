@@ -46,7 +46,7 @@
                         </div>
 
                         <div class="questions-list">
-                            @php $lastTitle = null; @endphp
+                            @php $lastHeading = null; @endphp
                             @foreach ($part->questions as $question)
                                 @php
                                     if (in_array($question->id, $embeddedQIds)) continue;
@@ -85,18 +85,18 @@
                                     }
                                 @endphp
 
-                                @if(!empty($question->content) && !empty($question->title) && $question->title !== $lastTitle)
+                                @if(!empty($question->content) && $question->content !== $lastHeading)
                                     <div class="question-set-header mt-4 mb-3 p-3 rounded" style="background: rgba(59, 130, 246, 0.05); border-left: 5px solid #3b82f6;">
                                         <div class="d-flex flex-column gap-2">
                                             @php 
-                                                $title = $question->title;
+                                                $headingTitle = $question->content;
                                                 $badgeText = '';
-                                                if (preg_match('/^\s*(Questions?\s*\d+\s*(?:[-–—_−‒―]|to|and|,)+\s*\d+)/iu', $title, $matches)) {
+                                                if (preg_match('/^\s*(Questions?\s*\d+\s*(?:[-–—_−‒―]|to|and|,)+\s*\d+)/iu', $headingTitle, $matches)) {
                                                     $badgeText = trim($matches[1]);
-                                                    $title = trim(substr($title, strlen($matches[0])));
-                                                } elseif (preg_match('/^\s*(Questions?\s*\d+)/iu', $title, $matches)) {
+                                                    $headingTitle = trim(substr($headingTitle, strlen($matches[0])));
+                                                } elseif (preg_match('/^\s*(Questions?\s*\d+)/iu', $headingTitle, $matches)) {
                                                     $badgeText = trim($matches[1]);
-                                                    $title = trim(substr($title, strlen($matches[0])));
+                                                    $headingTitle = trim(substr($headingTitle, strlen($matches[0])));
                                                 }
                                             @endphp
                                             
@@ -104,8 +104,8 @@
                                                 <div><span class="badge bg-primary px-3 py-2 rounded-2" style="font-size: 0.9rem;">{{ $badgeText }}</span></div>
                                             @endif
                                             
-                                            @if($title)
-                                                <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.5;">{{ $title }}</h5>
+                                            @if($headingTitle)
+                                                <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem; line-height: 1.5;">{{ $headingTitle }}</h5>
                                             @endif
 
                                             @if($question->common_heading)
@@ -115,7 +115,7 @@
                                             @endif
                                         </div>
                                     </div>
-                                    @php $lastTitle = $question->title; @endphp
+                                    @php $lastHeading = $question->content; @endphp
                                 @endif
 
                                 <div class="question-item card border-0 shadow-sm mb-4" 
@@ -138,7 +138,7 @@
 
                                                 <div class="q-text fs-5 fw-bold text-dark mb-3">
                                                     @php
-                                                        $qBody = $question->content ?: $question->title;
+                                                        $qBody = $question->title ?: $question->content;
                                                         $pattern = '/(?:\[q(\d+)\]|(\d+)_{2,})/';
                                                         $renderedBody = preg_replace_callback($pattern, function($matches) use ($allQuestions, &$embeddedQIds, $attempt) {
                                                             $num = $matches[1] ?: $matches[2];
