@@ -231,6 +231,10 @@
                                                                 <input type="number" name="marks" class="form-control" value="{{ $question->marks }}" required>
                                                             </div>
                                                             <div class="col-12 mb-3">
+                                                                <label class="form-label fw-bold text-muted small uppercase">Common Heading</label>
+                                                                <textarea name="common_heading" class="form-control" rows="2">{{ $question->common_heading }}</textarea>
+                                                            </div>
+                                                            <div class="col-12 mb-3">
                                                                 <label class="form-label fw-bold text-muted small uppercase">Question Title / Body</label>
                                                                 <textarea name="title" class="form-control" rows="3">{{ $question->title }}</textarea>
                                                             </div>

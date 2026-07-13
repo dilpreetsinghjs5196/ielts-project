@@ -239,7 +239,7 @@ class ListeningTestController extends Controller
             }
             $data['image'] = null;
         } elseif ($request->hasFile('image')) {
-            $data['image'] = $this->handleImageUpload($request->file('image'), 'listening_parts');
+            $data['image'] = $this->handleFileUpload($request->file('image'), 'listening_parts');
         }
 
         $part->update($data);
@@ -268,6 +268,12 @@ class ListeningTestController extends Controller
         ]);
 
         $data = $request->only(['question_number', 'question_type', 'title', 'common_heading', 'content', 'correct_answer', 'marks']);
+
+        if (in_array($request->question_type, ['mcq', 'mcq_multi', 'fill_blanks']) && $request->has('options')) {
+            $data['options'] = array_filter($request->options);
+        } else {
+            $data['options'] = null;
+        }
 
         if ($request->has('remove_image')) {
             if ($question->image) {
