@@ -42,7 +42,7 @@ class FrontendController extends Controller
         $testType = TestType::where('name', $request->get('test_type'))->first();
         $levelId  = $request->get('level_id');
 
-        if (!$category || !$testType) {
+        if (!$category || !$testType || $category->slug !== 'reading') {
             return response()->json([]);
         }
 

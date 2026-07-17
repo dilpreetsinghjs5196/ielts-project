@@ -226,7 +226,7 @@
                         .then(sets => {
                             const grid = document.getElementById(`level-${level.id}-sets`);
                             grid.innerHTML = '';
-                            if (sets.length === 0) {
+                            if (sets.length === 0 || selection.categorySlug !== 'reading') {
                                 // Fallback: load tests directly for this level
                                 fetch(`{{ route('frontend.tests') }}?category=${selection.categorySlug}&test_type=${selection.typeName}&level_id=${level.id}`)
                                     .then(res => res.json())

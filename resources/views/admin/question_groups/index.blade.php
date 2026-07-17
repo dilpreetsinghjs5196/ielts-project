@@ -58,7 +58,7 @@
     </div>
 
     @php
-        $isDirectLevel = $levelId && in_array($levelId, $noModuleLevels);
+        $isDirectLevel = $levelId && (in_array($levelId, $noModuleLevels) || $activeCategory->slug === 'writing');
         $isWriting = $activeCategory->slug === 'writing';
     @endphp
 
