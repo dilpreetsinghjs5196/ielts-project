@@ -950,8 +950,8 @@
         let activeFlow = 'cards'; // 'navbar' or 'cards'
 
         function goBackFromTests() {
-            // If Level ID is 1 or 2, we skipped Module selection, so go back to Level selection.
-            if (currentLevelId == 1 || currentLevelId == 2) {
+            // If Level ID is 1 or 2, or module is not reading, we skipped Module selection, so go back to Level selection.
+            if (currentLevelId == 1 || currentLevelId == 2 || currentModule.toLowerCase() !== 'reading') {
                 showOnlyStep('level');
             } else {
                 showOnlyStep('modules');
@@ -1064,8 +1064,8 @@
 
             // Check if this level should skip module set selection
             // Level ID 1: Level 1 and 2, Level ID 2: Level 3
-            // Level ID 3: Exam Batch (Keep module selection)
-            if (levelId == 1 || levelId == 2) {
+            // Level ID 3: Exam Batch (Keep module selection for Reading)
+            if (levelId == 1 || levelId == 2 || currentModule.toLowerCase() !== 'reading') {
                 document.getElementById('testBadgeType').innerText = currentType;
                 document.getElementById('testBadgeLevel').innerText = currentLevelName;
                 document.getElementById('testBadgeModule').innerText = 'All Practice Tests';
@@ -1075,7 +1075,7 @@
                 showOnlyStep('tests');
                 fetchTests(null); // Fetch directly without module set ID
             } else {
-                // For Exam Batch (ID 3) and others, show module set selection
+                // For Exam Batch (ID 3) and others (Reading only), show module set selection
                 document.getElementById('moduleBadgeType').innerText = currentType;
                 document.getElementById('moduleBadgeLevel').innerText = levelName;
                 document.getElementById('moduleSubtitle').innerText =
