@@ -69,8 +69,16 @@
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold text-danger" href="#">IELTS REVIEW</a>
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-muted small d-none d-md-block">Test: {{ $test->name }}</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small d-none d-md-block me-2">Test: {{ $test->name }}</span>
+                @php
+                    $pdfRoute = auth('web')->check() 
+                        ? route('results.download-pdf', ['attempt' => $attempt->id, 'type' => 'writing']) 
+                        : route('student.tests.download-pdf', ['id' => $test->id, 'category' => 'writing']);
+                @endphp
+                <a href="{{ $pdfRoute }}" class="btn btn-danger btn-sm rounded-pill px-4 shadow-sm fw-bold">
+                    <i class="fas fa-file-pdf me-2"></i> Save PDF
+                </a>
                 <a href="{{ auth('web')->check() ? route('admin.results.index') : route('student.dashboard') }}" class="btn btn-outline-dark btn-sm rounded-pill px-4">
                     <i class="fas fa-arrow-left me-2"></i> Exit Review
                 </a>

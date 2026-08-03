@@ -66,6 +66,43 @@ class ResultController extends Controller
         return view('student.tests.review', compact('test', 'attempt'));
     }
 
+    public function downloadPdf(Request $request, $id)
+    {
+        $type = $request->get('type', $request->get('category', 'standard'));
+        $test = null;
+        $attempt = null;
+        $totalMarks = 40;
+        $moduleName = 'Reading';
+
+        if ($type === 'writing') {
+            $attempt = WritingAttempt::with(['student', 'writingTest.tasks'])->findOrFail($id);
+            $test = $attempt->writingTest;
+            $category = 'writing';
+            $totalMarks = 9.0;
+            $moduleName = 'Writing';
+        } elseif ($type === 'listening') {
+            $attempt = ListeningAttempt::with(['student', 'listeningTest.parts.questions'])->findOrFail($id);
+            $test = $attempt->listeningTest;
+            $category = 'listening';
+            $totalMarks = 40;
+            $moduleName = 'Listening';
+        } else {
+            $attempt = TestAttempt::with(['student', 'test.moduleSet', 'test.questionGroups.questions'])->findOrFail($id);
+            $test = $attempt->test;
+            $category = 'reading';
+            $calcTotal = $test->questionGroups->sum(fn($g) => $g->questions->sum('marks'));
+            $totalMarks = $calcTotal > 0 ? $calcTotal : 40;
+            $moduleName = 'Reading';
+        }
+
+        $student = $attempt->student;
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('student.tests.pdf-report', compact('student', 'test', 'attempt', 'category', 'totalMarks', 'moduleName'))
+            ->setOptions(['isRemoteEnabled' => true]);
+        
+        $filename = \Illuminate\Support\Str::slug(($student ? $student->name : 'Student') . '-' . $test->name . '-Review') . '.pdf';
+        return $pdf->download($filename);
+    }
+
     public function show(Request $request, $id)
     {
         $type = $request->get('type', 'standard');

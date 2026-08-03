@@ -452,4 +452,58 @@ class MockTestController extends Controller
         
         return view('student.tests.review', compact('test', 'attempt'));
     }
+
+    public function downloadPdf(Request $request, $id)
+    {
+        $studentId = auth('student')->id();
+        $student = auth('student')->user();
+        $category = $request->get('category', 'reading');
+
+        $test = null;
+        $attempt = null;
+        $totalMarks = 40;
+        $moduleName = 'Reading';
+
+        if ($category === 'writing') {
+            $test = \App\Models\WritingTest::with('tasks')->findOrFail($id);
+            $attempt = \App\Models\WritingAttempt::where('student_id', $studentId)
+                ->where('writing_test_id', $id)
+                ->where(function ($q) {
+                    $q->where('status', 'completed')->orWhere('status', 'graded')->orWhereNotNull('score');
+                })
+                ->latest()
+                ->first();
+            $totalMarks = 9.0;
+            $moduleName = 'Writing';
+        } elseif ($category === 'listening') {
+            $test = ListeningTest::with('parts.questions')->findOrFail($id);
+            $attempt = ListeningAttempt::where('student_id', $studentId)
+                ->where('listening_test_id', $id)
+                ->where('status', 'completed')
+                ->latest()
+                ->first();
+            $totalMarks = 40;
+            $moduleName = 'Listening';
+        } else {
+            $test = Test::with(['moduleSet', 'questionGroups.questions'])->findOrFail($id);
+            $attempt = \App\Models\TestAttempt::where('student_id', $studentId)
+                ->where('test_id', $test->id)
+                ->where('status', 'completed')
+                ->latest()
+                ->first();
+            $calcTotal = $test->questionGroups->sum(fn($g) => $g->questions->sum('marks'));
+            $totalMarks = $calcTotal > 0 ? $calcTotal : 40;
+            $moduleName = 'Reading';
+        }
+
+        if (!$attempt) {
+            return redirect()->route('student.dashboard')->with('error', 'Test attempt not found or not completed yet.');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('student.tests.pdf-report', compact('student', 'test', 'attempt', 'category', 'totalMarks', 'moduleName'))
+            ->setOptions(['isRemoteEnabled' => true]);
+        
+        $filename = \Illuminate\Support\Str::slug(($student ? $student->name : 'Student') . '-' . $test->name . '-Review') . '.pdf';
+        return $pdf->download($filename);
+    }
 }

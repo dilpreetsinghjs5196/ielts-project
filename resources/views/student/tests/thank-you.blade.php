@@ -43,9 +43,10 @@
                     </a>
                     @php
                         $isListening = isset($attempt->listening_test_id);
+                        $cat = $isListening ? 'listening' : 'reading';
                         $reviewRoute = route('student.tests.review', [
                             'id' => $test->id, 
-                            'category' => $isListening ? 'listening' : 'reading'
+                            'category' => $cat
                         ]);
                     @endphp
                     <a href="{{ $reviewRoute }}" class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold transition-all hover-lift flex-grow-1">

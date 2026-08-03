@@ -22,7 +22,15 @@
             @endforeach
         </div>
 
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
+            @php
+                $pdfRoute = auth('web')->check() 
+                    ? route('results.download-pdf', ['attempt' => $attempt->id, 'type' => 'listening']) 
+                    : route('student.tests.download-pdf', ['id' => $test->id, 'category' => 'listening']);
+            @endphp
+            <a href="{{ $pdfRoute }}" class="btn btn-danger rounded-pill px-4 shadow-sm fw-bold">
+                <i class="fas fa-file-pdf me-2"></i> Save PDF
+            </a>
             <a href="{{ auth('web')->check() ? route('admin.results.index') : route('student.dashboard') }}" class="btn btn-outline-dark rounded-pill px-4">
                 <i class="fas fa-sign-out-alt me-2"></i> Exit Review
             </a>

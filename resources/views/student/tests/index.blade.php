@@ -96,18 +96,19 @@
                                                 $categoryParam = in_array($test->view_category, ['writing', 'speaking', 'listening']) ? '?category=' . $test->view_category : '';
                                             @endphp
                                             @if(!$attempt)
-                                                <a href="{{ route('student.tests.show', $test->id) }}{{ $categoryParam }}" class="btn btn-sm btn-primary rounded-pill px-4">Take Test</a>
+                                                <a href="{{ route('student.tests.show', $test->id) }}{{ $categoryParam }}" class="btn btn-sm btn-primary rounded-pill px-4 text-nowrap">Take Test</a>
                                             @elseif($attempt->status === 'pending')
-                                                <div class="d-flex gap-2 justify-content-center">
-                                                    <a href="{{ route('student.tests.show', $test->id) }}{{ $categoryParam }}" class="btn btn-sm btn-info text-white rounded-pill px-3">Resume</a>
-                                                    <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => $test->view_category]) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3">Restart</a>
+                                                <div class="d-flex gap-2 justify-content-center align-items-center">
+                                                    <a href="{{ route('student.tests.show', $test->id) }}{{ $categoryParam }}" class="btn btn-sm btn-info text-white rounded-pill px-3 text-nowrap">Resume</a>
+                                                    <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => $test->view_category]) }}" onclick="return confirm('Restart test and lose current progress?')" class="btn btn-sm btn-outline-danger rounded-pill px-3 text-nowrap">Restart</a>
                                                 </div>
                                             @elseif(in_array($test->view_category, ['writing', 'speaking']) && $attempt->score === null)
-                                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" disabled>Awaiting Grade</button>
+                                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-4 text-nowrap" disabled>Awaiting Grade</button>
                                             @else
-                                                <div class="d-flex gap-2 justify-content-center">
-                                                    <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => $test->view_category]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3">Review Result</a>
-                                                    <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => $test->view_category]) }}" onclick="return confirm('Retrying will delete your current score. Are you sure?')" class="btn btn-sm btn-outline-warning rounded-pill px-3">Retry</a>
+                                                <div class="d-flex gap-2 justify-content-center align-items-center">
+                                                    <a href="{{ route('student.tests.review', ['id' => $test->id, 'category' => $test->view_category]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 text-nowrap">Review</a>
+                                                    <a href="{{ route('student.tests.download-pdf', ['id' => $test->id, 'category' => $test->view_category]) }}" class="btn btn-sm btn-outline-danger rounded-pill px-3 text-nowrap"><i class="fas fa-file-pdf me-1"></i>PDF</a>
+                                                    <a href="{{ route('student.tests.restart', ['id' => $test->id, 'category' => $test->view_category]) }}" onclick="return confirm('Retrying will delete your current score. Are you sure?')" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-nowrap">Retry</a>
                                                 </div>
                                             @endif
                                         </td>

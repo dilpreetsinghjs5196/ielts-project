@@ -74,6 +74,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
     Route::resource('students', StudentController::class);
     Route::resource('results', ResultController::class);
     Route::get('results/{attempt}/review', [ResultController::class, 'review'])->name('results.review');
+    Route::get('results/{attempt}/download-pdf', [ResultController::class, 'downloadPdf'])->name('results.download-pdf');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -134,6 +135,7 @@ Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(
     Route::get('/tests/{id}', [\App\Http\Controllers\Student\MockTestController::class, 'show'])->name('tests.show');
     Route::get('/tests/{id}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'thankYou'])->name('tests.thank-you');
     Route::get('/tests/{id}/review', [\App\Http\Controllers\Student\MockTestController::class, 'review'])->name('tests.review');
+    Route::get('/tests/{id}/download-pdf', [\App\Http\Controllers\Student\MockTestController::class, 'downloadPdf'])->name('tests.download-pdf');
     Route::post('/tests/{id}/submit', [\App\Http\Controllers\Student\MockTestController::class, 'submit'])->name('tests.submit');
     Route::post('/tests/{id}/save-progress', [\App\Http\Controllers\Student\MockTestController::class, 'saveProgress'])->name('tests.save-progress');
     Route::get('/tests/{id}/restart', [\App\Http\Controllers\Student\MockTestController::class, 'restart'])->name('tests.restart');
