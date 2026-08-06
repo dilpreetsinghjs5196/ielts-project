@@ -176,6 +176,17 @@ class TestController extends Controller
         ]);
 
         $test = Test::create($request->all());
+        $category = Category::findOrFail($test->category_id);
+
+        if (in_array($category->slug, ['reading', 'writing']) || $request->input('from') === 'question_bank') {
+            return redirect()->route('admin.question-groups.index', [
+                'category' => $category->slug,
+                'test_type' => $test->test_type_id,
+                'level' => $test->level_id,
+                'module_set' => $test->module_set_id,
+                'test' => $test->id,
+            ])->with('success', 'Mock Test created successfully.');
+        }
 
         if ($test->module_set_id) {
             $moduleSet = ModuleSet::with('category')->findOrFail($test->module_set_id);
@@ -185,7 +196,6 @@ class TestController extends Controller
                 'module_set_id' => $moduleSet->id
             ])->with('success', 'Mock Test created successfully.');
         } else {
-            $category = Category::findOrFail($test->category_id);
             return redirect()->route('admin.tests.index', [
                 'category' => $category->slug,
                 'test_type_id' => $test->test_type_id,
@@ -215,6 +225,16 @@ class TestController extends Controller
         ]);
 
         $test->update($request->all());
+        $category = Category::findOrFail($test->category_id);
+
+        if (in_array($category->slug, ['reading', 'writing']) || $request->input('from') === 'question_bank') {
+            return redirect()->route('admin.question-groups.index', [
+                'category' => $category->slug,
+                'test_type' => $test->test_type_id,
+                'level' => $test->level_id,
+                'module_set' => $test->module_set_id,
+            ])->with('success', 'Mock Test updated successfully.');
+        }
 
         if ($test->module_set_id) {
             $moduleSet = ModuleSet::with('category')->findOrFail($test->module_set_id);
@@ -224,7 +244,6 @@ class TestController extends Controller
                 'module_set_id' => $moduleSet->id
             ])->with('success', 'Mock Test updated successfully.');
         } else {
-            $category = Category::findOrFail($test->category_id);
             return redirect()->route('admin.tests.index', [
                 'category' => $category->slug,
                 'test_type_id' => $test->test_type_id,

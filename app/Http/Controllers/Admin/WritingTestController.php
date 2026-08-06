@@ -73,10 +73,10 @@ class WritingTestController extends Controller
         $writingTest->update($request->all());
 
         $writingCategory = Category::where('slug', 'writing')->first();
-        return redirect()->route('admin.tests.index', [
+        return redirect()->route('admin.question-groups.index', [
             'category' => $writingCategory->slug,
-            'test_type_id' => $writingTest->test_type_id,
-            'level_id' => $writingTest->level_id
+            'test_type' => $writingTest->test_type_id,
+            'level' => $writingTest->level_id
         ])->with('success', 'Writing Mock Test updated successfully.');
     }
 

@@ -247,15 +247,27 @@ class QuestionGroupController extends Controller
 
         $questionGroup->update($data);
 
-        return redirect()->route('admin.question-groups.index', ['category' => $questionGroup->category->slug])
-            ->with('success', 'Segment updated successfully.');
+        return redirect()->route('admin.question-groups.index', [
+            'category' => $questionGroup->category->slug,
+            'test_type' => $questionGroup->test_type_id,
+            'level' => $questionGroup->level_id,
+            'test' => $questionGroup->test_id,
+        ])->with('success', 'Segment updated successfully.');
     }
 
     public function destroy(QuestionGroup $questionGroup)
     {
         $slug = $questionGroup->category->slug;
+        $testTypeId = $questionGroup->test_type_id;
+        $levelId = $questionGroup->level_id;
+        $testId = $questionGroup->test_id;
+
         $questionGroup->delete();
-        return redirect()->route('admin.question-groups.index', ['category' => $slug])
-            ->with('success', 'Segment deleted successfully.');
+        return redirect()->route('admin.question-groups.index', [
+            'category' => $slug,
+            'test_type' => $testTypeId,
+            'level' => $levelId,
+            'test' => $testId,
+        ])->with('success', 'Segment deleted successfully.');
     }
 }

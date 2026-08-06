@@ -193,10 +193,9 @@ class ListeningTestController extends Controller
 
         $listeningTest->update($data);
 
-        return redirect()->route('admin.tests.index', [
-            'category' => 'listening',
-            'test_type_id' => $listeningTest->test_type_id,
-            'level_id' => $listeningTest->level_id
+        return redirect()->route('admin.listening-tests.index', [
+            'test_type' => $listeningTest->test_type_id,
+            'level' => $listeningTest->level_id
         ])->with('success', 'Listening Test updated successfully.');
     }
 
