@@ -74,7 +74,7 @@
                         </div>
 
                         <div class="mb-4" id="image_section">
-                            <label for="image" class="form-label font-weight-bold">Optional Segment Image (For Reading/Others)</label>
+                            <label for="images" class="form-label font-weight-bold">Optional Segment Images (For Reading/Others)</label>
                             @if ($questionGroup->image)
                                 <div class="mb-3 p-2 bg-light rounded border text-center">
                                     <p class="small text-muted mb-2 text-start">Current Optional Image:</p>
@@ -87,8 +87,28 @@
                                     </div>
                                 </div>
                             @endif
-                            <input type="file" name="image" id="image" class="form-control" accept="image/*">
-                            <small class="text-muted">Upload an image that will appear in the passage/segment area.</small>
+                            @if ($questionGroup->images && is_array($questionGroup->images) && count($questionGroup->images) > 0)
+                                <div class="mb-3">
+                                    <p class="small text-muted mb-2">Additional Current Images:</p>
+                                    <div class="row g-2">
+                                        @foreach($questionGroup->images as $index => $imgPath)
+                                            <div class="col-md-4">
+                                                <div class="p-2 bg-light rounded border text-center h-100 d-flex flex-column align-items-center justify-content-between">
+                                                    <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid rounded shadow-sm mb-2" style="max-height: 150px;">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="remove_images[]" id="remove_image_{{ $index }}" value="{{ $imgPath }}">
+                                                        <label class="form-check-label text-danger small" for="remove_image_{{ $index }}">
+                                                            Remove
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                            <input type="file" name="images[]" id="images" class="form-control" accept="image/*" multiple>
+                            <small class="text-muted">Upload one or more images that will appear in the passage/segment area.</small>
                         </div>
                     </div>
                 </div>

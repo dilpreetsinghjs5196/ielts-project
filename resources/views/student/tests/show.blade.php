@@ -104,6 +104,14 @@
                                 <img src="{{ asset('storage/' . $group->image) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
                             </div>
                         @endif
+
+                        @if ($group->images && is_array($group->images))
+                            <div class="segment-images mt-4 d-flex flex-column gap-3">
+                                @foreach($group->images as $imgPath)
+                                    <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endforeach

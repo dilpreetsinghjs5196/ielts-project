@@ -20,7 +20,12 @@ class QuestionGroup extends Model
         'attachment',
         'instruction',
         'image',
+        'images',
         'status',
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     public function test()

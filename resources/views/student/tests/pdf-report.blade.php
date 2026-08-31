@@ -417,6 +417,16 @@
                             <img src="{{ $grpImg }}" style="max-width: 500px; max-height: 350px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Passage Image">
                         </div>
                     @endif
+                    @if($group->images && is_array($group->images))
+                        @foreach($group->images as $imgPath)
+                            @php
+                                $grpImgPath = str_starts_with($imgPath, 'http') ? $imgPath : (file_exists(public_path('storage/' . $imgPath)) ? public_path('storage/' . $imgPath) : asset('storage/' . $imgPath));
+                            @endphp
+                            <div style="margin-top: 10px; text-align: center;">
+                                <img src="{{ $grpImgPath }}" style="max-width: 500px; max-height: 350px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Passage Image">
+                            </div>
+                        @endforeach
+                    @endif
                     @if($group->attachment)
                         @php
                             $attImg = str_starts_with($group->attachment, 'http') ? $group->attachment : (file_exists(public_path('storage/' . $group->attachment)) ? public_path('storage/' . $group->attachment) : asset('storage/' . $group->attachment));

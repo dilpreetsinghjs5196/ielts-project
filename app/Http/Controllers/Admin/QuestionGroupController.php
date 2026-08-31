@@ -162,6 +162,25 @@ class QuestionGroupController extends Controller
             $data['image'] = 'test_images/' . $filename;
         }
 
+        if ($request->hasFile('images')) {
+            $uploadedImages = [];
+            foreach ($request->file('images') as $file) {
+                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage/test_images') 
+                    : public_path('storage/test_images');
+
+                if (!file_exists($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+
+                $file->move($targetDir, $filename);
+                $uploadedImages[] = 'test_images/' . $filename;
+            }
+            $data['images'] = $uploadedImages;
+        }
+
         $group = QuestionGroup::create($data);
 
         return redirect()->route('admin.question-groups.show', $group)->with('success', 'Question Group (Segment) created successfully. Now add questions to it.');
@@ -199,7 +218,7 @@ class QuestionGroupController extends Controller
             'remove_image' => 'nullable|boolean',
         ]);
 
-        $data = $request->except(['audio_file', 'attachment', 'image', 'remove_audio', 'remove_attachment', 'remove_image']);
+        $data = $request->except(['audio_file', 'attachment', 'image', 'images', 'remove_audio', 'remove_attachment', 'remove_image', 'remove_images']);
 
         if ($request->has('remove_audio')) {
             if ($questionGroup->audio_file && \Storage::disk('public')->exists($questionGroup->audio_file)) {
@@ -244,6 +263,40 @@ class QuestionGroupController extends Controller
             $file->move($targetDir, $filename);
             $data['image'] = 'test_images/' . $filename;
         }
+
+        $currentImages = is_array($questionGroup->images) ? $questionGroup->images : [];
+        if ($request->has('remove_images')) {
+            foreach ($request->remove_images as $imgToRemove) {
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage') 
+                    : public_path('storage');
+                if (file_exists($targetDir . '/' . $imgToRemove)) {
+                    unlink($targetDir . '/' . $imgToRemove);
+                }
+                if (($key = array_search($imgToRemove, $currentImages)) !== false) {
+                    unset($currentImages[$key]);
+                }
+            }
+            $currentImages = array_values($currentImages); // Re-index array
+        }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage/test_images') 
+                    : public_path('storage/test_images');
+
+                if (!file_exists($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+
+                $file->move($targetDir, $filename);
+                $currentImages[] = 'test_images/' . $filename;
+            }
+        }
+        $data['images'] = $currentImages;
 
         $questionGroup->update($data);
 
