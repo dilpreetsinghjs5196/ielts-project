@@ -86,7 +86,42 @@ class WritingTaskController extends Controller
                 $writingTask->image = 'writing_tasks/' . $filename;
             }
 
-            // 3. SECURE SAVE
+            // 3. HANDLE MULTIPLE IMAGES
+            $currentImages = is_array($writingTask->images) ? $writingTask->images : [];
+            if ($request->has('remove_images')) {
+                foreach ($request->remove_images as $imgToRemove) {
+                    $targetDir = is_dir(base_path('../public_html')) 
+                        ? base_path('../public_html/storage') 
+                        : public_path('storage');
+                    if (file_exists($targetDir . '/' . $imgToRemove)) {
+                        unlink($targetDir . '/' . $imgToRemove);
+                    }
+                    if (($key = array_search($imgToRemove, $currentImages)) !== false) {
+                        unset($currentImages[$key]);
+                    }
+                }
+                $currentImages = array_values($currentImages); // Re-index array
+            }
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                    
+                    $targetDir = is_dir(base_path('../public_html')) 
+                        ? base_path('../public_html/storage/writing_tasks') 
+                        : public_path('storage/writing_tasks');
+
+                    if (!file_exists($targetDir)) {
+                        mkdir($targetDir, 0777, true);
+                    }
+
+                    $file->move($targetDir, $filename);
+                    $currentImages[] = 'writing_tasks/' . $filename;
+                }
+            }
+            $writingTask->images = $currentImages;
+
+            // 4. SECURE SAVE
             $writingTask->save();
 
             return redirect()->back()->with('success', 'FORCE SAVED: Task and Image updated.');

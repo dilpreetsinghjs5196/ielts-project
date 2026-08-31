@@ -464,7 +464,15 @@
                     </div>
 
                     @if($task->image)
-                        <img src="{{ asset('storage/' . $task->image) }}" class="chart-image" alt="Task Image">
+                        <img src="{{ asset('storage/' . $task->image) }}" class="chart-image mb-3" alt="Task Image">
+                    @endif
+
+                    @if($task->images && is_array($task->images))
+                        <div class="d-flex flex-column gap-3">
+                            @foreach($task->images as $imgPath)
+                                <img src="{{ asset('storage/' . $imgPath) }}" class="chart-image" alt="Task Image">
+                            @endforeach
+                        </div>
                     @endif
                     
                     <p class="mt-4 small text-muted">Part {{ $task->task_number }}</p>

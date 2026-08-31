@@ -16,8 +16,13 @@ class WritingTask extends Model
         'instruction', 
         'question_text', 
         'image', 
+        'images',
         'sample_answer', 
         'marks'
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     public function writingTest()

@@ -101,19 +101,40 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Task {{ $task->task_number }} Image (Optional)</label>
+                            <label class="form-label small fw-bold text-muted">Task {{ $task->task_number }} Images</label>
                             @if($task->image)
                                 <div class="mb-2">
                                     <img src="{{ asset('storage/' . $task->image) }}" class="img-thumbnail" style="max-height: 150px;">
                                     <div class="form-check mt-2 text-start">
                                         <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image_task_{{ $task->id }}" value="1">
                                         <label class="form-check-label text-danger" for="remove_image_task_{{ $task->id }}">
-                                            Remove Current Image
+                                            Remove Current Legacy Image
                                         </label>
                                     </div>
                                 </div>
                             @endif
-                            <input type="file" name="image" class="form-control form-control-sm">
+                            @if ($task->images && is_array($task->images) && count($task->images) > 0)
+                                <div class="mb-3">
+                                    <p class="small text-muted mb-2">Additional Current Images:</p>
+                                    <div class="row g-2">
+                                        @foreach($task->images as $index => $imgPath)
+                                            <div class="col-md-4">
+                                                <div class="p-2 bg-light rounded border text-center h-100 d-flex flex-column align-items-center justify-content-between">
+                                                    <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid rounded shadow-sm mb-2" style="max-height: 150px;">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="remove_images[]" id="remove_image_{{ $task->id }}_{{ $index }}" value="{{ $imgPath }}">
+                                                        <label class="form-check-label text-danger small" for="remove_image_{{ $task->id }}_{{ $index }}">
+                                                            Remove
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                            <input type="file" name="images[]" class="form-control form-control-sm" multiple accept="image/*">
+                            <small class="text-muted">Upload one or more images (Optional).</small>
                         </div>
 
                         <div class="mb-3">

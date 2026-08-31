@@ -273,6 +273,16 @@
                             <img src="{{ $taskImg }}" style="max-width: 450px; max-height: 350px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Task Image">
                         </div>
                     @endif
+                    @if($task->images && is_array($task->images))
+                        @foreach($task->images as $imgPath)
+                            @php
+                                $taskImgPath = str_starts_with($imgPath, 'http') ? $imgPath : (file_exists(public_path('storage/' . $imgPath)) ? public_path('storage/' . $imgPath) : asset('storage/' . $imgPath));
+                            @endphp
+                            <div style="margin-top: 10px;">
+                                <img src="{{ $taskImgPath }}" style="max-width: 450px; max-height: 350px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Task Image">
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
                 <div style="padding: 0 15px 5px 15px; font-weight: bold; color: #334155;">
                     Your Submitted Response (Word Count: {{ isset($attempt->answers[$task->task_number]) ? count(explode(' ', trim($attempt->answers[$task->task_number]))) : 0 }} words):
