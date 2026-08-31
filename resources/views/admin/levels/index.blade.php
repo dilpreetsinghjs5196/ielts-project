@@ -32,7 +32,7 @@
                                 @foreach ($levels as $level)
                                 <tr>
                                     <td class="px-4 py-4">
-                                        <h6 class="mb-0 font-weight-bold" style="color: #0d1624;">{{ $level->name }}</h6>
+                                        <h6 class="mb-0 font-weight-bold text-dark">{{ $level->name }}</h6>
                                     </td>
                                     <td>
                                         <code class="text-primary bg-primary bg-opacity-10 px-2 py-1 rounded" style="font-size: 0.85rem;">{{ $level->slug }}</code>

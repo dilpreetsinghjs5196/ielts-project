@@ -50,7 +50,7 @@
                     @if ($part->passage)
                         <div class="mt-3">
                             <label class="small fw-bold text-muted d-block mb-2">Transcript / Passage</label>
-                            <div style="background: #ffffff; padding: 30px; border-radius: 12px; max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; font-size: 1.15rem; line-height: 1.8; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
+                            <div class="segment-passage-box">
                                 {!! nl2br(e($part->passage)) !!}
                             </div>
                         </div>

@@ -62,9 +62,9 @@
                         </div>
 
                         <div class="mb-4" id="image_section">
-                            <label for="images" class="form-label font-weight-bold">Optional Segment Images (For Reading/Others)</label>
-                            <input type="file" name="images[]" id="images" class="form-control" accept="image/*" multiple>
-                            <small class="text-muted">Upload one or more images that will appear in the passage/segment area.</small>
+                            <label for="image" class="form-label font-weight-bold">Optional Segment Image (For Reading/Others)</label>
+                            <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                            <small class="text-muted">Upload an image that will appear in the passage/segment area.</small>
                         </div>
                     </div>
                 </div>

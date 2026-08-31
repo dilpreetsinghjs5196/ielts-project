@@ -115,14 +115,7 @@
                                 </div>
                                 @if($task->image)
                                     <div class="mt-3">
-                                        <img src="{{ asset('storage/' . $task->image) }}" class="img-fluid border rounded mb-3" style="max-height: 300px;" alt="Task Image">
-                                    </div>
-                                @endif
-                                @if($task->images && is_array($task->images))
-                                    <div class="mt-3 d-flex flex-column gap-3">
-                                        @foreach($task->images as $imgPath)
-                                            <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid border rounded" style="max-height: 300px;" alt="Task Image">
-                                        @endforeach
+                                        <img src="{{ asset('storage/' . $task->image) }}" class="img-fluid border rounded" style="max-height: 300px;" alt="Task Image">
                                     </div>
                                 @endif
                             </div>
