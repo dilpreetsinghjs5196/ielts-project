@@ -25,6 +25,7 @@ class Question extends Model
         'explanation',
         'marks',
         'image',
+        'images',
         'status',
     ];
 
@@ -36,6 +37,7 @@ class Question extends Model
     protected $casts = [
         'options' => 'array',
         'settings' => 'array',
+        'images' => 'array',
     ];
 
     public function category()

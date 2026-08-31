@@ -358,6 +358,16 @@
                                         <img src="{{ $qImg }}" style="max-width: 250px; max-height: 200px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Question Image">
                                     </div>
                                 @endif
+                                @if($question->images && is_array($question->images))
+                                    @foreach($question->images as $imgPath)
+                                        @php
+                                            $qImgPath = str_starts_with($imgPath, 'http') ? $imgPath : (file_exists(public_path('storage/' . $imgPath)) ? public_path('storage/' . $imgPath) : asset('storage/' . $imgPath));
+                                        @endphp
+                                        <div style="margin: 6px 0;">
+                                            <img src="{{ $qImgPath }}" style="max-width: 250px; max-height: 200px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Question Image">
+                                        </div>
+                                    @endforeach
+                                @endif
                                 @php
                                     $validOptions = is_array($question->options) ? array_filter($question->options, fn($val) => trim((string)$val) !== '') : [];
                                 @endphp

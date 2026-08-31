@@ -105,10 +105,10 @@
                     @endif
 
                     <div class="mb-3" id="image_section">
-                        <label for="image" class="form-label font-weight-bold">Optional Question Image</label>
-                        <input type="file" name="image" id="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">
-                        <small class="text-muted">Upload an image specific to this question (Optional).</small>
-                        @error('image')
+                        <label for="images" class="form-label font-weight-bold">Optional Question Images</label>
+                        <input type="file" name="images[]" id="images" class="form-control @error('images') is-invalid @enderror" accept="image/*" multiple>
+                        <small class="text-muted">Upload one or more images specific to this question (Optional).</small>
+                        @error('images')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

@@ -101,7 +101,7 @@
 
                         @if ($group->image)
                             <div class="segment-image mt-4">
-                                <img src="{{ asset('storage/' . $group->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 500px;">
+                                <img src="{{ asset('storage/' . $group->image) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
                             </div>
                         @endif
                     </div>
@@ -239,7 +239,14 @@
 
                                         @if ($question->image)
                                             <div class="question-image mb-3">
-                                                <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 400px;">
+                                                <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
+                                            </div>
+                                        @endif
+                                        @if ($question->images && is_array($question->images))
+                                            <div class="question-images mb-3 d-flex flex-column gap-3">
+                                                @foreach($question->images as $imgPath)
+                                                    <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
+                                                @endforeach
                                             </div>
                                         @endif
 

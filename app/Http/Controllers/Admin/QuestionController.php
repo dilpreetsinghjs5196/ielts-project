@@ -88,7 +88,7 @@ class QuestionController extends Controller
             $data['attachment'] = $request->file('attachment')->store('questions/attachments', 'public');
         }
 
-        // Handle Dynamic Path Image
+        // Handle Dynamic Path Image (Single)
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
@@ -104,6 +104,27 @@ class QuestionController extends Controller
             $file->move($targetDir, $filename);
             $data['image'] = 'test_images/' . $filename;
         }
+
+        // Handle Multiple Dynamic Path Images
+        if ($request->hasFile('images')) {
+            $uploadedImages = [];
+            foreach ($request->file('images') as $file) {
+                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage/test_images') 
+                    : public_path('storage/test_images');
+
+                if (!file_exists($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+
+                $file->move($targetDir, $filename);
+                $uploadedImages[] = 'test_images/' . $filename;
+            }
+            $data['images'] = $uploadedImages;
+        }
+
 
         // Handle options if it's a type that requires options
         if (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
@@ -187,7 +208,7 @@ class QuestionController extends Controller
             $data['attachment'] = $request->file('attachment')->store('questions/attachments', 'public');
         }
 
-        // Handle Dynamic Path Image
+        // Handle Dynamic Path Image (Single)
         if ($request->has('remove_image')) {
             if ($question->image) {
                 $targetDir = is_dir(base_path('../public_html')) 
@@ -213,6 +234,48 @@ class QuestionController extends Controller
             $file->move($targetDir, $filename);
             $data['image'] = 'writing_tasks/' . $filename;
         }
+
+        // Handle Multiple Images
+        $currentImages = $question->images ?? [];
+        
+        // Remove specified images
+        if ($request->has('remove_images')) {
+            $targetDir = is_dir(base_path('../public_html')) 
+                ? base_path('../public_html/storage') 
+                : public_path('storage');
+                
+            foreach ($request->remove_images as $index) {
+                if (isset($currentImages[$index])) {
+                    if (file_exists($targetDir . '/' . $currentImages[$index])) {
+                        unlink($targetDir . '/' . $currentImages[$index]);
+                    }
+                    unset($currentImages[$index]);
+                }
+            }
+            // Re-index array
+            $currentImages = array_values($currentImages);
+        }
+
+        // Add new images
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                
+                $targetDir = is_dir(base_path('../public_html')) 
+                    ? base_path('../public_html/storage/test_images') 
+                    : public_path('storage/test_images');
+
+                if (!file_exists($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+
+                $file->move($targetDir, $filename);
+                $currentImages[] = 'test_images/' . $filename;
+            }
+        }
+        
+        $data['images'] = empty($currentImages) ? null : $currentImages;
+
 
         if (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
             $data['options'] = array_filter($request->options);

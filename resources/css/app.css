@@ -9,3 +9,13 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+.question-image img {
+    max-height: none !important;
+    width: 100%;
+    max-width: 700px;
+}
+
+.question-image.mb-3 img {
+    max-height: 100% !important;
+    width: 100% !important;
+}
