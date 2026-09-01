@@ -681,60 +681,65 @@
             background-color: var(--card-bg);
         }
 
-        /* ===== THEME TOGGLE BUTTON ===== */
+        /* ===== PREMIUM THEME TOGGLE BUTTON ===== */
         .theme-toggle {
             position: relative;
-            width: 52px;
-            height: 28px;
-            border-radius: 14px;
-            border: 2px solid var(--input-border);
-            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            width: 64px;
+            height: 32px;
+            border-radius: 16px;
+            border: 2px solid rgba(206, 157, 60, 0.3);
+            background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 100%);
             cursor: pointer;
             padding: 0;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             flex-shrink: 0;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.1), 0 4px 12px rgba(135, 206, 235, 0.3);
         }
 
         [data-theme="dark"] .theme-toggle {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-color: #475569;
+            background: linear-gradient(135deg, #0B132B 0%, #1C2541 100%);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 4px 12px rgba(28, 37, 65, 0.6);
         }
 
         .theme-toggle-thumb {
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: #fbbf24;
-            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #FFD700;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.6), inset 0 -2px 4px rgba(218, 165, 32, 0.6);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
         }
 
         [data-theme="dark"] .theme-toggle-thumb {
-            left: 26px;
-            background: #e2e8f0;
-            box-shadow: 0 2px 8px rgba(148, 163, 184, 0.4);
+            left: 34px;
+            background: #F4F6F0;
+            box-shadow: 0 2px 10px rgba(244, 246, 240, 0.7), inset 0 -2px 5px rgba(200, 200, 200, 0.8);
+            transform: rotate(360deg);
         }
 
         .theme-toggle-icon {
-            font-size: 10px;
+            font-size: 12px;
             line-height: 1;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
         }
 
         .theme-toggle .sun-icon {
-            color: #92400e;
+            color: #D2691E;
+            text-shadow: 0 0 4px rgba(255, 215, 0, 0.8);
         }
 
         .theme-toggle .moon-icon {
             display: none;
-            color: #475569;
+            color: #2C3E50;
         }
 
         [data-theme="dark"] .theme-toggle .sun-icon {
@@ -746,41 +751,48 @@
         }
 
         .theme-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 12px rgba(206, 157, 60, 0.25);
+            transform: scale(1.08);
         }
 
         .theme-toggle:active {
-            transform: scale(0.95);
+            transform: scale(0.92);
+        }
+
+        /* Clouds in Light Mode */
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            top: 18px;
+            left: 36px;
+            transition: all 0.5s ease;
+            box-shadow: 6px -4px 0 -1px rgba(255, 255, 255, 0.8), -4px -2px 0 1px rgba(255, 255, 255, 0.8);
+            z-index: 1;
         }
 
         /* Stars decoration in dark mode */
-        .theme-toggle::before,
-        .theme-toggle::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            background: transparent;
-            transition: all 0.4s ease;
-        }
-
         [data-theme="dark"] .theme-toggle::before {
-            width: 3px;
-            height: 3px;
-            top: 5px;
-            left: 8px;
-            background: #fbbf24;
-            box-shadow: 6px 8px 0 0.5px #fbbf24, 12px 2px 0 0.5px #fbbf24;
+            width: 2px;
+            height: 2px;
+            top: 10px;
+            left: 14px;
+            background: #FFF;
+            box-shadow: 8px 12px 0 0.5px #FFF, 16px 2px 0 1px #FFF, 4px 6px 0 -0.5px #FFF;
+            border-radius: 50%;
         }
 
         .theme-toggle-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
             white-space: nowrap;
             user-select: none;
+            transition: color 0.3s ease;
         }
     </style>
     @stack('styles')
