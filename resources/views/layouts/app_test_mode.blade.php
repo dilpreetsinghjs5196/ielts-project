@@ -105,6 +105,7 @@
             box-shadow: 0 0 0 0.25rem rgba(206, 157, 60, 0.25);
         }
         html[data-theme="dark"] .form-control::placeholder { color: var(--text-muted); }
+        html[data-theme="dark"] .card { background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-main); }
         
         /* --- Font Size Overrides --- */
         html[data-font-size="large"] { font-size: 1.15rem; }
