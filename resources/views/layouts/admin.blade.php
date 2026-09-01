@@ -39,6 +39,9 @@
         }
 
         html[data-theme="dark"] .bg-white { background-color: #1e293b !important; }
+        html[data-theme="dark"] .bg-light { background-color: #1e293b !important; color: #f8fafc !important; }
+        html[data-theme="dark"] code.bg-white { background-color: #334155 !important; color: #f8fafc !important; }
+        html[data-theme="dark"] .input-group-text { background-color: #334155; border-color: #475569; color: #f8fafc; }
         html[data-theme="dark"] .text-dark { color: #f8fafc !important; }
         html[data-theme="dark"] .card { background-color: #1e293b; border-color: #334155; }
         html[data-theme="dark"] .table { color: #f8fafc; }
