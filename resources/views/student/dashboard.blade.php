@@ -6,25 +6,24 @@
     {{-- Welcome Header --}}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm overflow-hidden welcome-banner" style="border-radius: 16px;">
-                <div class="card-body p-4 d-flex align-items-center gap-4">
-                    <div class="avatar-box flex-shrink-0">
-                        <i class="fas fa-user-graduate"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <h3 class="mb-1 fw-bold banner-title">
-                            Welcome, {{ auth('student')->user()->name }}!
-                        </h3>
-                        <div class="d-flex flex-wrap align-items-center gap-3 banner-subtitle mt-2">
-                            <span><i class="fas fa-id-badge me-1 text-warning"></i> <strong>ID:</strong> {{ auth('student')->user()->student_id }}</span>
-                            <span class="opacity-50">•</span>
-                            <span><i class="fas fa-envelope me-1 text-warning"></i> {{ auth('student')->user()->email }}</span>
-                            <span class="opacity-50">•</span>
-                            <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold" style="font-size: 0.75rem;">
-                                {{ ucfirst(auth('student')->user()->status) }}
-                            </span>
-                        </div>
-                    </div>
+            <div class="p-4 rounded-3 text-white d-flex align-items-center gap-4"
+                style="background: linear-gradient(135deg, #0d1624 0%, #1a2a44 100%); border-radius: 16px !important;">
+                <div style="width: 70px; height: 70px; background: #ce9d3c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div>
+                    <h3 class="mb-1 fw-bold" style="font-family: 'Outfit', sans-serif;">
+                        Welcome, {{ auth('student')->user()->name }}!
+                    </h3>
+                    <p class="mb-0 text-white-50">
+                        <i class="fas fa-id-badge me-2"></i>{{ auth('student')->user()->student_id }}
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <i class="fas fa-envelope me-2"></i>{{ auth('student')->user()->email }}
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <span class="badge" style="background-color: #ce9d3c; font-size: 0.75rem;">
+                            {{ ucfirst(auth('student')->user()->status) }}
+                        </span>
+                    </p>
                 </div>
             </div>
         </div>
@@ -77,7 +76,7 @@
         {{-- My Profile --}}
         <div class="col-md-5 mb-4">
             <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
-                <div class="card-header border-bottom d-flex align-items-center justify-content-between" style="border-radius: 12px 12px 0 0; padding: 1.2rem 1.5rem;">
+                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between" style="border-radius: 12px 12px 0 0; padding: 1.2rem 1.5rem;">
                     <h5 class="mb-0 fw-bold"><i class="fas fa-user me-2" style="color: #ce9d3c;"></i>My Profile</h5>
                 </div>
                 <div class="card-body" style="padding: 1.5rem;">
@@ -123,7 +122,7 @@
         {{-- My Tests --}}
         <div class="col-md-7 mb-4">
             <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
-                <div class="card-header border-bottom d-flex align-items-center justify-content-between" style="border-radius: 12px 12px 0 0; padding: 1.2rem 1.5rem;">
+                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between" style="border-radius: 12px 12px 0 0; padding: 1.2rem 1.5rem;">
                     <h5 class="mb-0 fw-bold"><i class="fas fa-file-alt me-2" style="color: #3b82f6;"></i>My Tests & Results</h5>
                 </div>
                 <div class="card-body p-0">

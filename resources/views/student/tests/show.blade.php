@@ -101,7 +101,15 @@
 
                         @if ($group->image)
                             <div class="segment-image mt-4">
-                                <img src="{{ asset('storage/' . $group->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 500px;">
+                                <img src="{{ asset('storage/' . $group->image) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
+                            </div>
+                        @endif
+
+                        @if ($group->images && is_array($group->images))
+                            <div class="segment-images mt-4 d-flex flex-column gap-3">
+                                @foreach($group->images as $imgPath)
+                                    <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
+                                @endforeach
                             </div>
                         @endif
                     </div>
@@ -145,12 +153,7 @@
                     @endphp
 
                     <div class="group-instruction mb-4 p-3 bg-warning-subtle rounded-3 border-start border-warning border-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-bold mb-0">{{ $group->title }}</h6>
-                            <button type="button" class="btn btn-link btn-sm text-decoration-none btn-report-issue rounded-pill px-2 py-1" onclick="openReportModal('', '{{ $group->title }}', '{{ $test->id }}', 'reading')" title="Report issue with {{ $group->title }}">
-                                <i class="far fa-flag me-1"></i> Report Issue
-                            </button>
-                        </div>
+                        <h6 class="fw-bold mb-1">{{ $group->title }}</h6>
                         <div class="mb-0 text-muted instruction-content" style="line-height: 2.5;">
                             @php
                                 $htmlInstruction = nl2br($renderedInstruction);
@@ -231,24 +234,27 @@
                                  id="q-{{ $question->id }}" 
                                  data-q-id="{{ $question->id }}" 
                                  data-q-type="{{ $question->question_type }}">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex gap-3">
                                     <div class="q-number-box">
                                         <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 32px; height: 32px; font-size: 0.85rem; flex-shrink: 0;">
                                             {{ $question->question_number }}
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-link btn-sm text-decoration-none btn-report-issue rounded-pill px-2 py-1" onclick="openReportModal('{{ $question->id }}', '{{ $question->question_number }}', '{{ $test->id }}', 'reading')" title="Report issue with Question #{{ $question->question_number }}">
-                                        <i class="far fa-flag me-1"></i> Report Issue
-                                    </button>
-                                </div>
-                                <div class="q-body w-100">
+                                    <div class="q-body w-100">
                                         <div class="fw-semibold mb-3" style="line-height: 2.5;">
                                             {!! nl2br($qContent) !!}
                                         </div>
 
                                         @if ($question->image)
                                             <div class="question-image mb-3">
-                                                <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 400px;">
+                                                <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
+                                            </div>
+                                        @endif
+                                        @if ($question->images && is_array($question->images))
+                                            <div class="question-images mb-3 d-flex flex-column gap-3">
+                                                @foreach($question->images as $imgPath)
+                                                    <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid rounded-3 border shadow-sm" style="width:100%">
+                                                @endforeach
                                             </div>
                                         @endif
 

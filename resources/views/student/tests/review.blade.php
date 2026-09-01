@@ -56,6 +56,13 @@
                                     <img src="{{ asset('storage/' . $group->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 500px;">
                                 </div>
                             @endif
+                            @if ($group->images && is_array($group->images))
+                                <div class="segment-images mt-4 d-flex flex-column gap-3 align-items-center">
+                                    @foreach($group->images as $imgPath)
+                                        <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 500px;">
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -234,6 +241,13 @@
                                             @if ($question->image)
                                                 <div class="question-image mb-3">
                                                     <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 400px;">
+                                                </div>
+                                            @endif
+                                            @if ($question->images && is_array($question->images))
+                                                <div class="question-images mb-3 d-flex flex-column gap-3">
+                                                    @foreach($question->images as $imgPath)
+                                                        <img src="{{ asset('storage/' . $imgPath) }}" class="img-fluid rounded-3 border shadow-sm" style="max-height: 400px;">
+                                                    @endforeach
                                                 </div>
                                             @endif
 

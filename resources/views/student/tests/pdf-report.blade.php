@@ -273,6 +273,16 @@
                             <img src="{{ $taskImg }}" style="max-width: 450px; max-height: 350px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Task Image">
                         </div>
                     @endif
+                    @if($task->images && is_array($task->images))
+                        @foreach($task->images as $imgPath)
+                            @php
+                                $taskImgPath = str_starts_with($imgPath, 'http') ? $imgPath : (file_exists(public_path('storage/' . $imgPath)) ? public_path('storage/' . $imgPath) : asset('storage/' . $imgPath));
+                            @endphp
+                            <div style="margin-top: 10px;">
+                                <img src="{{ $taskImgPath }}" style="max-width: 450px; max-height: 350px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Task Image">
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
                 <div style="padding: 0 15px 5px 15px; font-weight: bold; color: #334155;">
                     Your Submitted Response (Word Count: {{ isset($attempt->answers[$task->task_number]) ? count(explode(' ', trim($attempt->answers[$task->task_number]))) : 0 }} words):
@@ -358,6 +368,16 @@
                                         <img src="{{ $qImg }}" style="max-width: 250px; max-height: 200px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Question Image">
                                     </div>
                                 @endif
+                                @if($question->images && is_array($question->images))
+                                    @foreach($question->images as $imgPath)
+                                        @php
+                                            $qImgPath = str_starts_with($imgPath, 'http') ? $imgPath : (file_exists(public_path('storage/' . $imgPath)) ? public_path('storage/' . $imgPath) : asset('storage/' . $imgPath));
+                                        @endphp
+                                        <div style="margin: 6px 0;">
+                                            <img src="{{ $qImgPath }}" style="max-width: 250px; max-height: 200px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Question Image">
+                                        </div>
+                                    @endforeach
+                                @endif
                                 @php
                                     $validOptions = is_array($question->options) ? array_filter($question->options, fn($val) => trim((string)$val) !== '') : [];
                                 @endphp
@@ -406,6 +426,16 @@
                         <div style="margin-top: 10px; text-align: center;">
                             <img src="{{ $grpImg }}" style="max-width: 500px; max-height: 350px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Passage Image">
                         </div>
+                    @endif
+                    @if($group->images && is_array($group->images))
+                        @foreach($group->images as $imgPath)
+                            @php
+                                $grpImgPath = str_starts_with($imgPath, 'http') ? $imgPath : (file_exists(public_path('storage/' . $imgPath)) ? public_path('storage/' . $imgPath) : asset('storage/' . $imgPath));
+                            @endphp
+                            <div style="margin-top: 10px; text-align: center;">
+                                <img src="{{ $grpImgPath }}" style="max-width: 500px; max-height: 350px; border: 1px solid #cbd5e1; border-radius: 4px;" alt="Passage Image">
+                            </div>
+                        @endforeach
                     @endif
                     @if($group->attachment)
                         @php

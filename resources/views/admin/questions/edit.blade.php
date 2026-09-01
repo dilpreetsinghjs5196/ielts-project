@@ -106,21 +106,37 @@
                     </div>
 
                     <div class="mb-3" id="image_section">
-                        <label for="image" class="form-label font-weight-bold">Optional Question Image</label>
+                        <label for="images" class="form-label font-weight-bold">Optional Question Images</label>
+                        
                         @if ($question->image)
                             <div class="mb-2">
-                                <img src="{{ asset('storage/' . $question->image) }}" alt="Question Image" class="img-fluid rounded border" style="max-height: 200px;">
+                                <img src="{{ asset('storage/' . $question->image) }}" alt="Question Image" class="img-fluid rounded border mb-2" style="max-height: 200px;">
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image" value="1">
                                 <label class="form-check-label text-danger" for="remove_image">
-                                    Remove Current Image
+                                    Remove Current Single Image
                                 </label>
                             </div>
                         @endif
-                        <input type="file" name="image" id="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">
-                        <small class="text-muted">Upload an image specific to this question (Optional).</small>
-                        @error('image')
+
+                        @if ($question->images && is_array($question->images))
+                            <div class="d-flex flex-wrap gap-3 mb-3">
+                                @foreach ($question->images as $index => $imgPath)
+                                    <div class="border rounded p-2 text-center" style="width: 150px;">
+                                        <img src="{{ asset('storage/' . $imgPath) }}" alt="Question Image" class="img-fluid rounded mb-2" style="height: 100px; object-fit: cover;">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="remove_images[]" id="remove_image_{{ $index }}" value="{{ $index }}">
+                                            <label class="form-check-label text-danger small" for="remove_image_{{ $index }}">Remove</label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <input type="file" name="images[]" id="images" class="form-control @error('images') is-invalid @enderror" accept="image/*" multiple>
+                        <small class="text-muted">Upload additional images specific to this question (Optional).</small>
+                        @error('images')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

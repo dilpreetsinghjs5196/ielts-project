@@ -43,7 +43,7 @@
                 </div>
                 <div class="card-body">
                     @if ($questionGroup->passage)
-                        <div class="segment-passage-box">
+                        <div style="background: #ffffff; padding: 30px; border-radius: 12px; max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; font-size: 1.15rem; line-height: 1.8; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
                             {!! nl2br(e($questionGroup->passage)) !!}
                         </div>
                     @endif

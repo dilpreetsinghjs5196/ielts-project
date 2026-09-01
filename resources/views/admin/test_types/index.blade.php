@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('content')
 <div class="row mb-4">
@@ -31,7 +31,7 @@
                             @forelse ($testTypes as $type)
                             <tr>
                                 <td class="px-4 py-4">
-                                    <h6 class="mb-0 font-weight-bold text-dark">{{ $type->name }}</h6>
+                                    <h6 class="mb-0 font-weight-bold" style="color: #0d1624;">{{ $type->name }}</h6>
                                 </td>
                                 <td>
                                     <code class="text-primary bg-primary bg-opacity-10 px-2 py-1 rounded" style="font-size: 0.85rem;">{{ $type->slug }}</code>

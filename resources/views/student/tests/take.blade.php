@@ -33,6 +33,12 @@
     .test-card:hover {
         box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     }
+    
+    .question-image.mb-3 img {
+    max-height: 100% !important;
+    width: 100%;
+}
+    
 </style>
 
 <div class="row mb-5">
