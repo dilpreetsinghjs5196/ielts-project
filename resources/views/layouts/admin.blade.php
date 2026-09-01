@@ -26,12 +26,32 @@
             --sidebar-active-bg: #ce9d3c;
             /* Golden accent matching logo */
             --brand-color: #ffffff;
+            --navbar-bg: #ffffff;
+            --navbar-border: #e2e8f0;
+            --text-main: #212529;
         }
+
+        html[data-theme="dark"] {
+            --primary-bg: #0b1120;
+            --navbar-bg: #1e293b;
+            --navbar-border: #334155;
+            --text-main: #f8fafc;
+        }
+
+        html[data-theme="dark"] .bg-white { background-color: #1e293b !important; }
+        html[data-theme="dark"] .text-dark { color: #f8fafc !important; }
+        html[data-theme="dark"] .card { background-color: #1e293b; border-color: #334155; }
+        html[data-theme="dark"] .table { color: #f8fafc; }
+        html[data-theme="dark"] .dropdown-menu { background-color: #1e293b; border-color: #334155; }
+        html[data-theme="dark"] .dropdown-item { color: #f8fafc; }
+        html[data-theme="dark"] .dropdown-item:hover { background-color: #334155; color: #ffffff; }
 
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--primary-bg);
+            color: var(--text-main);
             overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Sidebar Styling */
@@ -155,9 +175,10 @@
         /* Navbar */
         .navbar {
             padding: 15px 20px;
-            background: #fff;
+            background: var(--navbar-bg);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--navbar-border);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .navbar-btn {
@@ -247,6 +268,24 @@
             z-index: 101;
             cursor: pointer;
             transition: left 0.3s, background 0.2s;
+        }
+        
+        /* Premium minimal toggle */
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--navbar-border);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .theme-toggle-btn:hover {
+            background: var(--navbar-border);
         }
 
         #sidebarClose:hover {
@@ -438,6 +477,8 @@
                 </button>
 
                 <div class="d-flex align-items-center gap-3">
+                    <button class="theme-toggle-btn flex-shrink-0" aria-label="Toggle Dark Mode"></button>
+                    
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
                             id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
@@ -558,7 +599,7 @@
             //  Overlay click 
             overlay.addEventListener('click', mobileClose);
 
-            //  Resize cleanup 
+            // Resize cleanup 
             window.addEventListener('resize', function () {
                 if (!isMobile()) {
                     sidebar.classList.remove('sidebar-open');
@@ -569,6 +610,41 @@
                     if (closeBtn) closeBtn.style.left = '';
                 }
             });
+
+            // Theme Toggle Logic
+            const themeToggles = document.querySelectorAll('.theme-toggle-btn');
+            const html = document.documentElement;
+
+            function updateToggleIcons() {
+                const isDark = html.getAttribute('data-theme') === 'dark';
+                themeToggles.forEach(btn => {
+                    btn.innerHTML = isDark ? '<i class="fas fa-sun text-warning"></i>' : '<i class="fas fa-moon"></i>';
+                });
+            }
+
+            themeToggles.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const isDark = html.getAttribute('data-theme') === 'dark';
+                    if (isDark) {
+                        html.removeAttribute('data-theme');
+                        html.removeAttribute('data-bs-theme');
+                        localStorage.setItem('ielts-theme', 'light');
+                    } else {
+                        html.setAttribute('data-theme', 'dark');
+                        html.setAttribute('data-bs-theme', 'dark');
+                        localStorage.setItem('ielts-theme', 'dark');
+                    }
+                    updateToggleIcons();
+                });
+            });
+
+            // Initialize icons and theme
+            const savedTheme = localStorage.getItem('ielts-theme');
+            if (savedTheme === 'dark') {
+                html.setAttribute('data-theme', 'dark');
+                html.setAttribute('data-bs-theme', 'dark');
+            }
+            updateToggleIcons();
         });
     </script>
     @stack('scripts')
