@@ -41,25 +41,25 @@
 
 <div class="test-container">
     <!-- Test Header -->
-    <header class="test-header d-flex justify-content-between align-items-center px-4">
-        <div class="header-left d-flex align-items-center gap-3">
-            <img src="{{ asset('images/opera-dark-logo.webp') }}" height="40" alt="Logo" class="test-logo">
-            <div class="test-info">
-                <h5 class="mb-0 fw-bold">{{ $test->name }}</h5>
-                <small class="text-muted">{{ $test->level->name }} | Listening</small>
+    <header class="test-header d-flex justify-content-between align-items-center px-3 gap-2" style="min-height: 60px;">
+        <div class="header-left d-flex align-items-center gap-2" style="min-width: 0;">
+            <img src="{{ asset('images/opera-dark-logo.webp') }}" height="35" alt="Logo" class="test-logo d-none d-lg-block">
+            <div class="test-info" style="min-width: 0;">
+                <h5 class="mb-0 fw-bold text-truncate" style="max-width: 200px;" title="{{ $test->name }}">{{ $test->name }}</h5>
+                <small class="text-muted text-truncate d-block">{{ $test->level->name }} | Listening</small>
             </div>
         </div>
         
-        <div class="header-center d-flex align-items-center gap-4">
+        <div class="header-center d-flex align-items-center gap-2 gap-md-3 flex-grow-1 justify-content-center" style="min-width: 0;">
             @if($test->audio_file)
-                <div class="main-audio-player d-flex align-items-center bg-dark rounded-pill px-4 py-2 shadow-sm" style="min-width: 380px;">
+                <div class="main-audio-player d-flex align-items-center bg-dark rounded-pill px-3 py-1 shadow-sm" style="width: 100%; max-width: 380px; min-width: 180px;">
                     <div class="audio-controls d-flex align-items-center gap-2">
-                        <div class="p-2 cursor-pointer skip-btn" onclick="window.skipAudio(-10)" title="Back 10s">
-                            <i class="fas fa-undo text-light opacity-75" style="pointer-events: none;"></i>
+                        <div class="p-1 cursor-pointer skip-btn" onclick="window.skipAudio(-10)" title="Back 10s">
+                            <i class="fas fa-undo text-light opacity-75" style="pointer-events: none; font-size: 0.9rem;"></i>
                         </div>
-                        <i class="fas fa-play-circle text-warning fs-3 cursor-pointer" onclick="toggleMainAudio()" id="main-audio-icon"></i>
-                        <div class="p-2 cursor-pointer skip-btn" onclick="window.skipAudio(10)" title="Forward 10s">
-                            <i class="fas fa-redo text-light opacity-75" style="pointer-events: none;"></i>
+                        <i class="fas fa-play-circle text-warning fs-4 cursor-pointer" onclick="toggleMainAudio()" id="main-audio-icon"></i>
+                        <div class="p-1 cursor-pointer skip-btn" onclick="window.skipAudio(10)" title="Forward 10s">
+                            <i class="fas fa-redo text-light opacity-75" style="pointer-events: none; font-size: 0.9rem;"></i>
                         </div>
                     </div>
                     
@@ -67,27 +67,32 @@
                         <source src="{{ asset('storage/' . $test->audio_file) }}" type="audio/mpeg">
                     </audio>
                     
-                    <div class="audio-progress-container flex-grow-1 mx-3" style="height: 6px; background: #334155; border-radius: 3px; cursor: pointer;" onclick="seekAudio(event)">
+                    <div class="audio-progress-container flex-grow-1 mx-2" style="height: 6px; background: #334155; border-radius: 3px; cursor: pointer;" onclick="seekAudio(event)">
                         <div id="audio-progress-bar" style="width: 0%; height: 100%; background: #ce9d3c; border-radius: 3px; transition: width 0.1s linear;"></div>
                     </div>
                     
-                    <span id="audio-time" class="text-white small fw-bold mono" style="min-width: 45px;">0:00</span>
+                    <span id="audio-time" class="text-white small fw-bold mono" style="min-width: 40px; font-size: 0.8rem;">0:00</span>
                 </div>
             @endif
 
             <div class="timer-wrapper">
                 <div class="timer d-flex align-items-center gap-2">
                     <i class="far fa-clock"></i>
-                    <span id="test-timer" class="fw-bold fs-4">40:00</span>
+                    <span id="test-timer" class="fw-bold fs-5">40:00</span>
                 </div>
             </div>
         </div>
 
-        <div class="header-right d-flex align-items-center gap-3">
-            <span class="user-badge px-3 py-1 bg-light rounded-pill border">
+        <div class="header-right d-flex align-items-center gap-2" style="min-width: 0;">
+            <select id="fontSizeSelect" class="form-select form-select-sm rounded-pill flex-shrink-0" style="width: auto; border-color: #dee2e6; cursor: pointer; font-size: 13px; font-weight: 500; padding-left: 12px; padding-right: 28px;">
+                <option value="standard">Aa Standard</option>
+                <option value="large">Aa Large</option>
+                <option value="extra-large">Aa Extra Large</option>
+            </select>
+            <span class="user-badge px-3 py-1 bg-light rounded-pill border text-truncate d-none d-sm-inline-block" style="max-width: 120px; font-size: 0.85rem;">
                 <i class="fas fa-user-circle me-1"></i> {{ auth('student')->user()->name }}
             </span>
-            <button class="btn btn-primary btn-sm px-4 fw-bold rounded-pill" onclick="submitTest()">Finish Test</button>
+            <button class="btn btn-primary btn-sm px-3 fw-bold rounded-pill flex-shrink-0" onclick="submitTest()">Finish</button>
         </div>
     </header>
 
@@ -803,6 +808,22 @@
         restoreAnswers();
         if (!isOverlayShowing) {
             startTimer();
+        }
+
+        // Font Size Selector Logic
+        const fontSizeSelect = document.getElementById('fontSizeSelect');
+        const html = document.documentElement;
+        
+        // Set initial value in dropdown
+        const currentSize = html.getAttribute('data-font-size') || 'standard';
+        if (fontSizeSelect) {
+            fontSizeSelect.value = currentSize;
+            
+            fontSizeSelect.addEventListener('change', function() {
+                const newSize = this.value;
+                html.setAttribute('data-font-size', newSize);
+                localStorage.setItem('ielts-font-size', newSize);
+            });
         }
     });
 

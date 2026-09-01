@@ -27,7 +27,19 @@
         .cursor-pointer { cursor: pointer; }
         .cursor-grab { cursor: grab; }
         .cursor-grabbing { cursor: grabbing; }
+        /* --- Font Size Overrides --- */
+        html[data-font-size="large"] { font-size: 1.15rem; }
+        html[data-font-size="extra-large"] { font-size: 1.3rem; }
+        
+        html[data-font-size="large"] .passage-text { font-size: 1.25rem; line-height: 1.9; }
+        html[data-font-size="extra-large"] .passage-text { font-size: 1.4rem; line-height: 2.0; }
     </style>
+    <script>
+        (function() {
+            var savedFont = localStorage.getItem('ielts-font-size');
+            if (savedFont) document.documentElement.setAttribute('data-font-size', savedFont);
+        })();
+    </script>
     @stack('styles')
 </head>
 <body>

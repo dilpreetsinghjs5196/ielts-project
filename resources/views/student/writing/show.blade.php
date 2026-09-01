@@ -390,7 +390,19 @@
             color: #666;
             text-decoration: underline;
         }
+
+        /* --- Font Size Overrides --- */
+        html[data-font-size="large"] .prompt-text { font-size: 1.15rem; line-height: 1.7; }
+        html[data-font-size="large"] .writing-area { font-size: 1.15rem; line-height: 1.7; }
+        html[data-font-size="extra-large"] .prompt-text { font-size: 1.3rem; line-height: 1.8; }
+        html[data-font-size="extra-large"] .writing-area { font-size: 1.3rem; line-height: 1.8; }
     </style>
+    <script>
+        (function() {
+            var savedFont = localStorage.getItem('ielts-font-size');
+            if (savedFont) document.documentElement.setAttribute('data-font-size', savedFont);
+        })();
+    </script>
 </head>
 <body>
 @if($attempt && ($attempt->status === 'completed' || !$attempt->wasRecentlyCreated))
@@ -442,10 +454,17 @@
                 <span id="test-timer" style="font-weight: 700; font-size: 1.1rem;">60:00</span>
             </div>
         </div>
-        <div class="header-icons">
-            <i class="fas fa-wifi"></i>
-            <i class="fas fa-bell"></i>
-            <i class="fas fa-bars"></i>
+        <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
+            <select id="fontSizeSelect" class="form-select form-select-sm" style="width: auto; padding: 4px 32px 4px 16px; border-radius: 15px; border: 1px solid #d1d1d1; font-size: 14px; font-family: inherit; outline: none; cursor: pointer; background-color: #fff; font-weight: 500;">
+                <option value="standard">Aa Standard</option>
+                <option value="large">Aa Large</option>
+                <option value="extra-large">Aa Extra Large</option>
+            </select>
+            <div class="header-icons">
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-bell"></i>
+                <i class="fas fa-bars"></i>
+            </div>
         </div>
     </header>
 
@@ -640,6 +659,22 @@
             restoreAnswers();
             if (!isOverlayShowing) {
                 startTimer();
+            }
+
+            // Font Size Selector Logic
+            const fontSizeSelect = document.getElementById('fontSizeSelect');
+            const html = document.documentElement;
+            
+            // Set initial value in dropdown
+            const currentSize = html.getAttribute('data-font-size') || 'standard';
+            if (fontSizeSelect) {
+                fontSizeSelect.value = currentSize;
+                
+                fontSizeSelect.addEventListener('change', function() {
+                    const newSize = this.value;
+                    html.setAttribute('data-font-size', newSize);
+                    localStorage.setItem('ielts-font-size', newSize);
+                });
             }
         });
 

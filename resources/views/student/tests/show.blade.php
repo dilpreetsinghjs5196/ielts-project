@@ -65,6 +65,11 @@
         </div>
 
         <div class="header-right d-flex align-items-center gap-3">
+            <select id="fontSizeSelect" class="form-select form-select-sm rounded-pill" style="width: auto; border-color: #dee2e6; cursor: pointer; font-size: 14px; font-weight: 500; padding-left: 16px; padding-right: 32px;">
+                <option value="standard">Aa Standard</option>
+                <option value="large">Aa Large</option>
+                <option value="extra-large">Aa Extra Large</option>
+            </select>
             <span class="user-badge px-3 py-1 bg-light rounded-pill border">
                 <i class="fas fa-user-circle me-1"></i> {{ auth('student')->user()->name }}
             </span>
@@ -773,6 +778,22 @@
         restoreAnswers();
         if (!isOverlayShowing) {
             startTimer();
+        }
+
+        // Font Size Selector Logic
+        const fontSizeSelect = document.getElementById('fontSizeSelect');
+        const html = document.documentElement;
+        
+        // Set initial value in dropdown
+        const currentSize = html.getAttribute('data-font-size') || 'standard';
+        if (fontSizeSelect) {
+            fontSizeSelect.value = currentSize;
+            
+            fontSizeSelect.addEventListener('change', function() {
+                const newSize = this.value;
+                html.setAttribute('data-font-size', newSize);
+                localStorage.setItem('ielts-font-size', newSize);
+            });
         }
     });
 
