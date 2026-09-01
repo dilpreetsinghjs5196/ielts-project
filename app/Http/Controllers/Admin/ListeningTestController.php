@@ -71,9 +71,25 @@ class ListeningTestController extends Controller
             'title' => 'required|string|max:255',
             'instruction' => 'nullable|string',
             'passage' => 'nullable|string',
+            'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:20480',
+            'images.*' => 'nullable|image|max:5120',
         ]);
 
-        $part = ListeningPart::create($request->all());
+        $data = $request->except(['audio_file', 'images']);
+
+        if ($request->hasFile('audio_file')) {
+            $data['audio_file'] = $this->handleFileUpload($request->file('audio_file'), 'listening/parts/audio');
+        }
+
+        if ($request->hasFile('images')) {
+            $images = [];
+            foreach ($request->file('images') as $file) {
+                $images[] = $this->handleFileUpload($file, 'listening_parts');
+            }
+            $data['images'] = $images;
+        }
+
+        $part = ListeningPart::create($data);
 
         return redirect()->route('admin.listening-parts.show', $part)->with('success', 'Part created successfully. Now add questions.');
     }
@@ -210,9 +226,9 @@ class ListeningTestController extends Controller
             'instruction' => 'nullable|string',
             'passage' => 'nullable|string',
             'audio_file' => 'nullable|file|mimes:mp3,wav,ogg|max:20480',
-            'image' => 'nullable|image|max:5120',
+            'images.*' => 'nullable|image|max:5120',
             'remove_audio' => 'nullable|boolean',
-            'remove_image' => 'nullable|boolean',
+            'remove_images' => 'nullable|array',
         ]);
 
         $data = $request->only(['title', 'instruction', 'passage']);
@@ -231,19 +247,31 @@ class ListeningTestController extends Controller
             $data['audio_file'] = $this->handleFileUpload($request->file('audio_file'), 'listening/parts/audio');
         }
 
-        if ($request->has('remove_image')) {
-            if ($part->image) {
-                $targetDir = is_dir(base_path('../public_html')) 
-                    ? base_path('../public_html/storage') 
-                    : public_path('storage');
-                if (file_exists($targetDir . '/' . $part->image)) {
-                    unlink($targetDir . '/' . $part->image);
-                }
-            }
-            $data['image'] = null;
-        } elseif ($request->hasFile('image')) {
-            $data['image'] = $this->handleFileUpload($request->file('image'), 'listening_parts');
+        $existingImages = $part->images ?? [];
+
+        // Handle old single image for backward compatibility if it exists
+        if ($part->image && !in_array($part->image, $existingImages)) {
+            $existingImages[] = $part->image;
+            $data['image'] = null; // Clear the old single image field
         }
+
+        if ($request->has('remove_images')) {
+            $targetDir = is_dir(base_path('../public_html')) ? base_path('../public_html/storage') : public_path('storage');
+            foreach ($request->remove_images as $imagePath) {
+                if (file_exists($targetDir . '/' . $imagePath)) {
+                    unlink($targetDir . '/' . $imagePath);
+                }
+                $existingImages = array_diff($existingImages, [$imagePath]);
+            }
+        }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $existingImages[] = $this->handleFileUpload($file, 'listening_parts');
+            }
+        }
+
+        $data['images'] = array_values($existingImages);
 
         $part->update($data);
 

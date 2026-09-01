@@ -126,9 +126,14 @@
                             </div>
                         @endif
 
-                        @if ($part->image)
-                            <div class="segment-image mt-4 text-center">
-                                <img src="{{ asset('storage/' . $part->image) }}" class="img-fluid rounded-4 border shadow-sm" style="width:100%">
+                        @php
+                            $partImages = $part->images ?? ($part->image ? [$part->image] : []);
+                        @endphp
+                        @if (count($partImages) > 0)
+                            <div class="segment-images mt-4 text-center d-flex flex-column gap-3">
+                                @foreach($partImages as $img)
+                                    <img src="{{ asset('storage/' . $img) }}" class="img-fluid rounded-4 border shadow-sm" style="width:100%">
+                                @endforeach
                             </div>
                         @endif
                     </div>

@@ -147,17 +147,25 @@
                                     @endif
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold text-muted small uppercase">Part Image</label>
-                                    <input type="file" name="image" class="form-control" accept="image/*">
-                                    @if($part->image)
-                                        <div class="mt-2">
-                                            <img src="{{ asset('storage/' . $part->image) }}" class="img-thumbnail" style="max-height: 100px;">
-                                            <div class="form-check mt-2 text-start">
-                                                <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image_part_{{ $part->id }}" value="1">
-                                                <label class="form-check-label text-danger" for="remove_image_part_{{ $part->id }}">
-                                                    Remove Current Image
-                                                </label>
-                                            </div>
+                                    <label class="form-label fw-bold text-muted small uppercase">Part Images</label>
+                                    <input type="file" name="images[]" multiple class="form-control" accept="image/*">
+                                    <small class="text-muted">Select multiple images by holding Ctrl or Cmd.</small>
+                                    @php
+                                        $images = $part->images ?? ($part->image ? [$part->image] : []);
+                                    @endphp
+                                    @if(count($images) > 0)
+                                        <div class="mt-3 d-flex flex-wrap gap-3">
+                                            @foreach($images as $img)
+                                                <div class="position-relative border p-2 rounded bg-white shadow-sm" style="max-width: 150px;">
+                                                    <img src="{{ asset('storage/' . $img) }}" class="img-fluid rounded mb-2" style="max-height: 100px; object-fit: contain;">
+                                                    <div class="form-check text-center w-100">
+                                                        <input class="form-check-input float-none" type="checkbox" name="remove_images[]" id="remove_image_{{ $loop->index }}_{{ $part->id }}" value="{{ $img }}">
+                                                        <label class="form-check-label text-danger small" for="remove_image_{{ $loop->index }}_{{ $part->id }}">
+                                                            Remove
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            @endforeach
                                         </div>
                                     @endif
                                 </div>

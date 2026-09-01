@@ -14,6 +14,11 @@ class ListeningPart extends Model
         'passage',
         'audio_file',
         'image',
+        'images',
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     public function test()
