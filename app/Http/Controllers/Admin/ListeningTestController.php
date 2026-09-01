@@ -95,14 +95,18 @@ class ListeningTestController extends Controller
             'common_heading' => 'nullable|string',
             'content' => 'nullable|string',
             'correct_answer' => 'nullable|string',
-            'image' => 'nullable|image|max:5120',
+            'images.*' => 'nullable|image|max:5120',
             'marks' => 'required|integer',
         ]);
 
         $data = $request->only(['listening_part_id', 'question_number', 'question_type', 'title', 'common_heading', 'content', 'correct_answer', 'marks']);
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $this->handleFileUpload($request->file('image'), 'listening_questions');
+        if ($request->hasFile('images')) {
+            $images = [];
+            foreach ($request->file('images') as $file) {
+                $images[] = $this->handleFileUpload($file, 'listening_questions');
+            }
+            $data['images'] = $images;
         }
 
         if ($request->has('options')) {
@@ -261,9 +265,10 @@ class ListeningTestController extends Controller
             'common_heading' => 'nullable|string',
             'content' => 'nullable|string',
             'correct_answer' => 'nullable|string',
-            'image' => 'nullable|image|max:5120',
+            'images.*' => 'nullable|image|max:5120',
             'marks' => 'required|integer',
-            'remove_image' => 'nullable|boolean',
+            'remove_images' => 'nullable|array',
+            'remove_images.*' => 'nullable|string',
         ]);
 
         $data = $request->only(['question_number', 'question_type', 'title', 'common_heading', 'content', 'correct_answer', 'marks']);
@@ -274,19 +279,35 @@ class ListeningTestController extends Controller
             $data['options'] = null;
         }
 
-        if ($request->has('remove_image')) {
-            if ($question->image) {
-                $targetDir = is_dir(base_path('../public_html')) 
-                    ? base_path('../public_html/storage') 
-                    : public_path('storage');
-                if (file_exists($targetDir . '/' . $question->image)) {
-                    unlink($targetDir . '/' . $question->image);
-                }
-            }
-            $data['image'] = null;
-        } elseif ($request->hasFile('image')) {
-            $data['image'] = $this->handleFileUpload($request->file('image'), 'listening_questions');
+        $currentImages = is_array($question->images) ? $question->images : [];
+        if (is_string($question->images)) {
+            $currentImages = json_decode($question->images, true) ?: [];
         }
+
+        if ($request->has('remove_images')) {
+            $targetDir = is_dir(base_path('../public_html')) 
+                ? base_path('../public_html/storage') 
+                : public_path('storage');
+            
+            foreach ($request->remove_images as $imageToRemove) {
+                if (file_exists($targetDir . '/' . $imageToRemove)) {
+                    unlink($targetDir . '/' . $imageToRemove);
+                }
+                $currentImages = array_filter($currentImages, function($img) use ($imageToRemove) {
+                    return $img !== $imageToRemove;
+                });
+            }
+        }
+        
+        $currentImages = array_values($currentImages); // re-index
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $currentImages[] = $this->handleFileUpload($file, 'listening_questions');
+            }
+        }
+        
+        $data['images'] = $currentImages;
 
         if ($request->has('options')) {
             $data['options'] = array_filter($request->options);

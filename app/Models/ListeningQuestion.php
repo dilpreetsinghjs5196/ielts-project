@@ -17,12 +17,14 @@ class ListeningQuestion extends Model
         'correct_answer',
         'explanation',
         'image',
+        'images',
         'marks',
         'settings',
     ];
 
     protected $casts = [
         'options' => 'array',
+        'images' => 'array',
         'settings' => 'array',
     ];
 

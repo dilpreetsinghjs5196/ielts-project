@@ -102,22 +102,34 @@
                         </div>
 
                         <div class="form-group mb-0">
-                            <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Image (Optional)</label>
+                            <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Images (Optional)</label>
                             <div class="input-group">
-                                <input type="file" name="image" class="form-control border-2" accept="image/*" style="border-radius: 12px 0 0 12px;">
-                                <span class="input-group-text bg-light border-2" style="border-radius: 0 12px 12px 0;"><i class="fas fa-image"></i></span>
+                                <input type="file" name="images[]" class="form-control border-2" accept="image/*" multiple style="border-radius: 12px 0 0 12px;">
+                                <span class="input-group-text bg-light border-2" style="border-radius: 0 12px 12px 0;"><i class="fas fa-images"></i></span>
                             </div>
-                            @if($question->image)
-                                <div class="mt-3 p-3 bg-light rounded border text-center">
-                                    <p class="small text-muted mb-2">Current Image Preview:</p>
-                                    <img src="{{ asset('storage/' . $question->image) }}" class="img-fluid rounded border shadow-sm" style="max-height: 200px;">
-                                    <div class="form-check mt-3 text-start d-flex justify-content-center">
-                                        <div>
-                                            <input class="form-check-input" type="checkbox" name="remove_image" id="remove_image" value="1">
-                                            <label class="form-check-label text-danger fw-bold" for="remove_image">
-                                                Remove Current Image
-                                            </label>
-                                        </div>
+                            @php
+                                $images = [];
+                                if (is_array($question->images)) {
+                                    $images = $question->images;
+                                } elseif (is_string($question->images)) {
+                                    $images = json_decode($question->images, true) ?: [];
+                                }
+                            @endphp
+                            @if(count($images) > 0)
+                                <div class="mt-3 p-3 bg-light rounded border">
+                                    <p class="small text-muted mb-2 text-center">Current Images Preview:</p>
+                                    <div class="row g-3">
+                                        @foreach($images as $img)
+                                            <div class="col-md-4 text-center">
+                                                <img src="{{ asset('storage/' . $img) }}" class="img-fluid rounded border shadow-sm mb-2" style="max-height: 150px; object-fit: cover;">
+                                                <div class="form-check d-flex justify-content-center align-items-center">
+                                                    <input class="form-check-input me-2" type="checkbox" name="remove_images[]" id="remove_image_{{ $loop->index }}" value="{{ $img }}">
+                                                    <label class="form-check-label text-danger fw-bold small" for="remove_image_{{ $loop->index }}">
+                                                        Remove
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             @endif

@@ -105,10 +105,10 @@
                         </div>
 
                         <div class="form-group mb-0">
-                            <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Image (Optional)</label>
+                            <label class="form-label fw-bold text-secondary small text-uppercase tracking-wider">Question Images (Optional)</label>
                             <div class="input-group">
-                                <input type="file" name="image" class="form-control border-2" accept="image/*" style="border-radius: 12px 0 0 12px;">
-                                <span class="input-group-text bg-light border-2" style="border-radius: 0 12px 12px 0;"><i class="fas fa-image"></i></span>
+                                <input type="file" name="images[]" class="form-control border-2" accept="image/*" multiple style="border-radius: 12px 0 0 12px;">
+                                <span class="input-group-text bg-light border-2" style="border-radius: 0 12px 12px 0;"><i class="fas fa-images"></i></span>
                             </div>
                         </div>
                     </div>
