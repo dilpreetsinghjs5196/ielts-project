@@ -11,11 +11,11 @@
     
     <style>
         :root {
-            --ielts-header: #f4f4f4;
-            --ielts-border: #d1d1d1;
-            --ielts-active: #ececec;
+            --ielts-header: var(--header-bg);
+            --ielts-border: var(--border-color);
+            --ielts-active: var(--bg-main);
             --ielts-red: #e31837;
-            --ielts-text: #222;
+            --ielts-text: var(--text-main);
         }
 
         body, html {
@@ -25,7 +25,7 @@
             font-family: 'Inter', sans-serif;
             color: var(--ielts-text);
             overflow: hidden;
-            background-color: #fff;
+            background-color: var(--bg-main);
         }
 
         /* --- Header --- */
@@ -57,7 +57,7 @@
         .header-icons {
             display: flex;
             gap: 20px;
-            color: #555;
+            color: var(--text-muted);
         }
 
         /* --- Main Layout --- */
@@ -66,7 +66,7 @@
             justify-content: center;
             height: calc(100vh - 100px); 
             width: 100%;
-            background-color: #fafafa;
+            background-color: var(--bg-main);
         }
 
         /* --- Panels --- */
@@ -74,7 +74,7 @@
             padding: 40px;
             overflow-y: auto;
             position: relative;
-            background-color: #fff;
+            background-color: var(--bg-card);
             max-width: 800px;
             width: 100%;
             box-shadow: 0 0 15px rgba(0,0,0,0.05);
@@ -82,8 +82,8 @@
 
         /* --- Instructions Area --- */
         .part-header {
-            background: #f8f8f8;
-            border: 1px solid #ddd;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
             padding: 10px 15px;
             margin-bottom: 25px;
             font-size: 1rem;
@@ -97,8 +97,8 @@
             margin-bottom: 30px;
             font-weight: 500;
             padding: 15px;
-            background-color: #f4fbff;
-            border-left: 4px solid #4a90e2;
+            background-color: var(--bg-main);
+            border-left: 4px solid var(--accent-gold);
         }
 
         .question-list {
@@ -112,8 +112,8 @@
             line-height: 1.6;
             margin-bottom: 15px;
             padding: 15px 20px;
-            background: #fff;
-            border: 1px solid #e1e1e1;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             transition: transform 0.2s;
@@ -121,18 +121,18 @@
 
         .question-list li:hover {
             transform: translateY(-2px);
-            border-color: #4a90e2;
+            border-color: var(--accent-gold);
         }
 
         .question-icon {
-            color: #4a90e2;
+            color: var(--accent-gold);
             margin-right: 15px;
         }
 
         /* --- Footer Tabs --- */
         footer {
             height: 50px;
-            background: #fdfdfd;
+            background: var(--bg-card);
             border-top: 1px solid var(--ielts-border);
             display: flex;
             align-items: center;
@@ -269,9 +269,10 @@
             Candidate Name: {{ auth('student')->user()->name ?? 'Guest User' }}
         </div>
         <div class="header-icons">
-            <i class="fas fa-wifi"></i>
-            <i class="fas fa-bell"></i>
-            <i class="fas fa-bars"></i>
+            <button class="theme-toggle-btn flex-shrink-0" aria-label="Toggle Dark Mode"></button>
+            <i class="fas fa-wifi" style="margin-top: 8px;"></i>
+            <i class="fas fa-bell" style="margin-top: 8px;"></i>
+            <i class="fas fa-bars" style="margin-top: 8px;"></i>
         </div>
     </header>
 

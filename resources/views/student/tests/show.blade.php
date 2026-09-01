@@ -65,15 +65,16 @@
         </div>
 
         <div class="header-right d-flex align-items-center gap-3">
-            <select id="fontSizeSelect" class="form-select form-select-sm rounded-pill" style="width: auto; border-color: #dee2e6; cursor: pointer; font-size: 14px; font-weight: 500; padding-left: 16px; padding-right: 32px;">
+            <button class="theme-toggle-btn flex-shrink-0" aria-label="Toggle Dark Mode"></button>
+            <select id="fontSizeSelect" class="form-select form-select-sm rounded-pill flex-shrink-0" style="width: auto; border-color: #dee2e6; cursor: pointer; font-size: 14px; font-weight: 500; padding-left: 16px; padding-right: 32px;">
                 <option value="standard">Aa Standard</option>
                 <option value="large">Aa Large</option>
                 <option value="extra-large">Aa Extra Large</option>
             </select>
-            <span class="user-badge px-3 py-1 bg-light rounded-pill border">
+            <span class="user-badge px-3 py-1 bg-light rounded-pill border text-truncate d-none d-sm-inline-block" style="max-width: 150px;">
                 <i class="fas fa-user-circle me-1"></i> {{ auth('student')->user()->name }}
             </span>
-            <button class="btn btn-primary btn-sm px-4 fw-bold rounded-pill" onclick="submitTest()">Finish Test</button>
+            <button class="btn btn-primary btn-sm px-4 fw-bold rounded-pill flex-shrink-0" onclick="submitTest()">Finish</button>
         </div>
     </header>
 
@@ -422,7 +423,7 @@
 
     .test-header {
         height: var(--header-height);
-        background: #fff;
+        background: var(--header-bg);
         border-bottom: 3px solid var(--primary-gold);
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         z-index: 100;
@@ -430,10 +431,10 @@
 
     .timer-wrapper {
         display: none !important;
-        background: #f1f5f9;
+        background: var(--bg-main);
         padding: 8px 24px;
         border-radius: 50px;
-        color: var(--main-dark);
+        color: var(--text-main);
         min-width: 150px;
     }
 
@@ -446,7 +447,7 @@
     .test-passage {
         width: 50%;
         overflow-y: auto;
-        background: #f1f5f9;
+        background: var(--bg-main);
         scrollbar-width: thin;
     }
 
@@ -488,7 +489,7 @@
     .test-questions {
         width: 50%;
         overflow-y: auto;
-        background: #fff;
+        background: var(--bg-card);
         scrollbar-width: thin;
     }
 
@@ -500,7 +501,7 @@
     .passage-text {
         font-size: 1.15rem;
         line-height: 1.8;
-        color: #1e293b;
+        color: var(--text-main);
     }
 
     .q-number {
@@ -515,11 +516,11 @@
 
     .option-label:hover {
         border-color: var(--primary-gold);
-        background: #fffdf9;
+        background: var(--bg-main);
     }
 
     .option-label input:checked + .option-text {
-        color: var(--main-dark);
+        color: var(--text-main);
         font-weight: 700;
     }
 
@@ -530,23 +531,23 @@
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid transparent;
-        background: #f8fafc;
+        background: var(--bg-main);
     }
 
     .nav-part:hover {
-        background: #f1f5f9;
+        background: var(--bg-card);
     }
 
     .nav-part.active {
-        background: #fff;
-        border-color: #e2e8f0;
+        background: var(--bg-card);
+        border-color: var(--border-color);
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         flex-grow: 0;
     }
 
     .part-label {
         font-size: 0.9rem;
-        color: var(--main-dark);
+        color: var(--text-main);
     }
 
     .nav-part.active .part-label {
@@ -554,16 +555,16 @@
     }
 
     .nav-btn {
-        border-color: #cbd5e1;
-        background: #fff;
-        color: #64748b;
+        border-color: var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-muted);
         transition: all 0.2s;
     }
 
     .nav-btn.answered {
-        background: #e2e8f0;
-        border-color: #94a3b8;
-        color: var(--main-dark);
+        background: var(--bg-main);
+        border-color: var(--border-color);
+        color: var(--text-main);
     }
 
     .nav-btn.current {

@@ -84,6 +84,7 @@
         </div>
 
         <div class="header-right d-flex align-items-center gap-2" style="min-width: 0;">
+            <button class="theme-toggle-btn flex-shrink-0" aria-label="Toggle Dark Mode"></button>
             <select id="fontSizeSelect" class="form-select form-select-sm rounded-pill flex-shrink-0" style="width: auto; border-color: #dee2e6; cursor: pointer; font-size: 13px; font-weight: 500; padding-left: 12px; padding-right: 28px;">
                 <option value="standard">Aa Standard</option>
                 <option value="large">Aa Large</option>
@@ -390,7 +391,7 @@
     }
     body { overflow: hidden; background: #f8fafc; font-family: 'Inter', sans-serif; }
     .test-container { display: flex; flex-direction: column; height: 100vh; }
-    .test-header { height: var(--header-height); background: #fff; border-bottom: 3px solid var(--primary-gold); z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .test-header { height: var(--header-height); background: var(--header-bg); border-bottom: 3px solid var(--primary-gold); z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .timer-wrapper { display: none !important; background: #f1f5f9; padding: 8px 24px; border-radius: 50px; min-width: 150px; }
     .skip-btn { display: none !important; }
     .audio-progress-container { pointer-events: none; cursor: default !important; }
@@ -403,11 +404,12 @@
         cursor: pointer;
         transition: all 0.3s ease;
         border: 1px solid transparent;
-        background: #f8fafc;
+        background: var(--bg-main);
     }
     .nav-part:hover { background: #f1f5f9; }
-    .nav-part.active { background: #fff; border-color: #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .nav-part.active { background: var(--bg-card); border-color: var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .nav-part.active .part-label { color: var(--primary-gold); }
+    .part-label { font-size: 0.9rem; color: var(--text-main); }
 
     .question-nav-link {
         width: 32px;
@@ -416,16 +418,16 @@
         align-items: center;
         justify-content: center;
         border-radius: 8px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--border-color);
         font-size: 0.85rem;
-        background: #fff;
+        background: var(--bg-card);
         transition: all 0.2s;
     }
     .question-nav-link:hover { background: #f1f5f9; color: var(--primary-gold); border-color: var(--primary-gold); }
     .question-nav-link.answered { background: #f1f5f9; border-color: #cbd5e1; }
     .question-nav-link.current { background: var(--main-dark) !important; color: #fff !important; border-color: var(--main-dark) !important; }
 
-    .vr { width: 1px; height: 24px; background-color: #e2e8f0; }
+    .vr { width: 1px; height: 24px; background-color: var(--border-color); }
     
     /* --- Success Popup --- */
     #submission-popup {
@@ -479,17 +481,11 @@
     .btn-home { background: #0d1624; color: white; }
     .btn-admin { background: #ce9d3c; color: white; }
     
-    .test-main { flex: 1; overflow: hidden; }
-    .test-passage { width: 50%; overflow-y: auto; background: #f1f5f9; }
-    .test-questions { width: 50%; overflow-y: auto; background: #fff; }
-    .test-footer { height: var(--footer-height); z-index: 100; }
-    .test-resizer { width: 8px; background: #cbd5e1; cursor: col-resize; position: relative; }
+    .test-main { flex: 1; overflow: hidden; display: flex; }
+    .test-passage { width: 50%; overflow-y: auto; background: var(--bg-main); }
+    .test-questions { width: 50%; overflow-y: auto; background: var(--bg-card); }
+    .test-resizer { width: 8px; background: var(--border-color); cursor: col-resize; position: relative; }
     .resizer-handle { background: #3b82f6; width: 30px; height: 30px; border-radius: 50%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; }
-    .nav-part { padding: 5px 15px; border-radius: 20px; cursor: pointer; transition: 0.3s; }
-    .nav-part.active { background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .nav-part.active .part-label { color: var(--primary-gold); }
-    .question-nav-link { font-size: 0.8rem; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid #e2e8f0; }
-    .question-nav-link.active { background: var(--primary-gold); color: #fff !important; }
     .pulse-badge { animation: pulse 2s infinite; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 </style>
@@ -546,9 +542,13 @@
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            // Highlight the question temporarily
-            el.style.backgroundColor = '#fffbeb';
-            setTimeout(() => { el.style.backgroundColor = ''; }, 2000);
+            // Briefly highlight target group
+            const group = el.closest('.question-group');
+            if(group) {
+                const originalBg = group.style.backgroundColor;
+                group.style.backgroundColor = 'var(--bg-card)';
+                setTimeout(() => { group.style.backgroundColor = originalBg; }, 1000);
+            } 
 
             // Update nav active state
             document.querySelectorAll('.question-nav-link').forEach(l => l.classList.remove('current'));

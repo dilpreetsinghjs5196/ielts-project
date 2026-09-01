@@ -11,11 +11,45 @@
     
     <style>
         :root {
-            --ielts-header: #f4f4f4;
-            --ielts-border: #d1d1d1;
-            --ielts-active: #ececec;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-gold: #ce9d3c;
+            --header-bg: #ffffff;
+            
+            --ielts-header: var(--header-bg);
+            --ielts-border: var(--border-color);
+            --ielts-active: var(--bg-main);
             --ielts-red: #e31837;
-            --ielts-text: #222;
+            --ielts-text: var(--text-main);
+        }
+        
+        html[data-theme="dark"] {
+            --bg-main: #0b1120;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --header-bg: #1e293b;
+        }
+
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .theme-toggle-btn:hover {
+            background: var(--border-color);
         }
 
         body, html {
@@ -25,7 +59,7 @@
             font-family: 'Inter', sans-serif;
             color: var(--ielts-text);
             overflow: hidden;
-            background-color: #fff;
+            background-color: var(--bg-main);
         }
 
         /* --- Header --- */
@@ -41,15 +75,15 @@
 
         .timer-wrapper {
             display: none !important;
-            background: #f1f5f9;
+            background: var(--bg-main);
             padding: 4px 18px;
             border-radius: 50px;
-            color: #222;
+            color: var(--text-main);
             min-width: 100px;
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 1px solid #d1d1d1;
+            border: 1px solid var(--ielts-border);
         }
 
         .test-info {
@@ -70,7 +104,7 @@
         .header-icons {
             display: flex;
             gap: 20px;
-            color: #555;
+            color: var(--text-muted);
         }
 
         /* --- Main Layout --- */
@@ -89,19 +123,21 @@
 
         .left-panel {
             flex: 1;
-            border-right: 8px solid #bbb; /* Draggable handle style */
-            background-color: #fff;
+            border-right: 8px solid var(--border-color); /* Draggable handle style */
+            background-color: var(--bg-card);
+            color: var(--text-main);
         }
 
         .right-panel {
             flex: 1;
-            background-color: #fff;
+            background-color: var(--bg-card);
+            color: var(--text-main);
         }
 
         /* --- Instructions Area --- */
         .part-header {
-            background: #f8f8f8;
-            border: 1px solid #ddd;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
             padding: 10px 15px;
             margin-bottom: 25px;
             font-size: 0.85rem;
@@ -118,8 +154,9 @@
         .chart-image {
             max-width: 100%;
             height: auto;
-            border: 1px solid #eee;
+            border: 1px solid var(--border-color);
             margin: 20px 0;
+            background-color: #fff; /* Keep white for image backgrounds */
         }
 
         /* --- Input Area --- */
@@ -134,10 +171,14 @@
             resize: none;
             box-sizing: border-box;
             outline: none;
+            background-color: var(--bg-main);
+            color: var(--text-main);
         }
 
         .word-counter {
             text-align: right;
+            color: var(--text-muted);
+        }
             margin-top: 10px;
             font-size: 0.9rem;
             color: #444;
@@ -401,6 +442,11 @@
         (function() {
             var savedFont = localStorage.getItem('ielts-font-size');
             if (savedFont) document.documentElement.setAttribute('data-font-size', savedFont);
+            
+            var savedTheme = localStorage.getItem('ielts-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
         })();
     </script>
 </head>
@@ -455,7 +501,8 @@
             </div>
         </div>
         <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
-            <select id="fontSizeSelect" class="form-select form-select-sm" style="width: auto; padding: 4px 32px 4px 16px; border-radius: 15px; border: 1px solid #d1d1d1; font-size: 14px; font-family: inherit; outline: none; cursor: pointer; background-color: #fff; font-weight: 500;">
+            <button class="theme-toggle-btn flex-shrink-0" aria-label="Toggle Dark Mode"></button>
+            <select id="fontSizeSelect" class="form-select form-select-sm" style="width: auto; padding: 4px 32px 4px 16px; border-radius: 15px; border: 1px solid #d1d1d1; font-size: 14px; font-family: inherit; outline: none; cursor: pointer; background-color: var(--bg-card); color: var(--text-main); font-weight: 500;">
                 <option value="standard">Aa Standard</option>
                 <option value="large">Aa Large</option>
                 <option value="extra-large">Aa Extra Large</option>
@@ -676,6 +723,32 @@
                     localStorage.setItem('ielts-font-size', newSize);
                 });
             }
+
+            // Theme Toggle Logic
+            const themeToggles = document.querySelectorAll('.theme-toggle-btn');
+            function updateToggleIcons() {
+                const isDark = html.getAttribute('data-theme') === 'dark';
+                themeToggles.forEach(btn => {
+                    btn.innerHTML = isDark ? '<i class="fas fa-sun" style="color: var(--accent-gold);"></i>' : '<i class="fas fa-moon"></i>';
+                });
+            }
+
+            themeToggles.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const isDark = html.getAttribute('data-theme') === 'dark';
+                    if (isDark) {
+                        html.removeAttribute('data-theme');
+                        localStorage.setItem('ielts-theme', 'light');
+                    } else {
+                        html.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('ielts-theme', 'dark');
+                    }
+                    updateToggleIcons();
+                });
+            });
+
+            // Initialize icons
+            updateToggleIcons();
         });
 
         function submitTest(isAuto = false) {
