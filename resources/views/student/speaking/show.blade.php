@@ -259,6 +259,24 @@
         .btn-home { background: #0d1624; color: white; border: none; }
         .btn-admin { background: #e31837; color: white; border: none; }
 
+        /* --- Bootstrap Dark Mode Overrides --- */
+        html[data-theme="dark"] .bg-warning-subtle { background-color: rgba(206, 157, 60, 0.15) !important; color: var(--text-main) !important; }
+        html[data-theme="dark"] .bg-primary-subtle { background-color: rgba(59, 130, 246, 0.15) !important; }
+        html[data-theme="dark"] .bg-danger-subtle { background-color: rgba(239, 68, 68, 0.15) !important; }
+        html[data-theme="dark"] .bg-success-subtle { background-color: rgba(34, 197, 94, 0.15) !important; }
+        
+        html[data-theme="dark"] .form-control, html[data-theme="dark"] .form-select { 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            border-color: var(--border-color); 
+        }
+        html[data-theme="dark"] .form-control:focus, html[data-theme="dark"] .form-select:focus { 
+            background-color: var(--bg-card); 
+            color: var(--text-main); 
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 0.25rem rgba(206, 157, 60, 0.25);
+        }
+        html[data-theme="dark"] .form-control::placeholder { color: var(--text-muted); }
     </style>
 </head>
 <body>

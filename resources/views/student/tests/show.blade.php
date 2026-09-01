@@ -185,7 +185,7 @@
                                         if ($targetQ->id != $question->id) {
                                             $embeddedQIds[] = $targetQ->id;
                                         }
-                                        return '<span class="d-inline-block mx-1"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 80px; height: 32px; border: 1px solid #94a3b8; border-radius: 4px;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'"></span>';
+                                        return '<span class="d-inline-block mx-1"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 80px; height: 32px; border-radius: 4px;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'"></span>';
                                     }
                                     return $matches[0];
                                 }, $question->content);
