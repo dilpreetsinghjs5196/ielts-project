@@ -19,11 +19,17 @@ class ListeningTestController extends Controller
         $categorySlug = 'listening';
         $activeCategory = Category::where('slug', $categorySlug)->firstOrFail();
         
-        $testTypeId = $request->query('test_type') ?: session('last_test_type_id');
-        if ($request->query('test_type')) session(['last_test_type_id' => $testTypeId]);
-
+        $testTypeId = $request->query('test_type');
         $levelId = $request->query('level');
         $testId = $request->query('test');
+
+        if (!$testTypeId && ($levelId || $testId)) {
+            $testTypeId = session('last_test_type_id');
+        } elseif (!$testTypeId) {
+            session()->forget('last_test_type_id');
+        } else {
+            session(['last_test_type_id' => $testTypeId]);
+        }
 
         $testTypes = TestType::all();
         $levels = $testTypeId ? Level::all() : collect();

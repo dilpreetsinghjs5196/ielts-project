@@ -30,16 +30,18 @@ class QuestionGroupController extends Controller
         $activeCategory = Category::where('slug', $categorySlug)->firstOrFail();
         
         $testTypeId = $request->query('test_type');
-        
-        // If not in request, try session for administrative flow convenience
-        if (!$testTypeId) {
-            $testTypeId = session('last_test_type_id');
-        } else {
-            session(['last_test_type_id' => $testTypeId]);
-        }
         $levelId = $request->query('level');
         $moduleSetId = $request->query('module_set');
         $testId = $request->query('test');
+        
+        // If not in request, check if we are deep linking
+        if (!$testTypeId && ($levelId || $moduleSetId || $testId)) {
+            $testTypeId = session('last_test_type_id');
+        } elseif (!$testTypeId) {
+            session()->forget('last_test_type_id');
+        } else {
+            session(['last_test_type_id' => $testTypeId]);
+        }
 
         // Get options for each step
         $testTypes = TestType::all();

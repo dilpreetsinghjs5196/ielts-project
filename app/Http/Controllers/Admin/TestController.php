@@ -20,12 +20,18 @@ class TestController extends Controller
         $selectedCategory = null;
         $selectedTestType = null;
         $testTypeIdFromRequest = $request->get('test_type_id');
-        
-        if ($testTypeIdFromRequest) {
+        $levelIdFromRequest = $request->get('level_id');
+        $moduleSetIdFromRequest = $request->get('module_set_id');
+
+        if (!$testTypeIdFromRequest && ($levelIdFromRequest || $moduleSetIdFromRequest)) {
+            $effectiveTestTypeId = session('last_test_type_id');
+        } elseif (!$testTypeIdFromRequest) {
+            session()->forget('last_test_type_id');
+            $effectiveTestTypeId = null;
+        } else {
             session(['last_test_type_id' => $testTypeIdFromRequest]);
+            $effectiveTestTypeId = $testTypeIdFromRequest;
         }
-        
-        $effectiveTestTypeId = $testTypeIdFromRequest ?: session('last_test_type_id');
         $selectedModuleSet = null;
         $selectedLevel = null;
         $testTypes = TestType::all();
