@@ -24,6 +24,7 @@ Route::get('/api/levels', [FrontendController::class, 'getLevels'])->name('front
 Route::get('/api/test-types', [FrontendController::class, 'getTestTypes'])->name('frontend.test-types');
 Route::get('/api/module-sets', [FrontendController::class, 'getModuleSets'])->name('frontend.module-sets');
 Route::get('/api/tests', [FrontendController::class, 'getTests'])->name('frontend.tests');
+Route::get('/api/search-tests', [FrontendController::class, 'searchTests'])->name('frontend.search-tests');
 
 Route::get('/', function () {
     return view('welcome');

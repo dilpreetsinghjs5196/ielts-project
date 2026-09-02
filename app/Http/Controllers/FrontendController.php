@@ -155,4 +155,40 @@ class FrontendController extends Controller
 
         return response()->json($tests);
     }
+
+    public function searchTests(Request $request)
+    {
+        $query = $request->get('q');
+        if (empty($query)) {
+            return response()->json([]);
+        }
+
+        $results = [];
+
+        // Reading Tests
+        $tests = Test::where('name', 'like', "%{$query}%")->where('status', 'active')->get();
+        foreach ($tests as $t) {
+            $results[] = ['id' => $t->id, 'name' => $t->name, 'category' => 'Reading'];
+        }
+
+        // Listening Tests
+        $listening = ListeningTest::where('name', 'like', "%{$query}%")->where('status', 'active')->get();
+        foreach ($listening as $t) {
+            $results[] = ['id' => $t->id, 'name' => $t->name, 'category' => 'Listening'];
+        }
+
+        // Writing Tests
+        $writing = WritingTest::where('name', 'like', "%{$query}%")->where('status', 'active')->get();
+        foreach ($writing as $t) {
+            $results[] = ['id' => $t->id, 'name' => $t->name, 'category' => 'Writing'];
+        }
+
+        // Speaking Tests
+        $speaking = SpeakingTest::where('name', 'like', "%{$query}%")->where('status', 'active')->get();
+        foreach ($speaking as $t) {
+            $results[] = ['id' => $t->id, 'name' => $t->name, 'category' => 'Speaking'];
+        }
+
+        return response()->json($results);
+    }
 }

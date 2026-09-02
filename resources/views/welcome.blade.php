@@ -571,6 +571,16 @@
                             onclick="startTypeSelection('General Training')">General Training</a>
                     </li>
                 </ul>
+
+                <!-- AJAX Search Box -->
+                <div class="position-relative me-3 d-none d-lg-block" style="width: 250px;">
+                    <input type="text" id="testSearchInput" class="form-control rounded-pill pe-4" placeholder="Search tests...">
+                    <i class="fas fa-search position-absolute text-muted" style="right: 15px; top: 50%; transform: translateY(-50%);"></i>
+                    <div id="searchResults" class="position-absolute w-100 bg-white border rounded mt-1 shadow-sm d-none" style="z-index: 1050; max-height: 300px; overflow-y: auto;">
+                        <!-- Results will be injected here -->
+                    </div>
+                </div>
+
                 <div class="d-flex align-items-center gap-2">
                     @auth('web')
                         <a href="{{ route('admin.dashboard') }}" class="btn btn-auth btn-login">Admin Panel</a>
@@ -1201,6 +1211,65 @@
                 .catch(() => {
                     container.innerHTML = '<div class="text-center text-danger">Failed to load tests. Please try again.</div>';
                 });
+        }
+        // AJAX Search implementation
+        const searchInput = document.getElementById('testSearchInput');
+        const searchResults = document.getElementById('searchResults');
+        let searchTimeout = null;
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 2) {
+                    searchResults.classList.add('d-none');
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch(`/api/search-tests?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            searchResults.innerHTML = '';
+                            if (data.length === 0) {
+                                searchResults.innerHTML = '<div class="p-3 text-muted text-center small">No tests found</div>';
+                            } else {
+                                const isStudentLoggedIn = {{ auth('student')->check() ? 'true' : 'false' }};
+                                
+                                const list = document.createElement('div');
+                                list.className = 'list-group list-group-flush';
+                                
+                                data.forEach(test => {
+                                    const targetUrl = "{{ route('student.tests.show', ':id') }}".replace(':id', test.id) + (['Writing', 'Speaking', 'Listening'].includes(test.category) ? '?category=' + test.category.toLowerCase() : '');
+                                    const loginUrl = "{{ route('login') }}?test_id=" + test.id + "&category=" + test.category.toLowerCase();
+                                    const testUrl = isStudentLoggedIn ? targetUrl : loginUrl;
+                                    
+                                    list.innerHTML += `
+                                        <a href="${testUrl}" class="list-group-item list-group-item-action py-2 px-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span style="font-size:0.85rem;font-weight:500;color:#0d1624;">${test.name}</span>
+                                                <span class="badge bg-light text-dark border" style="font-size:0.7rem;">${test.category}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                });
+                                searchResults.appendChild(list);
+                            }
+                            searchResults.classList.remove('d-none');
+                        })
+                        .catch(error => {
+                            console.error('Error fetching search results:', error);
+                        });
+                }, 300);
+            });
+
+            // Hide search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.classList.add('d-none');
+                }
+            });
         }
     </script>
 </body>
