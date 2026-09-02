@@ -160,7 +160,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 mb-2 mt-3">Update Segment</button>
-                        <a href="{{ route('admin.question-groups.index', ['category' => $questionGroup->category->slug, 'test_type' => $questionGroup->test_type_id, 'level' => $questionGroup->level_id, 'test' => $questionGroup->test_id]) }}" class="btn btn-light w-100">Cancel</a>
+                        <a href="{{ route('admin.question-groups.index', ['category' => $questionGroup->category->slug, 'test_type' => $questionGroup->test_type_id, 'level' => $questionGroup->level_id, 'module_set' => $questionGroup->test ? $questionGroup->test->module_set_id : null, 'test' => $questionGroup->test_id]) }}" class="btn btn-light w-100">Cancel</a>
                     </div>
                 </div>
             </div>

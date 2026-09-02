@@ -14,6 +14,7 @@
                                 'category' => $activeCategory->slug ?? 'listening',
                                 'test_type' => request()->test_type_id,
                                 'level' => request()->level_id,
+                                'module_set' => request()->module_set_id,
                                 'test' => request()->test_id
                             ]);
                         }

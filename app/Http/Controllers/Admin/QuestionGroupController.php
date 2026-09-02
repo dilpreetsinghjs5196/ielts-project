@@ -302,12 +302,7 @@ class QuestionGroupController extends Controller
 
         $questionGroup->update($data);
 
-        return redirect()->route('admin.question-groups.index', [
-            'category' => $questionGroup->category->slug,
-            'test_type' => $questionGroup->test_type_id,
-            'level' => $questionGroup->level_id,
-            'test' => $questionGroup->test_id,
-        ])->with('success', 'Segment updated successfully.');
+        return redirect()->back()->with('success', 'Segment updated successfully.');
     }
 
     public function destroy(QuestionGroup $questionGroup)
