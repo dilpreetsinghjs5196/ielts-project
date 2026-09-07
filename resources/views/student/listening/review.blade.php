@@ -207,7 +207,7 @@
 
                                                 @if ($question->question_type === 'mcq' || $question->question_type === 'mcq_multi')
                                                     <div class="options-grid d-grid gap-2">
-                                                        @foreach ($question->options as $opt_key => $opt_val)
+                                                        @foreach ($question->options ?? [] as $opt_key => $opt_val)
                                                             @php
                                                                 $isSelected = is_array($studentAnswer) ? in_array($opt_key, $studentAnswer) : ($studentAnswer == $opt_key);
                                                                 $correctArray = preg_split('/[,]| and /', trim(strtolower($question->correct_answer)));

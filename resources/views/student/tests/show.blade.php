@@ -271,7 +271,7 @@
                                                     <span class="text-muted small">Drag a heading here</span>
                                                 </div>
                                                 <div class="headings-pool d-flex flex-wrap gap-2 mt-2">
-                                                    @foreach ($question->options as $opt_idx => $option)
+                                                    @foreach ($question->options ?? [] as $opt_idx => $option)
                                                         <div class="heading-item px-3 py-2 bg-white border rounded shadow-sm cursor-grab" draggable="true" ondragstart="drag(event)" id="h-{{ $question->id }}-{{ $opt_idx }}">
                                                             {{ $option }}
                                                         </div>
@@ -280,7 +280,7 @@
                                             </div>
                                         @elseif ($question->question_type === 'mcq' || $question->question_type === 'mcq_multi')
                                             <div class="mcq-options d-flex flex-column gap-2">
-                                                @foreach ($question->options as $opt_idx => $option)
+                                                @foreach ($question->options ?? [] as $opt_idx => $option)
                                                     <label class="option-label d-flex align-items-center gap-3 p-3 bg-white border rounded-3 cursor-pointer hover-bg-light transition-all">
                                                         <input type="{{ $question->question_type === 'mcq' ? 'radio' : 'checkbox' }}" 
                                                                name="q_{{ $question->id }}" 

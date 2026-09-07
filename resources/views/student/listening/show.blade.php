@@ -262,7 +262,7 @@
 
                                         @if ($question->question_type === 'mcq')
                                             <div class="mcq-options d-flex flex-column gap-2">
-                                                @foreach ($question->options as $opt_idx => $option)
+                                                @foreach ($question->options ?? [] as $opt_idx => $option)
                                                     <label class="option-label d-flex align-items-center gap-3 p-3 bg-white border rounded-3 cursor-pointer">
                                                         <input type="radio" name="q_{{ $question->id }}" value="{{ $opt_idx }}" class="form-check-input">
                                                         <span class="option-text">{{ $opt_idx }}. {{ $option }}</span>
@@ -271,7 +271,7 @@
                                             </div>
                                         @elseif ($question->question_type === 'mcq_multi')
                                             <div class="mcq-options d-flex flex-column gap-2">
-                                                @foreach ($question->options as $opt_idx => $option)
+                                                @foreach ($question->options ?? [] as $opt_idx => $option)
                                                     <label class="option-label d-flex align-items-center gap-3 p-3 bg-white border rounded-3 cursor-pointer">
                                                         <input type="checkbox" name="q_{{ $question->id }}[]" value="{{ $opt_idx }}" class="form-check-input">
                                                         <span class="option-text">{{ $opt_idx }}. {{ $option }}</span>
