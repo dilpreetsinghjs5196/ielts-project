@@ -87,10 +87,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web'])->group(function
 
     // Writing Grading
     Route::post('writing-attempts/{id}/grade', [ResultController::class, 'gradeWriting'])->name('writing-attempts.grade');
+    
+    // Settings
+    Route::post('/settings/toggle-coming-soon', [\App\Http\Controllers\Admin\SettingController::class, 'toggleComingSoon'])->name('settings.toggle-coming-soon');
 });
 
 // Student Protected Routes
-Route::prefix('student')->name('student.')->middleware(['auth:student'])->group(function () {
+Route::prefix('student')->name('student.')->middleware(['auth:student', \App\Http\Middleware\CheckComingSoon::class])->group(function () {
     Route::get('/dashboard', function () {
         $studentId = auth('student')->id();
         

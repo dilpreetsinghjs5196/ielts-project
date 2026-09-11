@@ -587,7 +587,9 @@
                     @elseif(auth('student')->check())
                         <a href="{{ route('student.dashboard') }}" class="btn btn-auth btn-login">Student Portal</a>
                     @else
-                        <a href="{{ route('login') }}" class="btn btn-auth btn-book">Login</a>
+                        @if((\App\Models\Setting::where('key', 'coming_soon')->first()->value ?? '0') !== '1')
+                            <a href="{{ route('login') }}" class="btn btn-auth btn-book">Login</a>
+                        @endif
                     @endauth
                     {{-- <a href="{{ route('login') }}" class="btn btn-auth btn-book">Book your test</a> --}}
                 </div>
@@ -617,7 +619,9 @@
                         <h1>The Official IELTS Familiarisation Test</h1>
                         <p>Are you taking your IELTS test on a computer soon? Take the free IELTS Familiarisation test
                             on computer to know what to expect on your test day.</p>
-                        <a href="{{ route('login') }}" class="btn btn-auth btn-book px-5 py-3">Start Practice Now</a>
+                        @if((\App\Models\Setting::where('key', 'coming_soon')->first()->value ?? '0') !== '1')
+                            <a href="{{ route('login') }}" class="btn btn-auth btn-book px-5 py-3">Start Practice Now</a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -718,9 +722,10 @@
                         computer-delivered IELTS format. From screen layouts to timing mechanisms, we ensure you are
                         100% prepared.</p>
                     <div class="mt-4">
-                        <a href="{{ route('login') }}" class="btn btn-auth btn-login me-3">Learn More</a>
-                        <a href="{{ route('login') }}" class="btn btn-auth btn-book">Get Started <i
-                                class="fas fa-arrow-right ms-2"></i></a>
+                        @if((\App\Models\Setting::where('key', 'coming_soon')->first()->value ?? '0') !== '1')
+                            <a href="{{ route('login') }}" class="btn btn-auth btn-login me-3">Learn More</a>
+                            <a href="{{ route('login') }}" class="btn btn-auth btn-book">Get Started <i class="fas fa-arrow-right ms-2"></i></a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -949,9 +954,30 @@
         </div>
     </div>
 
+    <!-- Coming Soon Modal -->
+    <div class="modal fade" id="comingSoonModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-4" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div class="modal-body">
+                    <i class="fas fa-tools fa-4x mb-4" style="color: var(--primary-gold);"></i>
+                    <h3 class="fw-bold mb-3">Coming Soon</h3>
+                    <p class="text-muted mb-4">This feature is currently under development and will be available shortly. Please check back later!</p>
+                    <button type="button" class="btn btn-warning px-4 rounded-pill fw-bold" style="background-color: var(--primary-gold); color: white; border: none;" data-bs-dismiss="modal">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        const isComingSoon = {{ (\App\Models\Setting::where('key', 'coming_soon')->first()->value ?? '0') == '1' ? 'true' : 'false' }};
+
+        function showComingSoonModal() {
+            var comingSoonModal = new bootstrap.Modal(document.getElementById('comingSoonModal'));
+            comingSoonModal.show();
+        }
+
         // Global state to track selections
         let currentModule = '';
         let currentType = '';
@@ -973,6 +999,10 @@
 
         // Entry point 1: From Navbar (Academic/General)
         function startTypeSelection(typeName) {
+            if (isComingSoon) {
+                showComingSoonModal();
+                return;
+            }
             activeFlow = 'navbar';
             currentType = typeName;
             document.getElementById('selectedModuleType').innerText = typeName;
@@ -991,6 +1021,10 @@
 
         // Entry point 2: From modules section cards (Listening/Reading/etc)
         function openTestSelection(moduleName) {
+            if (isComingSoon) {
+                showComingSoonModal();
+                return;
+            }
             activeFlow = 'cards';
             currentModule = moduleName;
             document.getElementById('selectionModuleSubtitle').innerText =

@@ -454,6 +454,16 @@
                     <li class="{{ request()->is('admin/results*') ? 'active' : '' }}">
                         <a href="{{ route('admin.results.index') }}"><i class="fas fa-chart-bar"></i> Results & Performance</a>
                     </li>
+                    <p class="px-3 text-uppercase mb-2 mt-4" style="font-size: 0.75rem; font-weight: 700; color: #ce9d3c; letter-spacing: 1px;">System Settings</p>
+                    <li class="px-3 py-2 d-flex align-items-center justify-content-between">
+                        <span style="color: var(--sidebar-color); font-size: 1rem;"><i class="fas fa-power-off" style="width: 25px; text-align: center;"></i> Coming Soon</span>
+                        <div class="form-check form-switch m-0">
+                            @php
+                                $comingSoon = \App\Models\Setting::where('key', 'coming_soon')->first()->value ?? '0';
+                            @endphp
+                            <input class="form-check-input" type="checkbox" id="toggleComingSoon" {{ $comingSoon == '1' ? 'checked' : '' }} style="cursor: pointer;">
+                        </div>
+                    </li>
                 @endif
             </ul>
 
@@ -648,6 +658,36 @@
                 html.setAttribute('data-bs-theme', 'dark');
             }
             updateToggleIcons();
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleComingSoon = document.getElementById('toggleComingSoon');
+            if (toggleComingSoon) {
+                toggleComingSoon.addEventListener('change', function() {
+                    const status = this.checked ? 1 : 0;
+                    fetch('{{ route("admin.settings.toggle-coming-soon") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ status: status })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            this.checked = !this.checked;
+                            alert('Failed to update setting.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error toggling coming soon:', error);
+                        this.checked = !this.checked;
+                        alert('Error updating setting.');
+                    });
+                });
+            }
         });
     </script>
     @stack('scripts')
