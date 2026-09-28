@@ -623,6 +623,7 @@
     }
 
     if (mainAudio) {
+        mainAudio.playbackRate = 1.25;
         mainAudio.ontimeupdate = function() {
             if (localStorage.getItem(finishedKey) === 'true') {
                 mainAudio.pause();
@@ -665,6 +666,8 @@
     // Part Audios Logic (for tests with individual part audios instead of a main audio)
     document.querySelectorAll('audio').forEach(audio => {
         if (audio.id === 'main-test-audio') return; // Handled by main audio logic
+
+        audio.playbackRate = 1.25;
 
         const audioId = audio.id || `part-audio-${Math.random().toString(36).substr(2, 9)}`;
         const pFinishedKey = `audio_finished_${attemptId}_${audioId}`;
