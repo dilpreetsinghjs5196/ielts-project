@@ -164,6 +164,38 @@
         });
     </script>
 
+    <!-- Toast Notification Container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <div id="timeNotificationToast" class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000">
+            <div class="d-flex">
+                <div class="toast-body fw-bold text-dark" id="toastMessage"></div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTimeNotification(message, isDanger = false) {
+            const toastElement = document.getElementById('timeNotificationToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.innerText = message;
+            
+            if (isDanger) {
+                toastElement.classList.replace('bg-warning', 'bg-danger');
+                toastMessage.classList.replace('text-dark', 'text-white');
+            } else {
+                toastElement.classList.replace('bg-danger', 'bg-warning');
+                toastMessage.classList.replace('text-white', 'text-dark');
+            }
+            
+            if (window.bootstrap) {
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            }
+        }
+    </script>
+
     @stack('scripts')
 </body>
 </html>

@@ -694,12 +694,26 @@
 
         const timerEl = document.getElementById('test-timer');
         let timerInterval;
+        let notified10Min = false;
+        let notified5Min = false;
+        let notified1Min = false;
 
         function updateTimer() {
             const mins = Math.floor(timeInSeconds / 60);
             const secs = timeInSeconds % 60;
             if (timerEl) {
                 timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            if (mins === 10 && secs === 0 && !notified10Min) {
+                if (typeof showTimeNotification === 'function') showTimeNotification("Attention: Only 10 minutes remaining!");
+                notified10Min = true;
+            } else if (mins === 5 && secs === 0 && !notified5Min) {
+                if (typeof showTimeNotification === 'function') showTimeNotification("Attention: Only 5 minutes remaining!");
+                notified5Min = true;
+            } else if (mins === 1 && secs === 0 && !notified1Min) {
+                if (typeof showTimeNotification === 'function') showTimeNotification("Attention: Only 1 minute remaining! Please wrap up your answers.", true);
+                notified1Min = true;
             }
 
             if (timeInSeconds > 0) {
@@ -815,6 +829,45 @@
                     submitBtn.disabled = false;
                 }
             });
+        }
+    </script>
+    
+    <!-- Toast Notification Container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; position: fixed; top: 0; right: 0; padding: 1rem;">
+        <div id="timeNotificationToast" class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000" style="display: none; min-width: 250px; border-radius: 8px; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <div class="d-flex" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="toast-body fw-bold text-dark" id="toastMessage" style="font-weight: bold; margin-right: 15px;"></div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" onclick="document.getElementById('timeNotificationToast').style.display='none'" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTimeNotification(message, isDanger = false) {
+            const toastElement = document.getElementById('timeNotificationToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.innerText = message;
+            
+            if (isDanger) {
+                toastElement.style.backgroundColor = '#dc3545'; // bg-danger
+                toastMessage.style.color = '#fff'; // text-white
+            } else {
+                toastElement.style.backgroundColor = '#ffc107'; // bg-warning
+                toastMessage.style.color = '#212529'; // text-dark
+            }
+            
+            toastElement.style.display = 'block';
+            
+            if (window.bootstrap) {
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            } else {
+                // Fallback auto-hide if bootstrap is missing
+                setTimeout(() => {
+                    toastElement.style.display = 'none';
+                }, 10000);
+            }
         }
     </script>
 </body>

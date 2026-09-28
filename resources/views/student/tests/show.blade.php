@@ -653,6 +653,9 @@
     let timeInSeconds = {{ $attempt->time_left ?? $examDurationInSeconds }};
     const timerEl = document.getElementById('test-timer');
     let timerInterval;
+    let notified10Min = false;
+    let notified5Min = false;
+    let notified1Min = false;
 
     function updateTimer() {
         const mins = Math.floor(timeInSeconds / 60);
@@ -661,6 +664,17 @@
             timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
         
+        if (mins === 10 && secs === 0 && !notified10Min) {
+            if (typeof showTimeNotification === 'function') showTimeNotification("Attention: Only 10 minutes remaining!");
+            notified10Min = true;
+        } else if (mins === 5 && secs === 0 && !notified5Min) {
+            if (typeof showTimeNotification === 'function') showTimeNotification("Attention: Only 5 minutes remaining!");
+            notified5Min = true;
+        } else if (mins === 1 && secs === 0 && !notified1Min) {
+            if (typeof showTimeNotification === 'function') showTimeNotification("Attention: Only 1 minute remaining! Please wrap up your answers.", true);
+            notified1Min = true;
+        }
+
         if (timeInSeconds > 0) {
             timeInSeconds--;
             
