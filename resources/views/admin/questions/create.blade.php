@@ -142,6 +142,39 @@
                         </div>
                     </div>
 
+                    <!-- TFNG Specific Section: Visual Option & Answer Selector -->
+                    <div id="tfng_options_section" class="mb-4 p-3 rounded-3 border" style="display: {{ old('question_type') == 'tfng' ? 'block' : 'none' }}; background: #f8fafc; border-color: #cbd5e1 !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label font-weight-bold text-dark mb-0">
+                                <i class="fas fa-check-double text-primary me-1"></i> True / False / Not Given Choices
+                            </label>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary active" id="tfng_mode_tfng" onclick="setTfngVariant('tfng')">TRUE / FALSE</button>
+                                <button type="button" class="btn btn-outline-primary" id="tfng_mode_yn" onclick="setTfngVariant('yn')">YES / NO</button>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-3">Click on the correct answer below to automatically select it.</p>
+                        
+                        <div class="d-flex gap-2" id="tfng_buttons_container">
+                            <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('TRUE', this)">
+                                TRUE
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('FALSE', this)">
+                                FALSE
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('NOT GIVEN', this)">
+                                NOT GIVEN
+                            </button>
+                        </div>
+
+                        <!-- Hidden options inputs to persist variant options -->
+                        <div id="tfng_hidden_options">
+                            <input type="hidden" name="options[]" value="TRUE">
+                            <input type="hidden" name="options[]" value="FALSE">
+                            <input type="hidden" name="options[]" value="NOT GIVEN">
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="correct_answer" class="form-label font-weight-bold">Correct Answer</label>
                         <input type="text" name="correct_answer" id="correct_answer" class="form-control @error('correct_answer') is-invalid @enderror" placeholder="Type the exact correct answer" value="{{ old('correct_answer') }}" required>
@@ -290,23 +323,99 @@
 
     function toggleOptions(type) {
         const mcqSection = document.getElementById('mcq_options_section');
+        const tfngSection = document.getElementById('tfng_options_section');
         const optionsLabel = document.getElementById('options_label');
         
+        if (type === 'tfng') {
+            if (mcqSection) mcqSection.style.display = 'none';
+            if (tfngSection) {
+                tfngSection.style.display = 'block';
+                syncTfngButtonHighlight();
+            }
+            return;
+        } else {
+            if (tfngSection) tfngSection.style.display = 'none';
+        }
+
         if (['mcq', 'mcq_multi', 'match_heading', 'fill_blanks'].includes(type)) {
-            mcqSection.style.display = 'block';
-            
-            if (type === 'mcq') {
-                optionsLabel.innerText = "Options (Single Choice)";
-            } else if (type === 'mcq_multi') {
-                optionsLabel.innerText = "Options (Multi-select)";
-            } else if (type === 'match_heading') {
-                optionsLabel.innerText = "Headings (List of headings to match)";
-            } else if (type === 'fill_blanks') {
-                optionsLabel.innerText = "Word Bank (Optional choices for blanks)";
+            if (mcqSection) {
+                mcqSection.style.display = 'block';
+                
+                if (type === 'mcq') {
+                    optionsLabel.innerText = "Options (Single Choice)";
+                } else if (type === 'mcq_multi') {
+                    optionsLabel.innerText = "Options (Multi-select)";
+                } else if (type === 'match_heading') {
+                    optionsLabel.innerText = "Headings (List of headings to match)";
+                } else if (type === 'fill_blanks') {
+                    optionsLabel.innerText = "Word Bank (Optional choices for blanks)";
+                }
             }
         } else {
-            mcqSection.style.display = 'none';
+            if (mcqSection) mcqSection.style.display = 'none';
         }
+    }
+
+    function setTfngVariant(variant) {
+        const btnTfng = document.getElementById('tfng_mode_tfng');
+        const btnYn = document.getElementById('tfng_mode_yn');
+        const container = document.getElementById('tfng_buttons_container');
+        const hiddenOpts = document.getElementById('tfng_hidden_options');
+
+        if (variant === 'yn') {
+            btnTfng.classList.remove('active');
+            btnYn.classList.add('active');
+            container.innerHTML = `
+                <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('YES', this)">YES</button>
+                <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('NO', this)">NO</button>
+                <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('NOT GIVEN', this)">NOT GIVEN</button>
+            `;
+            hiddenOpts.innerHTML = `
+                <input type="hidden" name="options[]" value="YES">
+                <input type="hidden" name="options[]" value="NO">
+                <input type="hidden" name="options[]" value="NOT GIVEN">
+            `;
+        } else {
+            btnYn.classList.remove('active');
+            btnTfng.classList.add('active');
+            container.innerHTML = `
+                <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('TRUE', this)">TRUE</button>
+                <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('FALSE', this)">FALSE</button>
+                <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('NOT GIVEN', this)">NOT GIVEN</button>
+            `;
+            hiddenOpts.innerHTML = `
+                <input type="hidden" name="options[]" value="TRUE">
+                <input type="hidden" name="options[]" value="FALSE">
+                <input type="hidden" name="options[]" value="NOT GIVEN">
+            `;
+        }
+        syncTfngButtonHighlight();
+    }
+
+    function selectTfngAnswer(val, btn) {
+        const answerInput = document.getElementById('correct_answer');
+        if (answerInput) {
+            answerInput.value = val;
+        }
+        syncTfngButtonHighlight();
+    }
+
+    function syncTfngButtonHighlight() {
+        const answerInput = document.getElementById('correct_answer');
+        if (!answerInput) return;
+        const val = (answerInput.value || '').trim().toUpperCase();
+        document.querySelectorAll('.tfng-choice-btn').forEach(btn => {
+            const btnText = btn.innerText.replace(/[^A-Za-z ]/g, '').trim().toUpperCase();
+            if (btnText === val) {
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-primary', 'shadow-sm');
+                btn.innerHTML = `<i class="fas fa-check-circle me-1"></i> ${btnText}`;
+            } else {
+                btn.classList.remove('btn-primary', 'shadow-sm');
+                btn.classList.add('btn-outline-secondary');
+                btn.innerText = btnText;
+            }
+        });
     }
 
     function addOption() {
@@ -345,6 +454,12 @@
         const typeSelect = document.getElementById('question_type');
         if (typeSelect) {
             toggleOptions(typeSelect.value);
+        }
+
+        const answerInput = document.getElementById('correct_answer');
+        if (answerInput) {
+            answerInput.addEventListener('input', syncTfngButtonHighlight);
+            syncTfngButtonHighlight();
         }
     });
 </script>

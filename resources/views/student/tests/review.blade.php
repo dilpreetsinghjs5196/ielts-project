@@ -251,7 +251,49 @@
                                                 </div>
                                             @endif
 
-                                            @if ($question->question_type === 'mcq' || $question->question_type === 'tfng')
+                                            @if ($question->question_type === 'tfng')
+                                                @php
+                                                    $tfngOpts = (!empty($question->options) && is_array($question->options)) 
+                                                        ? array_values(array_filter($question->options)) 
+                                                        : (in_array(strtoupper(trim((string)$question->correct_answer)), ['YES', 'NO']) ? ['YES', 'NO', 'NOT GIVEN'] : ['TRUE', 'FALSE', 'NOT GIVEN']);
+                                                    $stdAnsNorm = trim(strtolower((string)$studentAnswer));
+                                                    $correctAnsNorm = trim(strtolower((string)$question->correct_answer));
+                                                @endphp
+                                                <div class="tfng-review-options d-flex gap-3 mt-3">
+                                                    @foreach ($tfngOpts as $val)
+                                                        @php
+                                                            $valNorm = trim(strtolower((string)$val));
+                                                            $isSelected = ($stdAnsNorm === $valNorm);
+                                                            $isOptionCorrect = ($correctAnsNorm === $valNorm);
+                                                            
+                                                            $badgeStyle = 'background-color: var(--bg-card); color: var(--text-main); border: 2px solid var(--border-color);';
+                                                            if ($isSelected) {
+                                                                if ($isOptionCorrect) {
+                                                                    $badgeStyle = 'background-color: #10b981 !important; color: #ffffff !important; border: 2px solid #10b981 !important;';
+                                                                } else {
+                                                                    $badgeStyle = 'background-color: #ef4444 !important; color: #ffffff !important; border: 2px solid #ef4444 !important;';
+                                                                }
+                                                            } elseif ($isOptionCorrect) {
+                                                                $badgeStyle = 'background-color: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; border: 2px solid #10b981 !important;';
+                                                            }
+                                                        @endphp
+                                                        <div class="px-4 py-2 rounded-pill flex-grow-1 text-center fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" style="{{ $badgeStyle }}">
+                                                            <span>{{ $val }}</span>
+                                                            @if($isSelected)
+                                                                <i class="fas fa-{{ $isOptionCorrect ? 'check' : 'times' }}-circle"></i>
+                                                            @elseif($isOptionCorrect)
+                                                                <i class="fas fa-check-circle"></i>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                @if(!$isCorrect)
+                                                    <div class="mt-2 p-2 bg-success-subtle rounded-3 border-start border-success border-4">
+                                                        <small class="text-success fw-bold d-block mb-1"><i class="fas fa-check-circle me-1"></i> Correct Answer:</small>
+                                                        <span class="text-dark fw-bold text-uppercase">{{ $question->correct_answer }}</span>
+                                                    </div>
+                                                @endif
+                                            @elseif ($question->question_type === 'mcq')
                                                 <div class="options-grid d-grid gap-2">
                                                     @foreach ($question->options ?? [] as $index => $val)
                                                         @php

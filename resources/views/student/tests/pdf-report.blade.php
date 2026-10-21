@@ -380,13 +380,20 @@
                                 @endif
                                 @php
                                     $validOptions = is_array($question->options) ? array_filter($question->options, fn($val) => trim((string)$val) !== '') : [];
+                                    if(empty($validOptions) && $question->question_type === 'tfng') {
+                                        $validOptions = in_array(strtoupper(trim((string)$question->correct_answer)), ['YES', 'NO']) ? ['YES', 'NO', 'NOT GIVEN'] : ['TRUE', 'FALSE', 'NOT GIVEN'];
+                                    }
                                 @endphp
                                 @if(count($validOptions) > 0 && in_array($question->question_type, ['mcq', 'mcq_multi', 'tfng']))
                                     <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
-                                        @foreach($validOptions as $idx => $opt)
-                                            @php $optKey = is_numeric($idx) ? chr(65 + (int)$idx) : $idx; @endphp
-                                            <strong>{{ $optKey }}:</strong> {{ $opt }} &nbsp;&nbsp;
-                                        @endforeach
+                                        @if($question->question_type === 'tfng')
+                                            <strong>Options:</strong> {{ implode(' | ', $validOptions) }}
+                                        @else
+                                            @foreach($validOptions as $idx => $opt)
+                                                @php $optKey = is_numeric($idx) ? chr(65 + (int)$idx) : $idx; @endphp
+                                                <strong>{{ $optKey }}:</strong> {{ $opt }} &nbsp;&nbsp;
+                                            @endforeach
+                                        @endif
                                     </div>
                                 @endif
                             </td>
@@ -508,13 +515,20 @@
                                 @endif
                                 @php
                                     $validOptions = is_array($question->options) ? array_filter($question->options, fn($val) => trim((string)$val) !== '') : [];
+                                    if(empty($validOptions) && $question->question_type === 'tfng') {
+                                        $validOptions = in_array(strtoupper(trim((string)$question->correct_answer)), ['YES', 'NO']) ? ['YES', 'NO', 'NOT GIVEN'] : ['TRUE', 'FALSE', 'NOT GIVEN'];
+                                    }
                                 @endphp
                                 @if(count($validOptions) > 0 && in_array($question->question_type, ['mcq', 'mcq_multi', 'tfng']))
                                     <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
-                                        @foreach($validOptions as $idx => $opt)
-                                            @php $optKey = is_numeric($idx) ? chr(65 + (int)$idx) : $idx; @endphp
-                                            <strong>{{ $optKey }}:</strong> {{ $opt }} &nbsp;&nbsp;
-                                        @endforeach
+                                        @if($question->question_type === 'tfng')
+                                            <strong>Options:</strong> {{ implode(' | ', $validOptions) }}
+                                        @else
+                                            @foreach($validOptions as $idx => $opt)
+                                                @php $optKey = is_numeric($idx) ? chr(65 + (int)$idx) : $idx; @endphp
+                                                <strong>{{ $optKey }}:</strong> {{ $opt }} &nbsp;&nbsp;
+                                            @endforeach
+                                        @endif
                                     </div>
                                 @endif
                             </td>

@@ -127,8 +127,21 @@ class QuestionController extends Controller
 
 
         // Handle options if it's a type that requires options
-        if (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
-            $data['options'] = array_filter($request->options);
+        if ($request->question_type === 'tfng') {
+            if ($request->has('options') && !empty(array_filter($request->options))) {
+                $data['options'] = array_values(array_filter($request->options));
+            } else {
+                $ansUpper = strtoupper(trim((string)$request->correct_answer));
+                if (in_array($ansUpper, ['YES', 'NO'])) {
+                    $data['options'] = ['YES', 'NO', 'NOT GIVEN'];
+                } else {
+                    $data['options'] = ['TRUE', 'FALSE', 'NOT GIVEN'];
+                }
+            }
+        } elseif (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
+            $data['options'] = array_values(array_filter($request->options));
+        } else {
+            $data['options'] = null;
         }
 
         $question = Question::create($data);
@@ -277,8 +290,19 @@ class QuestionController extends Controller
         $data['images'] = empty($currentImages) ? null : $currentImages;
 
 
-        if (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
-            $data['options'] = array_filter($request->options);
+        if ($request->question_type === 'tfng') {
+            if ($request->has('options') && !empty(array_filter($request->options))) {
+                $data['options'] = array_values(array_filter($request->options));
+            } else {
+                $ansUpper = strtoupper(trim((string)$request->correct_answer));
+                if (in_array($ansUpper, ['YES', 'NO'])) {
+                    $data['options'] = ['YES', 'NO', 'NOT GIVEN'];
+                } else {
+                    $data['options'] = ['TRUE', 'FALSE', 'NOT GIVEN'];
+                }
+            }
+        } elseif (in_array($request->question_type, ['mcq', 'mcq_multi', 'match_heading', 'fill_blanks']) && $request->has('options')) {
+            $data['options'] = array_values(array_filter($request->options));
         } else {
             $data['options'] = null;
         }

@@ -291,11 +291,26 @@
                                                 @endforeach
                                             </div>
                                         @elseif ($question->question_type === 'tfng')
-                                            <div class="tfng-options d-flex gap-3">
-                                                @foreach (['TRUE', 'FALSE', 'NOT GIVEN'] as $val)
-                                                    <label class="btn btn-outline-secondary px-3 py-2 rounded-pill flex-grow-1">
-                                                        <input type="radio" name="q_{{ $question->id }}" value="{{ $val }}" class="d-none">
-                                                        {{ $val }}
+                                            @php
+                                                $tfngOpts = (!empty($question->options) && is_array($question->options)) 
+                                                    ? array_values(array_filter($question->options)) 
+                                                    : (in_array(strtoupper(trim((string)$question->correct_answer)), ['YES', 'NO']) ? ['YES', 'NO', 'NOT GIVEN'] : ['TRUE', 'FALSE', 'NOT GIVEN']);
+                                            @endphp
+                                            <div class="tfng-options d-flex gap-3 mt-2">
+                                                @foreach ($tfngOpts as $opt_idx => $val)
+                                                    @php
+                                                        $valTrimmed = trim((string)$val);
+                                                        $radioId = 'tfng_' . $question->id . '_' . $opt_idx;
+                                                    @endphp
+                                                    <input type="radio" 
+                                                           class="btn-check tfng-check" 
+                                                           name="q_{{ $question->id }}" 
+                                                           id="{{ $radioId }}" 
+                                                           value="{{ $valTrimmed }}" 
+                                                           autocomplete="off">
+                                                    <label class="btn btn-outline-secondary px-3 py-2 rounded-pill flex-grow-1 fw-bold tfng-btn text-center" 
+                                                           for="{{ $radioId }}">
+                                                        {{ $valTrimmed }}
                                                     </label>
                                                 @endforeach
                                             </div>
@@ -524,6 +539,37 @@
         font-weight: 700;
     }
 
+    /* TFNG Buttons Styling */
+    .tfng-options .tfng-btn {
+        transition: all 0.2s ease-in-out;
+        border-width: 1.5px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        background-color: var(--bg-card);
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    .tfng-options .tfng-btn:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background-color: rgba(59, 130, 246, 0.08);
+    }
+
+    .tfng-options .btn-check:checked + .tfng-btn {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+    }
+
+    html[data-theme="dark"] .tfng-options .btn-check:checked + .tfng-btn {
+        background-color: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5) !important;
+    }
+
     /* Footer Nav Segmented Styling */
     .nav-part {
         padding: 8px 16px;
@@ -706,7 +752,16 @@
 
             const type = qEl.dataset.qType;
             if (type === 'mcq' || type === 'tfng') {
-                const input = qEl.querySelector(`input[value="${value}"]`);
+                let input = qEl.querySelector(`input[value="${value}"]`);
+                if (!input) {
+                    const allInputs = qEl.querySelectorAll('input[type="radio"]');
+                    for (const inp of allInputs) {
+                        if (inp.value.trim().toLowerCase() === String(value).trim().toLowerCase()) {
+                            input = inp;
+                            break;
+                        }
+                    }
+                }
                 if (input) input.checked = true;
             } else if (type === 'mcq_multi' && Array.isArray(value)) {
                 value.forEach(v => {
