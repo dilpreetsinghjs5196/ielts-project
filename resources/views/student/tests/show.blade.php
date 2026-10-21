@@ -302,15 +302,16 @@
                                                         $valTrimmed = trim((string)$val);
                                                         $radioId = 'tfng_' . $question->id . '_' . $opt_idx;
                                                     @endphp
-                                                    <input type="radio" 
-                                                           class="btn-check tfng-check" 
-                                                           name="q_{{ $question->id }}" 
-                                                           id="{{ $radioId }}" 
-                                                           value="{{ $valTrimmed }}" 
-                                                           autocomplete="off">
-                                                    <label class="btn btn-outline-secondary px-3 py-2 rounded-pill flex-grow-1 fw-bold tfng-btn text-center" 
+                                                    <label class="btn btn-outline-secondary px-3 py-2 rounded-pill flex-grow-1 fw-bold tfng-btn text-center position-relative cursor-pointer" 
                                                            for="{{ $radioId }}">
-                                                        {{ $valTrimmed }}
+                                                        <input type="radio" 
+                                                               class="tfng-radio-input" 
+                                                               name="q_{{ $question->id }}" 
+                                                               id="{{ $radioId }}" 
+                                                               value="{{ $valTrimmed }}" 
+                                                               autocomplete="off"
+                                                               tabindex="-1">
+                                                        <span>{{ $valTrimmed }}</span>
                                                     </label>
                                                 @endforeach
                                             </div>
@@ -422,10 +423,15 @@
         --main-dark: #0d1624;
     }
 
-    body {
+    html, body {
+        height: 100%;
+        width: 100%;
         margin: 0;
         padding: 0;
-        overflow: hidden;
+        overflow: hidden !important;
+        position: fixed;
+        top: 0;
+        left: 0;
         background: #f8fafc;
         font-family: 'Inter', sans-serif;
     }
@@ -433,7 +439,9 @@
     .test-container {
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
     }
 
     .test-header {
@@ -540,6 +548,16 @@
     }
 
     /* TFNG Buttons Styling */
+    .tfng-options .tfng-radio-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
+        pointer-events: none;
+    }
+
     .tfng-options .tfng-btn {
         transition: all 0.2s ease-in-out;
         border-width: 1.5px;
@@ -548,6 +566,8 @@
         background-color: var(--bg-card);
         color: var(--text-main);
         border-color: var(--border-color);
+        position: relative;
+        user-select: none;
     }
 
     .tfng-options .tfng-btn:hover {
@@ -556,14 +576,16 @@
         background-color: rgba(59, 130, 246, 0.08);
     }
 
-    .tfng-options .btn-check:checked + .tfng-btn {
+    .tfng-options .tfng-btn:has(input:checked),
+    .tfng-options .tfng-btn.active {
         background-color: #2563eb !important;
         border-color: #2563eb !important;
         color: #ffffff !important;
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
     }
 
-    html[data-theme="dark"] .tfng-options .btn-check:checked + .tfng-btn {
+    html[data-theme="dark"] .tfng-options .tfng-btn:has(input:checked),
+    html[data-theme="dark"] .tfng-options .tfng-btn.active {
         background-color: #3b82f6 !important;
         border-color: #3b82f6 !important;
         color: #ffffff !important;
@@ -783,6 +805,7 @@
             }
         });
         updateProgress();
+        syncTfngActiveClasses();
     }
 
     function saveProgress() {
@@ -867,7 +890,7 @@
         }
     });
 
-    // Navigation and Scrolling
+    // Navigation and Scrolling (Scroll ONLY container, NEVER window)
     function scrollToQuestion(id) {
         // Handle smart inputs: search for the card or the specific input
         let qId = id.replace('q-', '');
@@ -886,12 +909,25 @@
                 activatePart(group.dataset.groupId, false);
             }
 
-            // 2. Scroll into view
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // 2. Scroll strictly within #questions-container
+            const container = document.getElementById('questions-container');
+            if (container) {
+                const elRect = el.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const relativeTop = elRect.top - containerRect.top + container.scrollTop;
+                const targetScroll = relativeTop - (container.clientHeight / 2) + (el.clientHeight / 2);
+                container.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+            }
             
-            // 3. Auto-focus the input box
-            if (inputEl) {
-                setTimeout(() => inputEl.focus(), 500);
+            // 3. Auto-focus the input box ONLY if it's text input (with preventScroll)
+            if (inputEl && inputEl.type !== 'radio' && inputEl.type !== 'checkbox') {
+                setTimeout(() => {
+                    try {
+                        inputEl.focus({ preventScroll: true });
+                    } catch (e) {
+                        inputEl.focus();
+                    }
+                }, 400);
             }
 
             // 4. Highlight link in nav
@@ -959,8 +995,22 @@
         });
     }
 
+    function syncTfngActiveClasses() {
+        document.querySelectorAll('.tfng-options').forEach(group => {
+            group.querySelectorAll('.tfng-btn').forEach(btn => {
+                const input = btn.querySelector('input[type="radio"]');
+                if (input && input.checked) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        });
+    }
+
     // Listen for changes to update progress and save answers
     document.addEventListener('change', () => {
+        syncTfngActiveClasses();
         updateProgress();
         saveProgress();
     });
@@ -968,6 +1018,14 @@
 
     // Initial progress check
     updateProgress();
+    syncTfngActiveClasses();
+
+    // Prevent window scrolling anywhere on test page
+    window.addEventListener('scroll', () => {
+        if (window.scrollY !== 0 || window.scrollX !== 0) {
+            window.scrollTo(0, 0);
+        }
+    }, { passive: false });
 
     // Drag and Drop Logic (Native JS)
     function allowDrop(ev) {
