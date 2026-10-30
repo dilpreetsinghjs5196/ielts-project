@@ -128,7 +128,9 @@ class QuestionController extends Controller
 
         // Handle options if it's a type that requires options
         if ($request->question_type === 'tfng') {
-            if ($request->has('options') && !empty(array_filter($request->options))) {
+            if ($request->has('tfng_options') && !empty(array_filter($request->tfng_options))) {
+                $data['options'] = array_values(array_filter($request->tfng_options));
+            } elseif ($request->has('options') && !empty(array_filter($request->options))) {
                 $data['options'] = array_values(array_filter($request->options));
             } else {
                 $ansUpper = strtoupper(trim((string)$request->correct_answer));
@@ -291,7 +293,9 @@ class QuestionController extends Controller
 
 
         if ($request->question_type === 'tfng') {
-            if ($request->has('options') && !empty(array_filter($request->options))) {
+            if ($request->has('tfng_options') && !empty(array_filter($request->tfng_options))) {
+                $data['options'] = array_values(array_filter($request->tfng_options));
+            } elseif ($request->has('options') && !empty(array_filter($request->options))) {
                 $data['options'] = array_values(array_filter($request->options));
             } else {
                 $ansUpper = strtoupper(trim((string)$request->correct_answer));

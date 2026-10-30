@@ -169,9 +169,9 @@
 
                         <!-- Hidden options inputs to persist variant options -->
                         <div id="tfng_hidden_options">
-                            <input type="hidden" name="options[]" value="TRUE">
-                            <input type="hidden" name="options[]" value="FALSE">
-                            <input type="hidden" name="options[]" value="NOT GIVEN">
+                            <input type="hidden" name="tfng_options[]" value="TRUE" {{ old('question_type') !== 'tfng' ? 'disabled' : '' }}>
+                            <input type="hidden" name="tfng_options[]" value="FALSE" {{ old('question_type') !== 'tfng' ? 'disabled' : '' }}>
+                            <input type="hidden" name="tfng_options[]" value="NOT GIVEN" {{ old('question_type') !== 'tfng' ? 'disabled' : '' }}>
                         </div>
                     </div>
 
@@ -327,19 +327,27 @@
         const optionsLabel = document.getElementById('options_label');
         
         if (type === 'tfng') {
-            if (mcqSection) mcqSection.style.display = 'none';
+            if (mcqSection) {
+                mcqSection.style.display = 'none';
+                mcqSection.querySelectorAll('input').forEach(inp => inp.disabled = true);
+            }
             if (tfngSection) {
                 tfngSection.style.display = 'block';
+                tfngSection.querySelectorAll('input').forEach(inp => inp.disabled = false);
                 syncTfngButtonHighlight();
             }
             return;
         } else {
-            if (tfngSection) tfngSection.style.display = 'none';
+            if (tfngSection) {
+                tfngSection.style.display = 'none';
+                tfngSection.querySelectorAll('input').forEach(inp => inp.disabled = true);
+            }
         }
 
         if (['mcq', 'mcq_multi', 'match_heading', 'fill_blanks'].includes(type)) {
             if (mcqSection) {
                 mcqSection.style.display = 'block';
+                mcqSection.querySelectorAll('input').forEach(inp => inp.disabled = false);
                 
                 if (type === 'mcq') {
                     optionsLabel.innerText = "Options (Single Choice)";
@@ -352,7 +360,10 @@
                 }
             }
         } else {
-            if (mcqSection) mcqSection.style.display = 'none';
+            if (mcqSection) {
+                mcqSection.style.display = 'none';
+                mcqSection.querySelectorAll('input').forEach(inp => inp.disabled = true);
+            }
         }
     }
 
@@ -371,9 +382,9 @@
                 <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('NOT GIVEN', this)">NOT GIVEN</button>
             `;
             hiddenOpts.innerHTML = `
-                <input type="hidden" name="options[]" value="YES">
-                <input type="hidden" name="options[]" value="NO">
-                <input type="hidden" name="options[]" value="NOT GIVEN">
+                <input type="hidden" name="tfng_options[]" value="YES">
+                <input type="hidden" name="tfng_options[]" value="NO">
+                <input type="hidden" name="tfng_options[]" value="NOT GIVEN">
             `;
         } else {
             btnYn.classList.remove('active');
@@ -384,9 +395,9 @@
                 <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1 fw-bold tfng-choice-btn" onclick="selectTfngAnswer('NOT GIVEN', this)">NOT GIVEN</button>
             `;
             hiddenOpts.innerHTML = `
-                <input type="hidden" name="options[]" value="TRUE">
-                <input type="hidden" name="options[]" value="FALSE">
-                <input type="hidden" name="options[]" value="NOT GIVEN">
+                <input type="hidden" name="tfng_options[]" value="TRUE">
+                <input type="hidden" name="tfng_options[]" value="FALSE">
+                <input type="hidden" name="tfng_options[]" value="NOT GIVEN">
             `;
         }
         syncTfngButtonHighlight();
