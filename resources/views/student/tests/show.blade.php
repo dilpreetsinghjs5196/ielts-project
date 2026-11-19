@@ -719,8 +719,11 @@
 <script>
     // Timer Logic
     let timeInSeconds = {{ $attempt->time_left ?? $examDurationInSeconds }};
+    const totalDurationInSeconds = {{ $examDurationInSeconds }};
+    const halfTimeInSeconds = Math.floor(totalDurationInSeconds / 2);
     const timerEl = document.getElementById('test-timer');
     let timerInterval;
+    let notifiedHalfTime = timeInSeconds < halfTimeInSeconds;
     let notified10Min = false;
     let notified5Min = false;
     let notified1Min = false;
@@ -732,7 +735,15 @@
             timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
         
-        if (mins === 10 && secs === 0 && !notified10Min) {
+        if (timeInSeconds === halfTimeInSeconds && !notifiedHalfTime) {
+            const halfMins = Math.floor(halfTimeInSeconds / 60);
+            const halfSecs = halfTimeInSeconds % 60;
+            const timeRemainingText = halfSecs > 0 ? `${halfMins}m ${halfSecs}s` : `${halfMins} minutes`;
+            if (typeof showTimeNotification === 'function') {
+                showTimeNotification(`Attention: Half time is over! ${timeRemainingText} remaining.`);
+            }
+            notifiedHalfTime = true;
+        } else if (mins === 10 && secs === 0 && !notified10Min) {
             if (typeof showTimeNotification === 'function') showTimeNotification("Attention: Only 10 minutes remaining!");
             notified10Min = true;
         } else if (mins === 5 && secs === 0 && !notified5Min) {
