@@ -190,7 +190,7 @@
                                 if ($isEmbeddedInBody) {
                                     $qBodyText = preg_replace_callback($pattern, function($m) use ($question, $part) {
                                         $num = $m[1];
-                                        return '<input type="text" name="q_'.$question->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center smart-q-input" style="width: 80px; border-bottom: 2px solid #ce9d3c; border-top:0; border-left:0; border-right:0; border-radius:0;" data-q-id="'.$question->id.'" data-q-num="'.$num.'" placeholder="'.$num.'">';
+                                        return '<input type="text" name="q_'.$question->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center smart-q-input" style="width: 80px; border-bottom: 2px solid #ce9d3c; border-top:0; border-left:0; border-right:0; border-radius:0;" data-q-id="'.$question->id.'" data-q-num="'.$num.'" placeholder="'.$num.'" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true">';
                                     }, $qBodyText);
                                 }
                                 
@@ -264,7 +264,7 @@
                                             <div class="mcq-options d-flex flex-column gap-2">
                                                 @foreach ($question->options ?? [] as $opt_idx => $option)
                                                     <label class="option-label d-flex align-items-center gap-3 p-3 bg-white border rounded-3 cursor-pointer">
-                                                        <input type="radio" name="q_{{ $question->id }}" value="{{ $opt_idx }}" class="form-check-input">
+                                                        <input type="radio" name="q_{{ $question->id }}" value="{{ $opt_idx }}" class="form-check-input" autocomplete="off">
                                                         <span class="option-text">{{ $opt_idx }}. {{ $option }}</span>
                                                     </label>
                                                 @endforeach
@@ -273,7 +273,7 @@
                                             <div class="mcq-options d-flex flex-column gap-2">
                                                 @foreach ($question->options ?? [] as $opt_idx => $option)
                                                     <label class="option-label d-flex align-items-center gap-3 p-3 bg-white border rounded-3 cursor-pointer">
-                                                        <input type="checkbox" name="q_{{ $question->id }}[]" value="{{ $opt_idx }}" class="form-check-input">
+                                                        <input type="checkbox" name="q_{{ $question->id }}[]" value="{{ $opt_idx }}" class="form-check-input" autocomplete="off">
                                                         <span class="option-text">{{ $opt_idx }}. {{ $option }}</span>
                                                     </label>
                                                 @endforeach
@@ -281,7 +281,7 @@
                                         @elseif ($question->question_type === 'fill_blanks' || $question->question_type === 'short_answer')
                                             @if(!$isEmbeddedInBody)
                                                 <div class="fill-blanks-container mt-3">
-                                                    <input type="text" name="q_{{ $question->id }}" class="form-control border-bottom border-top-0 border-start-0 border-end-0 bg-light px-3" placeholder="Enter answer..." style="height: 45px; border-radius: 8px;">
+                                                    <input type="text" name="q_{{ $question->id }}" class="form-control border-bottom border-top-0 border-start-0 border-end-0 bg-light px-3" placeholder="Enter answer..." style="height: 45px; border-radius: 8px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true">
                                                 </div>
                                             @endif
                                         @endif
@@ -780,16 +780,17 @@
                 answers[id] = checked ? checked.value : null;
             } else if (type === 'mcq_multi') {
                 const checked = q.querySelectorAll('input:checked');
-                answers[id] = Array.from(checked).map(c => c.value).join(', ');
+                answers[id] = checked.length > 0 ? Array.from(checked).map(c => c.value).join(', ') : null;
             } else {
                 const input = q.querySelector('input[type="text"]');
                 if (input) {
                     // Collect all smart inputs for this question if it's a merged one
                     const allInputs = q.querySelectorAll('.smart-q-input');
                     if (allInputs.length > 1) {
-                        answers[id] = Array.from(allInputs).map(i => i.value).join(', ');
+                        const vals = Array.from(allInputs).map(i => i.value.trim());
+                        answers[id] = vals.some(v => v !== '') ? vals.join(', ') : null;
                     } else {
-                        answers[id] = input.value;
+                        answers[id] = input.value.trim() !== '' ? input.value.trim() : null;
                     }
                 }
             }
@@ -810,10 +811,17 @@
     }
 
     function restoreAnswers() {
+        // Clear all inputs first to wipe any browser-cached or autofilled values
+        document.querySelectorAll('.question-item').forEach(qEl => {
+            qEl.querySelectorAll('input[type="text"]').forEach(inp => { inp.value = ''; });
+            qEl.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(inp => { inp.checked = false; });
+        });
+
         const existingAnswers = @json($attempt->answers ?? []);
         if (!existingAnswers || Object.keys(existingAnswers).length === 0) return;
 
         Object.entries(existingAnswers).forEach(([qId, value]) => {
+            if (value === null || value === undefined || value === '') return;
             const qEl = document.querySelector(`.question-item[data-q-id="${qId}"]`);
             if (!qEl) return;
 
@@ -828,18 +836,37 @@
                     if (input) input.checked = true;
                 });
             } else {
-                const input = qEl.querySelector('input[type="text"]');
-                if (input) {
-                    const allInputs = qEl.querySelectorAll('.smart-q-input');
-                    if (allInputs.length > 1 && typeof value === 'string') {
-                        const vals = value.split(',').map(s => s.trim());
-                        allInputs.forEach((si, idx) => {
-                            if (vals[idx]) si.value = vals[idx];
-                        });
-                    } else {
-                        input.value = value;
-                    }
+                const allInputs = qEl.querySelectorAll('.smart-q-input');
+                if (allInputs.length > 1 && typeof value === 'string') {
+                    const vals = value.split(',').map(s => s.trim());
+                    allInputs.forEach((si, idx) => {
+                        if (vals[idx] && vals[idx] !== '') {
+                            si.value = vals[idx];
+                        } else {
+                            si.value = '';
+                        }
+                    });
+                } else {
+                    const input = qEl.querySelector('input[type="text"]');
+                    if (input) input.value = value;
                 }
+            }
+        });
+    }
+
+    // Neutralize any deferred browser autofill attempts
+    function neutralizeBrowserAutofill() {
+        const existingAnswers = @json($attempt->answers ?? []);
+        document.querySelectorAll('.question-item').forEach(qEl => {
+            const qId = qEl.dataset.qId;
+            const savedVal = existingAnswers ? existingAnswers[qId] : null;
+            if (!savedVal) {
+                qEl.querySelectorAll('input[type="text"]').forEach(inp => {
+                    if (inp.value) inp.value = '';
+                });
+                qEl.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(inp => {
+                    inp.checked = false;
+                });
             }
         });
     }
@@ -847,6 +874,8 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         restoreAnswers();
+        setTimeout(neutralizeBrowserAutofill, 100);
+        setTimeout(neutralizeBrowserAutofill, 400);
         if (!isOverlayShowing) {
             startTimer();
         }

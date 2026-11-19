@@ -576,6 +576,11 @@
                         placeholder="Type your answer here..."
                         oninput="updateWordCount({{ $index + 1 }})"
                         onchange="saveProgress()"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        data-lpignore="true"
                     ></textarea>
                     
                     <div class="word-counter">
@@ -680,13 +685,34 @@
         }
 
         function restoreAnswers() {
+            // Clear all textareas first to wipe any browser-cached or autofilled values
+            document.querySelectorAll('textarea.writing-area').forEach(ta => {
+                ta.value = '';
+            });
+
             const existingAnswers = @json($attempt->answers ?? []);
-            if (!existingAnswers || Object.keys(existingAnswers).length === 0) return;
+            if (!existingAnswers || Object.keys(existingAnswers).length === 0) {
+                document.querySelectorAll('.word-counter span').forEach(sp => sp.innerText = '0');
+                return;
+            }
 
             Object.entries(existingAnswers).forEach(([partNum, value]) => {
                 const textarea = document.getElementById(`writing-textarea-${partNum}`);
                 if (textarea) {
-                    textarea.value = value;
+                    textarea.value = value || '';
+                    updateWordCount(partNum);
+                }
+            });
+        }
+
+        // Neutralize any deferred browser autofill attempts
+        function neutralizeBrowserAutofill() {
+            const existingAnswers = @json($attempt->answers ?? []);
+            document.querySelectorAll('textarea.writing-area').forEach((ta, idx) => {
+                const partNum = idx + 1;
+                const savedVal = existingAnswers ? existingAnswers[partNum] : null;
+                if (!savedVal && ta.value) {
+                    ta.value = '';
                     updateWordCount(partNum);
                 }
             });
@@ -749,6 +775,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             restoreAnswers();
+            setTimeout(neutralizeBrowserAutofill, 100);
+            setTimeout(neutralizeBrowserAutofill, 400);
             if (!isOverlayShowing) {
                 startTimer();
             }

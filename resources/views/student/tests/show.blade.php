@@ -152,7 +152,7 @@
 
                             if ($targetQ) {
                                 $embeddedQIds[] = $targetQ->id;
-                                return '<span class="d-inline-block mx-1"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 80px; height: 32px; border: 1px solid #94a3b8; border-radius: 4px;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'"></span>';
+                                return '<span class="d-inline-block mx-1"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 80px; height: 32px; border: 1px solid #94a3b8; border-radius: 4px;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true"></span>';
                             }
                             return $matches[0];
                         }, $renderedInstruction);
@@ -185,7 +185,7 @@
                                         if ($targetQ->id != $question->id) {
                                             $embeddedQIds[] = $targetQ->id;
                                         }
-                                        return '<span class="d-inline-block mx-1"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 80px; height: 32px; border-radius: 4px;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'"></span>';
+                                        return '<span class="d-inline-block mx-1"><input type="text" name="q_'.$targetQ->id.'_'.$num.'" class="form-control form-control-sm d-inline-block text-center fw-bold smart-q-input" style="width: 80px; height: 32px; border-radius: 4px;" data-q-id="'.$targetQ->id.'" data-q-num="'.$num.'" placeholder="'.$num.'" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true"></span>';
                                     }
                                     return $matches[0];
                                 }, $question->content);
@@ -285,7 +285,8 @@
                                                         <input type="{{ $question->question_type === 'mcq' ? 'radio' : 'checkbox' }}" 
                                                                name="q_{{ $question->id }}" 
                                                                value="{{ is_numeric($opt_idx) ? chr(65 + (int)$opt_idx) : $opt_idx }}" 
-                                                               class="form-check-input">
+                                                               class="form-check-input"
+                                                               autocomplete="off">
                                                         <span class="option-text">{{ $option }}</span>
                                                     </label>
                                                 @endforeach
@@ -318,7 +319,7 @@
                                         @elseif ($question->question_type === 'fill_blanks' || $question->question_type === 'short_answer')
                                             @if(!$isEmbeddedInBody)
                                                 <div class="fill-blanks-container mt-3">
-                                                    <input type="text" name="q_{{ $question->id }}_{{ $question->question_number }}" class="form-control border-bottom border-top-0 border-start-0 border-end-0 bg-light px-3" placeholder="Enter word..." style="height: 50px; border-radius: 12px;">
+                                                    <input type="text" name="q_{{ $question->id }}_{{ $question->question_number }}" class="form-control border-bottom border-top-0 border-start-0 border-end-0 bg-light px-3" placeholder="Enter word..." style="height: 50px; border-radius: 12px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true">
                                                 </div>
                                             @endif
                                         @endif
@@ -776,10 +777,21 @@
 
     // Load existing answers
     function restoreAnswers() {
+        // Clear all inputs first to wipe any browser-cached or autofilled values
+        document.querySelectorAll('.question-item').forEach(qEl => {
+            qEl.querySelectorAll('input[type="text"]').forEach(inp => { inp.value = ''; });
+            qEl.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(inp => { inp.checked = false; });
+        });
+
         const existingAnswers = @json($attempt->answers ?? []);
-        if (!existingAnswers || Object.keys(existingAnswers).length === 0) return;
+        if (!existingAnswers || Object.keys(existingAnswers).length === 0) {
+            updateProgress();
+            syncTfngActiveClasses();
+            return;
+        }
 
         Object.entries(existingAnswers).forEach(([qId, value]) => {
+            if (value === null || value === undefined || value === '') return;
             const qEl = document.querySelector(`.question-item[data-q-id="${qId}"]`);
             if (!qEl) return;
 
@@ -817,6 +829,23 @@
         });
         updateProgress();
         syncTfngActiveClasses();
+    }
+
+    // Neutralize any deferred browser autofill attempts
+    function neutralizeBrowserAutofill() {
+        const existingAnswers = @json($attempt->answers ?? []);
+        document.querySelectorAll('.question-item').forEach(qEl => {
+            const qId = qEl.dataset.qId;
+            const savedVal = existingAnswers ? existingAnswers[qId] : null;
+            if (!savedVal) {
+                qEl.querySelectorAll('input[type="text"]').forEach(inp => {
+                    if (inp.value) inp.value = '';
+                });
+                qEl.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(inp => {
+                    inp.checked = false;
+                });
+            }
+        });
     }
 
     function saveProgress() {
@@ -880,6 +909,8 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         restoreAnswers();
+        setTimeout(neutralizeBrowserAutofill, 100);
+        setTimeout(neutralizeBrowserAutofill, 400);
         if (!isOverlayShowing) {
             startTimer();
         }
