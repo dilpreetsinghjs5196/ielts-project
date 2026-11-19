@@ -110,7 +110,8 @@ class MockTestController extends Controller
                 ]);
             }
             
-            return view('student.listening.show', compact('test', 'attempt', 'examDurationInSeconds'));
+            $audioPlaybackRate = ($timing && $timing->listening_speed_1_5x) ? 1.5 : 1.0;
+            return view('student.listening.show', compact('test', 'attempt', 'examDurationInSeconds', 'audioPlaybackRate'));
         }
 
         // REGULAR TEST HANDLING

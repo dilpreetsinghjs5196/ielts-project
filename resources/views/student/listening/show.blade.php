@@ -627,6 +627,8 @@
         if (progressContainer) progressContainer.style.pointerEvents = 'none';
     }
 
+    const listeningAudioSpeed = {{ $audioPlaybackRate ?? ((\App\Models\ExamTiming::first())?->listening_speed_1_5x ? 1.5 : 1.0) }};
+
     function toggleMainAudio() {
         if (!mainAudio) return;
         
@@ -636,6 +638,7 @@
         }
 
         if (mainAudio.paused) {
+            mainAudio.playbackRate = listeningAudioSpeed;
             mainAudio.play().then(() => {
                 localStorage.setItem(startedKey, 'true');
                 audioIcon.classList.replace('fa-play-circle', 'fa-pause-circle');
@@ -649,7 +652,9 @@
     }
 
     if (mainAudio) {
-        mainAudio.playbackRate = 1.25;
+        mainAudio.playbackRate = listeningAudioSpeed;
+        mainAudio.addEventListener('play', () => { mainAudio.playbackRate = listeningAudioSpeed; });
+        mainAudio.addEventListener('loadedmetadata', () => { mainAudio.playbackRate = listeningAudioSpeed; });
         mainAudio.ontimeupdate = function() {
             if (localStorage.getItem(finishedKey) === 'true') {
                 mainAudio.pause();
@@ -693,7 +698,9 @@
     document.querySelectorAll('audio').forEach(audio => {
         if (audio.id === 'main-test-audio') return; // Handled by main audio logic
 
-        audio.playbackRate = 1.25;
+        audio.playbackRate = listeningAudioSpeed;
+        audio.addEventListener('play', () => { audio.playbackRate = listeningAudioSpeed; });
+        audio.addEventListener('loadedmetadata', () => { audio.playbackRate = listeningAudioSpeed; });
 
         const audioId = audio.id || `part-audio-${Math.random().toString(36).substr(2, 9)}`;
         const pFinishedKey = `audio_finished_${attemptId}_${audioId}`;

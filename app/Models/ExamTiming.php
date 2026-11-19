@@ -10,5 +10,10 @@ class ExamTiming extends Model
 
     protected $fillable = [
         'exam_time',
+        'listening_speed_1_5x',
+    ];
+
+    protected $casts = [
+        'listening_speed_1_5x' => 'boolean',
     ];
 }

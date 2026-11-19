@@ -71,6 +71,34 @@
                             </div>
                         </div>
 
+                        <!-- Listening Audio Speed Setting (1.5x Toggle) -->
+                        <div class="mb-4 p-4 rounded-3 border" style="background: #fdfaf3; border-color: rgba(206, 157, 60, 0.3) !important; border-radius: 12px;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="pe-3">
+                                    <label for="listening_speed_1_5x" class="form-label fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1.05rem;">
+                                        <i class="fas fa-headphones text-warning" style="color: #ce9d3c !important;"></i>
+                                        <span>Increase Listening Test Audio Speed to 1.5x</span>
+                                        <span class="badge {{ old('listening_speed_1_5x', $timing->listening_speed_1_5x) ? 'bg-warning text-dark' : 'bg-secondary' }}" id="speedBadge" style="font-size: 0.75rem; transition: all 0.2s;">
+                                            {{ old('listening_speed_1_5x', $timing->listening_speed_1_5x) ? '1.5x Enabled' : '1.0x Default' }}
+                                        </span>
+                                    </label>
+                                    <p class="text-muted small mb-0" style="line-height: 1.5;">
+                                        When toggle is <strong>ON</strong>, all student listening tests will play audio at <strong>1.5x speed</strong>. When <strong>OFF</strong>, audio will play at the normal default speed (1.0x).
+                                    </p>
+                                </div>
+                                <div class="form-check form-switch m-0 fs-3">
+                                    <input class="form-check-input custom-speed-switch" 
+                                           type="checkbox" 
+                                           name="listening_speed_1_5x" 
+                                           id="listening_speed_1_5x" 
+                                           value="1" 
+                                           {{ old('listening_speed_1_5x', $timing->listening_speed_1_5x) ? 'checked' : '' }}
+                                           onchange="updateSpeedBadge(this)"
+                                           style="cursor: pointer; width: 2.8em; height: 1.5em;">
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Form Actions -->
                         <div class="d-flex align-items-center justify-content-end gap-3 mt-5 pt-4 border-top">
                             <a href="{{ route('admin.dashboard') }}" class="btn btn-light px-4 py-2 fw-bold" style="border-radius: 8px; border: 1px solid #ddd; transition: 0.3s;">
@@ -97,6 +125,30 @@
         border-color: #ce9d3c !important;
         box-shadow: 0 0 0 3px rgba(206, 157, 60, 0.1) !important;
     }
+    .custom-speed-switch:checked {
+        background-color: #ce9d3c !important;
+        border-color: #ce9d3c !important;
+    }
+    .custom-speed-switch:focus {
+        border-color: #ce9d3c !important;
+        box-shadow: 0 0 0 0.25rem rgba(206, 157, 60, 0.25) !important;
+    }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    function updateSpeedBadge(checkbox) {
+        const badge = document.getElementById('speedBadge');
+        if (!badge) return;
+        if (checkbox.checked) {
+            badge.className = 'badge bg-warning text-dark';
+            badge.innerText = '1.5x Enabled';
+        } else {
+            badge.className = 'badge bg-secondary';
+            badge.innerText = '1.0x Default';
+        }
+    }
+</script>
 @endpush
 @endsection

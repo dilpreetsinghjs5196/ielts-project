@@ -12,7 +12,8 @@ class ExamTimingController extends Controller
     public function edit()
     {
         $timing = ExamTiming::firstOrCreate([], [
-            'exam_time' => 60
+            'exam_time' => 60,
+            'listening_speed_1_5x' => false,
         ]);
 
         return view('admin.exam-timing.edit', compact('timing'));
@@ -24,8 +25,11 @@ class ExamTimingController extends Controller
             'exam_time' => ['required', 'integer', 'min:1', 'max:1440'],
         ]);
 
+        $validated['listening_speed_1_5x'] = $request->boolean('listening_speed_1_5x');
+
         $timing = ExamTiming::firstOrCreate([], [
-            'exam_time' => 60
+            'exam_time' => 60,
+            'listening_speed_1_5x' => false,
         ]);
         $timing->update($validated);
 
