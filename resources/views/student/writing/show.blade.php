@@ -908,6 +908,45 @@
                 }, 10000);
             }
         }
+
+        // Disable Right-Click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        }, true);
+
+        // Disable Ctrl+F, Cmd+F, F3, Ctrl+G, F12, and Inspect shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Find in page: Ctrl+F, Cmd+F, Ctrl+G, Cmd+G
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F' || e.key === 'g' || e.key === 'G' || e.keyCode === 70 || e.keyCode === 71)) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            if (e.key === 'F3' || e.keyCode === 114) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // F12 Inspect / DevTools
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C (Inspect Element & Console)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key) || [73, 74, 67].includes(e.keyCode))) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Ctrl+U (View Source)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U' || e.keyCode === 85)) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }, true);
     </script>
 </body>
 </html>
